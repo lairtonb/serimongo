@@ -6,35 +6,24 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Serilog.Core;
 
 namespace SeriMongo.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class InfoController : ControllerBase
+    [Route("api/[controller]")]
+    public class InfoController: ControllerBase
     {
-         private readonly ILogger<InfoController> _logger;
-        private readonly LoggingLevelSwitch _loggingLevelSwitch;
+        private readonly ILogger<InfoController> _logger;
+        
 
-        public InfoController(ILogger<InfoController> logger, LoggingLevelSwitch loggingLevelSwitch)
+        public InfoController(ILogger<InfoController> logger)
         {
             _logger = logger;
-            _loggingLevelSwitch = loggingLevelSwitch;
-        }
-
-        [HttpGet("logdebug")]
-        public void SetLevel(string minimumLevel)
-        {
-            _loggingLevelSwitch.MinimumLevel = Serilog.Events.LogEventLevel.Debug;
-            _logger.LogDebug("This will now be logged");
         }
 
         [HttpGet]
         public IActionResult Get()
         {
-            _logger.LogDebug("This is not logged if Verbose is not enabled.");
-            _logger.LogInformation("Teste {Teste}", "This is a test value");
             return Ok(new
                 {
                     Environment.MachineName,
