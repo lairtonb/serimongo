@@ -48,12 +48,13 @@ namespace SeriMongo
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder => builder 
-                    //.WithOrigins("http://localhost:4200")
-                    .AllowAnyOrigin()
+                    .WithOrigins("http://localhost:4200")
+                    // .AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                // AllowAnyOrigin and AllowCredentials not allowed in the same method
-                // .AllowCredentials()
+                    .SetIsOriginAllowed(_ => true)
+                // .AllowAnyOrigin and .AllowCredentials not allowed in the same method
+                    .AllowCredentials()
                 );
             });
 
@@ -116,7 +117,7 @@ namespace SeriMongo
                 endpoints.EnableDependencyInjection();
 
                 /* SignalR */
-                endpoints.MapHub<LoggingHub>("/LoggingHub");
+                endpoints.MapHub<LoggingHub>("/logs");
             });
 
             app.UseSwagger();

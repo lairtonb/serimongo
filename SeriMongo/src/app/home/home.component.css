@@ -1,0 +1,97 @@
+/*
+  https://www.w3schools.com/css/css_table.asp
+*/
+
+body {
+  font-family: Calibri;
+}
+
+h1 {
+  font-family: Calibri;
+}
+
+table.logs {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table.logs, table.logs th, table.logs td {
+  border: 1px solid #ddd;
+  cursor: default;
+}
+
+table.logs thead tr {
+  /* light blue */
+  background-color: #0e5972;
+  color: white;
+}
+
+table.logs tr {
+  height: 26px;
+}
+
+/*
+thead tr {
+*/
+  /* steel blue */
+/*
+  background-color: #4863A0;
+  color: white;
+}
+*/
+
+thead td {
+  font-weight: bold;
+}
+
+table.logs tr:nth-child(even) {
+  background-color: #f3fafd;
+}
+
+table.logs tbody tr:hover {
+  background-color: #dde;
+}
+
+table.logs td {
+  padding-left: 3px;
+  padding-right: 3px;
+  font-family: Calibri;
+}
+
+table.logs tbody td {
+  cursor: pointer;
+}
+
+table.logs tbody tr.active {
+  color: white;
+  background-color: cornflowerblue;
+}
+
+.details {
+
+}
+
+.idcol {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 1%;
+}
+
+.tstamp {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 1%;
+}
+
+.lvl {
+  width: 1%;
+}
+
+.message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 1%;
+}
