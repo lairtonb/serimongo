@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using SeriMongo.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
