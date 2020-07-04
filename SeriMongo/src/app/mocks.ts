@@ -6,12 +6,13 @@ export const getLogEntries = () => {
       "id": "5efb2210382e47ef306524b7",
 
       "timestamp": new Date("2020-06-30T08:29:20.116-03:00"),
-      "level": "Information",
+      "level": "Error",
       "renderedMessage": "This is a random \"Information\" log entry for \"Jaeden Gibson\" (\"Jaeden.Gibson84@gmail.com\") from \"Tunisia\"",
       "properties": {
         "CustomerName": "Jaeden Gibson",
         "Email": "Jaeden.Gibson84@gmail.com",
-        "Country": "Tunisia"
+        "Country": "Tunisia",
+        "Exception": "What is Lorem Ipsum Lorem Ipsum is simply dummy text of the printing and typesetting industry Lorem Ipsum has been the industry's standard dummy text ever since the 1500s when an unknown printer took a galley of type and scrambled it to make a type specimen book it has?"
       }
     },
     {
@@ -50,8 +51,8 @@ export const getLogEntries = () => {
     {
       "id": "5efb220e382e47ef306524b3",
       "timestamp": "2020-06-30T08:29:17.424-03:00",
-      "level": "Information",
-      "renderedMessage": "This is a random \"Information\" log entry for \"Porter Aufderhar\" (\"Porter_Aufderhar@gmail.com\") from \"Bangladesh\"",
+      "level": "Debug",
+      "renderedMessage": "This is a random \"Debug\" log entry for \"Porter Aufderhar\" (\"Porter_Aufderhar@gmail.com\") from \"Bangladesh\"",
       "properties": {
         "CustomerName": "Porter Aufderhar",
         "Email": "Porter_Aufderhar@gmail.com",
