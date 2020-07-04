@@ -7,7 +7,7 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "css"
         }
       },
       "root": "",
@@ -28,7 +28,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.css"
             ],
             "scripts": []
           },
@@ -40,7 +40,7 @@
                   "with": "src/environments/environment.hmr.ts"
                 }
               ]
-            },            
+            },
             "production": {
               "fileReplacements": [
                 {
@@ -81,7 +81,7 @@
             "hmr": {
               "hmr": true,
               "browserTarget": "SeriMongo:build:hmr"
-            },            
+            },
             "production": {
               "browserTarget": "SeriMongo:build:production"
             }

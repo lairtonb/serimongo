@@ -2,16 +2,9 @@
   https://www.w3schools.com/css/css_table.asp
 */
 
-body {
-  font-family: Calibri;
-}
-
-h1 {
-  font-family: Calibri;
-}
-
 table.logs {
   border-collapse: collapse;
+  table-layout: fixed;
   width: 100%;
 }
 
@@ -72,26 +65,25 @@ table.logs tbody tr.active {
 }
 
 .idcol {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 1%;
+  width: 205px;
 }
 
 .tstamp {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 1%;
+  width: 230px;
 }
 
 .lvl {
-  width: 1%;
+  width: 100px;
 }
 
 .message {
-  overflow: hidden;
+  background: white;
+}
+
+.msg {
+  display: flexbox;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 1%;
+  overflow: hidden;
+  box-sizing: content-box;
 }
