@@ -1,0 +1,195 @@
+/*
+  https://www.w3schools.com/css/css_table.asp
+*/
+
+.search-area {
+  padding: 0;
+  height: 30px;
+  margin-top: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
+}
+
+.search-area #search-logs {
+  width: 100%;
+  box-sizing : border-box;
+  padding-left: 8px;
+  border: 1px solid grey;
+  box-shadow: 1px 3px 6px grey;
+  border-radius: 3px;
+}
+
+.search-area #search::placeholder {
+  opacity: .5;
+}
+
+.search-area #search-logs:focus {
+    outline: none !important;
+    border:1px solid blueviolet;
+    box-shadow: 1px 3px 6px #719ECE;
+}
+
+.search-area button {
+  border: 1px solid grey;
+  border-radius: 3px;
+  width: 80px;
+  margin-left: 10px;
+  box-shadow: -1px 3px 6px grey;
+  cursor: pointer;
+}
+
+/*button:focus{background-color:red;}*/
+
+/*
+.search-area #tail-button {
+  box-shadow: -1px 3px 6px grey;
+  border: 1px solid grey;
+  border-radius: 3px;
+  width: 80px;
+}
+*/
+
+.search-area button:hover {
+  background-color: whitesmoke;
+}
+
+.search-area button:active {
+  background-color: orange;
+  box-shadow: 1px 1px 4px grey;
+}
+
+.search-area button:focus {
+    outline: none !important;
+}
+
+.log-area {
+  padding: 6px;
+  margin-top: 0px;
+}
+
+h1 {
+  padding: 10px 0px 10px 10px;
+  font-size: 21pt;
+  background-color: #E2E2E2;
+  border-bottom: 1px #C1C1C2 solid;
+  color: #201F20;
+  margin: 0;
+  font-weight: normal;
+}
+
+table.logs {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  background-color: #fff;
+  font-size: 10pt;
+}
+
+table.logs tr {
+  height: 26px;
+}
+
+table.logs thead th {
+  color: #505050;
+  background: #E7E7E8;
+  text-align: left;
+  border: 1px solid #ddd;
+  cursor: default;
+}
+
+table.logs > tbody > tr  td {
+  cursor: pointer;
+  vertical-align: middle;
+  margin: 0px;
+}
+
+table.logs > thead > tr  th {
+  border: 1px solid rgb(214, 214, 218);
+  padding: 3px 6px 5px 5px;
+}
+
+table.logs > tbody > tr  td {
+  border: 1px solid rgb(214, 214, 218);
+  padding: 3px 6px 5px 5px;
+}
+
+table.logs > tbody > tr:nth-child(even) {
+  background: #F7F7F8;
+}
+
+table.logs > tbody > tr:hover {
+  background: rgb(235, 235, 240);
+}
+
+table.logs > tbody > tr.active {
+  background: rgb(235, 235, 240);
+}
+
+.idcol {
+  width: 180px;
+}
+
+.tstamp {
+  width: 210px;
+}
+
+.lvl {
+  width: 85px;
+}
+
+.message {
+  background: white;
+}
+
+.msg {
+  display: flexbox;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: content-box;
+}
+
+table.logs > tbody > tr.details  {
+  height: 16px;
+}
+table.logs > tbody > tr.details td  {
+  padding: 2px;
+  padding-right: 10px;
+  border: none;
+  font-size: 9pt;
+  cursor: default;
+  /*font-family: 'Courier New', Courier, monospace;*/
+}
+
+table.logs > tbody > tr.details td:nth-child(2) {
+  padding-left: 6px;
+}
+
+.useafter:first-child::after {
+    content:' :';
+}
+
+.Information {
+  font-weight: lighter;
+  color: darkblue;
+}
+
+.Warning {
+  font-weight: lighter;
+  color: darkorange;
+}
+
+.Error > span {
+  font-weight: bolder;
+  color: darkred;
+}
+
+.Exception {
+  color: darkred;
+  /*font-size: 14px;*/
+  font-weight: bold;
+}
+

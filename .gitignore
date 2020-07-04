@@ -12,6 +12,7 @@
 *.sln.docstates
 zip-tstamp.cmd
 zip_node_modules.cmd
+_Aux
 
 # Angular
 # ---------------------------------
