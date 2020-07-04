@@ -1,0 +1,73 @@
+<div class="container">
+<table class="logs">
+  <colgroup>
+    <col class="idcol">
+    <col class="tstamp">
+    <col class="lvl">
+    <col class="message">
+  </colgroup>
+  <thead>
+    <tr>
+      <!--
+        Adjut widths:
+        it is also possible to use a table head (which can be empty)
+        and apply relative widths for each table head cell. The widths
+        of all cells in the table body will conform to the width of their
+        column head. Example:
+        https://stackoverflow.com/a/53120855/1236495
+      -->
+      <th>Id</th>
+      <th>Timestamp</th>
+      <th>Level</th>
+      <th>Message</th>
+      <!--
+      <td>Has Details</td>
+      <td>Show Details</td>
+      -->
+    </tr>
+  </thead>
+  <tbody>
+    <ng-container *ngFor="let log of logEntries">
+
+    <!-- log entry -->
+    <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow">
+      <td>{{log.id}}</td>
+      <td>{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
+      <td>{{log.level}}</td>
+      <td class="msg">{{log.renderedMessage}}</td>
+
+
+      <!--
+      <td>{{log.showDetails}}</td>
+      <td><a href="#">Details</a></td>
+      -->
+    </tr>
+
+    <!--
+      Para alinhar certo, em vez de colocar uma tabela,
+      qu tal simplesmente tornar parte da mesma tabela usando
+      as celulas existentes com col-span?
+    -->
+
+
+    <!-- log entry properties -->
+    <ng-container *ngIf="log.showDetails">
+      <tr style="background-color: white">
+        <td colspan="4">
+          <table class="details" style="border: 1px solid red;">
+            <tr>
+              <ng-container *ngFor="let p of (log.properties | keyvalue)">
+                <tr><td>{{p.key}}</td><td>{{p.value}}</td></tr>
+              </ng-container>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </ng-container>
+
+    </ng-container>
+  </tbody>
+</table>
+</div>
+
+

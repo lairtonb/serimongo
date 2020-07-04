@@ -1,5 +1,11 @@
 <div style="overflow-x:auto;">
   <table class="logs">
+    <colgroup>
+      <col class="idcol">
+      <col class="tstamp">
+      <col class="lvl">
+      <col class="message">
+    </colgroup>
     <thead>
       <tr>
         <!--
@@ -13,7 +19,7 @@
         <td>Id</td>
         <td>Timestamp</td>
         <td>Level</td>
-        <td style="max-width: 60px;">Message</td>
+        <td>Message</td>
         <!--
         <td>Has Details</td>
         <td>Show Details</td>
@@ -25,10 +31,12 @@
 
       <!-- log entry -->
       <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow">
-        <td class="idcol">{{log.id}}</td>
-        <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
-        <td class="lvl">{{log.level}}</td>
-        <td class="message">{{log.renderedMessage}}</td>
+        <td>{{log.id}}</td>
+        <td>{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
+        <td>{{log.level}}</td>
+        <td class="msg">{{log.renderedMessage}}</td>
+
+
         <!--
         <td>{{log.showDetails}}</td>
         <td><a href="#">Details</a></td>
