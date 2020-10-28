@@ -8,6 +8,10 @@ indent_size = 2
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+[*.cs]
+indent_size = 4
+quote_type = double
+
 [*.ts]
 indent_size = 2
 quote_type = single
