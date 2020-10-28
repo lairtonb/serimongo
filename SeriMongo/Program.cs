@@ -22,6 +22,7 @@ namespace SeriMongo
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseWebRoot("dist/SeriMongo");
                 });
     }
 }
