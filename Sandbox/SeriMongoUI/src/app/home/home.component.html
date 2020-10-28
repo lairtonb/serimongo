@@ -1,0 +1,102 @@
+<div class="main">
+
+  <div class="debugInfoBox">
+    <pre>{{debugInfo | json}}</pre>
+  </div>
+
+  <div class="header">
+    <h1>{{title}}</h1>
+  </div>
+
+  <div class="search-area">
+    <textarea id="search-logs" #search type="text" rows="3" (keydown)="handleTab($event, search)" (input)="controlHeight(search)" placeholder='Type a filter expression and press [return] like x.level==Information && x.properties.Contains("Customer")'></textarea>
+    <button id="search-button">Search</button>
+    <button id="tail-button">Tail</button>
+  </div>
+
+  <div class="log-area">
+    <div #tableContainer class="tb-container">
+    <table class="logs table-scroll">
+      <thead>
+        <tr>
+          <!--
+            Adjust widths:
+            it is also possible to use a table head (which can be empty)
+            and apply relative widths for each table head cell. The widths
+            of all cells in the table body will conform to the width of their
+            column head. Example:
+            https://stackoverflow.com/a/53120855/1236495
+          -->
+          <th class="idcol">Id</th>
+          <th class="tstamp">Timestamp</th>
+          <th class="lvl">Level</th>
+          <th>Message</th>
+          <!--
+          <td>Has Details</td>
+          <td>Show Details</td>
+          -->
+        </tr>
+      </thead>
+      <tbody #tableLogsBody [style.height.px]="tableLogsBodyHeight">
+        <ng-container *ngFor="let log of logEntries">
+
+        <!-- log entry -->
+        <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow">
+          <td class="idcol">{{log.id}}</td>
+          <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
+          <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
+          <td [class]="{ 'msgcol': true, 'msg': true, 'Exception': log.level === 'Error'}">{{log.renderedMessage}}</td>
+
+
+          <!--
+          <td>{{log.showDetails}}</td>
+          <td><a href="#">Details</a></td>
+          -->
+        </tr>
+
+        <!--
+          Para alinhar certo, em vez de colocar uma tabela,
+          qu tal simplesmente tornar parte da mesma tabela usando
+          as celulas existentes com col-span?
+        -->
+
+
+        <!-- log entry properties log.showDetails -->
+        <!--
+        <ng-container *ngIf="1===1">
+          <tr style="background-color: white">
+            <td colspan="4">
+              <table class="details">
+                <ng-container *ngFor="let p of (log.properties | keyvalue)">
+                  <tr><td>{{p.key}}</td><td>{{p.value}}</td></tr>
+                </ng-container>
+              </table>
+            </td>
+          </tr>
+        </ng-container>
+        -->
+
+        <!--
+        <ng-container *ngIf="log.showDetails">
+          <tr class="details" style="background-color: white;">
+            <td colspan="2" class="useafter" style="text-align: right">Message</td>
+            <td colspan="2">{{log.renderedMessage}}</td>
+          </tr>
+          <ng-container *ngFor="let p of (log.properties | keyvalue)">
+            <tr class="details" style="background-color: white;">
+              <td class="useafter" style="text-align: right" colspan="2">{{p.key}}</td>
+              <td colspan="2"><span [class]="redException(p.key)">{{p.value}}</span></td>
+            </tr>
+          </ng-container>
+        </ng-container>
+        -->
+
+
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+  </div>
+
+
+</div>
