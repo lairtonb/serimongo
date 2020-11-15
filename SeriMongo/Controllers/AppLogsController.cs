@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -31,7 +31,7 @@ namespace SeriMongo.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<LogEntry>> GetAllNotes(int currentPage = 1, int pageSize = 2)
+        public async Task<IEnumerable<LogEntry>> GetAll(int currentPage = 1, int pageSize = 2)
         {
             var filter = FilterDefinition<LogEntry>.Empty;
             var options = new FindOptions<LogEntry>
