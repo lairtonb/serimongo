@@ -1,0 +1,352 @@
+.main {
+
+  /* or inline-flex */
+  display: flex;
+
+  /* vertical layout */
+  flex-direction: column;
+
+  /**/
+  /*
+  align-items: stretch;
+  */
+
+  min-height: calc(100vh - 16px);
+  border: 0px solid red;
+}
+
+.search-area {
+  background: burlywood;
+  padding: 0;
+  padding: 10px;
+  margin: 5px;
+  display: flex;
+  flex-direction: row;
+}
+
+.search-area #search-logs {
+  width: 100%;
+  box-sizing : border-box;
+  padding-left: 8px;
+  border: 1px solid grey;
+  box-shadow: 1px 3px 6px grey;
+  border-radius: 3px;
+  resize: vertical;
+  max-height: 100px;
+}
+
+.search-area #search-logs::placeholder {
+  /*color: blue;*/
+  opacity: .6;
+}
+
+.search-area #search-logs:focus {
+  outline: none !important;
+  border:1px solid blueviolet;
+  box-shadow: 1px 3px 6px #719ECE;
+}
+
+.search-area button {
+  border: 1px solid grey;
+  border-radius: 3px;
+  width: 80px;
+  height: 30px;
+  margin-left: 10px;
+  /*padding-left: 10px;
+  text-align: left;*/
+  box-shadow: -1px 3px 6px grey;
+  cursor: pointer;
+}
+
+.log-area {
+  /*background: cornflowerblue;*/
+  margin: 5px;
+  margin-top: 0px;
+  flex: 1 1 auto;
+  display: flex;
+}
+
+h1 {
+  padding: 10px 0px 10px 10px;
+  font-size: 21pt;
+  background-color: #E2E2E2;
+  border-bottom: 1px #C1C1C2 solid;
+  color: #201F20;
+  margin: 0;
+  font-weight: normal;
+}
+
+/**************************/
+
+.debugInfoBox {
+  position: absolute;
+  left: 200px;
+  top: 200px;
+  height: 180px;
+  width: 400px;
+  background-color: moccasin;
+  z-index: 300;
+  border: 3px solid red;
+  padding-left: 15px;
+}
+
+/*********************************/
+
+.tb-container {
+  border: 1px solid red;
+  /*background-color: mediumaquamarine;*/
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-scroll {
+  background-color: mediumpurple;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  /*
+  height: 100vh;
+  height: calc( 100vh - 150px);*/
+  /*height: 500px;*/ /* only way I could make it work was by calculating this dynamically */
+}
+
+
+.table-scroll tbody {
+  /*display: inline-flex;*/
+  /*flex-direction: column;*/
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 480px;
+  /*width: 100%;*/
+  /*height: calc( 100vh - 350px);*/
+  /*height: 100vh;*/
+}
+
+.table-scroll thead tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table-scroll thead {
+  color: currentColor;
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table-scroll tbody tr {
+  color: currentColor;
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+
+.table-scroll thead {
+  color: currentColor;
+  /*
+  Scrollbar is average 1em/16px width,
+  remove it from thead width
+  */
+  width: calc( 100% - 1.3em );
+}
+
+/* needed in order to keep rows from collapsing */
+/*
+.table-scroll td {
+  word-wrap: break-word;
+  width: 170px;
+}
+*/
+
+table.logs {
+  border-collapse: collapse;
+  table-layout: fixed;
+  /*width: 100%;*/
+  /*background-color: #fff;*/
+  font-size: 10pt;
+}
+
+table.logs tr {
+  height: 26px;
+}
+
+table.logs thead th {
+  color: #505050;
+  background: #E7E7E8;
+  text-align: left;
+  border: 1px solid #ddd;
+  cursor: default;
+}
+
+table.logs > thead > tr th {
+  border: 1px solid rgb(214, 214, 218);
+  padding: 3px 6px 5px 5px;
+}
+
+table.logs > tbody > tr td {
+  cursor: pointer;
+  vertical-align: top;
+  margin: 0px;
+  border: 1px solid rgb(214, 214, 218);
+  padding: 3px 6px 5px 5px;
+}
+
+.msg {
+  display: flexbox;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: content-box;
+}
+
+.idcol {
+  width: 180px;
+}
+
+.tstamp {
+  width: 210px;
+}
+
+.lvl {
+  width: 85px;
+}
+
+.msgcol {
+  background-color: defaulColor;
+}
+
+.message {
+  background: white;
+}
+
+/**********************************/
+
+/*
+
+table.logs thead th {
+  color: #505050;
+  background: #E7E7E8;
+  text-align: left;
+  border: 1px solid #ddd;
+  cursor: default;
+}
+
+table.logs > tbody > tr td {
+  cursor: pointer;
+  vertical-align: middle;
+  margin: 0px;
+}
+
+table.logs > tbody > tr td {
+  border: 1px solid rgb(214, 214, 218);
+  padding: 3px 6px 5px 5px;
+}
+
+table.logs > thead > tr th {
+  border: 1px solid rgb(214, 214, 218);
+  padding: 3px 6px 5px 5px;
+}
+
+table.logs > tbody > tr:nth-child(even) {
+  background: #F7F7F8;
+}
+
+table.logs > tbody > tr:hover {
+  background: rgb(235, 235, 240);
+}
+
+table.logs > tbody > tr.active {
+  background: rgb(235, 235, 240);
+}
+
+.idcol {
+  width: 180px;
+}
+
+.tstamp {
+  width: 210px;
+}
+
+.lvl {
+  width: 85px;
+}
+
+
+*/
+
+/*
+
+
+table.logs > tbody > tr:nth-child(even) {
+  background: #F7F7F8;
+}
+
+table.logs > tbody > tr:hover {
+  background: rgb(235, 235, 240);
+}
+
+table.logs > tbody > tr.active {
+  background: rgb(235, 235, 240);
+}
+
+
+
+
+.msg {
+  display: flexbox;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: content-box;
+}
+
+table.logs > tbody > tr.details {
+  height: 16px;
+}
+
+table.logs > tbody > tr.details td {
+  padding: 2px;
+  padding-right: 10px;
+  border: none;
+  font-size: 9pt;
+  cursor: default;
+}
+
+table.logs > tbody > tr.details td:nth-child(2) {
+  padding-left: 6px;
+}
+
+.useafter:first-child::after {
+    content:' :';
+}
+
+.Information {
+  font-weight: lighter;
+  color: darkblue;
+}
+
+.Warning {
+  font-weight: lighter;
+  color: darkorange;
+}
+
+.Error > span {
+  font-weight: bolder;
+  color: darkred;
+}
+
+.Exception {
+  color: darkred;
+  font-weight: bold;
+}
+*/
+
+/*font-size: 14px;*/
+
+/*  display: table;
+  width: 100%;
+  table-layout: fixed;*/

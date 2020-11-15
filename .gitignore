@@ -12,14 +12,15 @@
 *.sln.docstates
 zip-tstamp.cmd
 zip_node_modules.cmd
+_Aux
 
 # Angular
 # ---------------------------------
 
 # compiled output
-/dist
-/tmp
-/out-tsc
+**/dist/
+**/tmp/
+**/out-tsc/
 
 # Only exists if Bazel was run
 /bazel-out
