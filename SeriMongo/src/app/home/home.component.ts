@@ -6,6 +6,7 @@ import { LogEntry } from './log-entry';
 import { getLogEntries } from './mocks';
 import { SignalRService } from '../services/signalr.service';
 import { Subscription } from 'rxjs/internal/Subscription';
+import { SearchService } from '../services/search.service';
 
 @Component({
   templateUrl: './home.component.html',
@@ -14,13 +15,19 @@ import { Subscription } from 'rxjs/internal/Subscription';
 export class HomeComponent implements OnInit, AfterViewInit {
 
   title = 'SeriMongo UI';
+
+  searchExpression: string = `{
+    "Level": "Error",
+    "Properties.Country": "Guam"
+}`;
   logEntries: LogEntry[] = [];
   selectedRow: LogEntry;
   debugInfo: any = {};
 
   private signalRSubscription: Subscription;
 
-  constructor(private signalRService: SignalRService) {
+  constructor(private signalRService: SignalRService,
+    private searchService: SearchService) {
 
   }
 
@@ -45,6 +52,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     window.requestAnimationFrame(this.resize);
+  }
+
+  async onSearchClick() {
+    console.log('Search clicked: ' + this.searchExpression);
+    this.logEntries = await this.searchService.search(this.searchExpression);
   }
 
   @ViewChild('tableContainer')

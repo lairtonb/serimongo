@@ -9,8 +9,12 @@
   </div>
 
   <div class="search-area">
-    <textarea id="search-logs" #search type="text" rows="3" (keydown)="handleTab($event, search)" (input)="controlHeight(search)" placeholder='Type a filter expression and press [return] like x.level==Information && x.properties.Contains("Customer")'></textarea>
-    <button id="search-button">Search</button>
+    <textarea id="search-logs" #search type="text" rows="3"
+      (keydown)="handleTab($event, search)"
+      (input)="controlHeight(search)"
+      [(ngModel)]="searchExpression"
+      placeholder='{}'></textarea>
+    <button id="search-button" (click)="onSearchClick()">Search</button>
     <button id="tail-button">Tail</button>
   </div>
 
