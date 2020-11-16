@@ -4,6 +4,8 @@ import { stringify } from 'querystring';
 
 import { LogEntry } from './log-entry';
 import { getLogEntries } from './mocks';
+import { SignalRService } from '../services/signalr.service';
+import { Subscription } from 'rxjs/internal/Subscription';
 
 @Component({
   templateUrl: './home.component.html',
@@ -16,8 +18,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
   selectedRow: LogEntry;
   debugInfo: any = {};
 
-  constructor() {
-    // this.startSignalR();
+  private signalRSubscription: Subscription;
+
+  constructor(private signalRService: SignalRService) {
+
   }
 
   // Replaced by requestAnimationFrame for a smoother experience
@@ -30,7 +34,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.logEntries = getLogEntries();
+    // this.logEntries = getLogEntries();
+    this.signalRService.start();
+    this.signalRService.getLogEntries(this.onReceiveLogEntry);
+  }
+
+  onReceiveLogEntry = (logEntry: LogEntry) => {
+    this.logEntries.splice(0, 0, logEntry)
   }
 
   ngAfterViewInit() {
@@ -50,7 +60,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
       const tableLogsBodyTop = this.tableLogsBodyElement.nativeElement.offsetTop;
       const tableContainerTop = this.tableContainerElement.nativeElement.offsetTop;
-
 
       this.debugInfo = {
         'tableLogsBodyOffsetHeight': this.tableLogsBodyElement.nativeElement.offsetHeight,
