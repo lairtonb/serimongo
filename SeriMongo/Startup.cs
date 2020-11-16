@@ -18,6 +18,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.OpenApi.Models;
+using MongoDB.Bson.Serialization;
 using SeriMongo.Data;
 using SeriMongo.Hubs;
 using SeriMongo.Models;
@@ -64,13 +65,19 @@ namespace SeriMongo
             // MongoDB Data Access
             services.AddSingleton<AppLogsContext>();
 
+            // MongoDB Search using JSON
+            if (!BsonClassMap.IsClassMapRegistered(typeof(LogEntry)))
+            {
+                BsonClassMap.RegisterClassMap<LogEntry>();
+            }
+
             // This is used by the LogMonitorService to propagate logs to clients
             services.AddSignalR(configure => { 
                 // Can fine-tune settings
                 // configure.
             });
 
-            services.AddOData();
+            // services.AddOData();
 
             // https://github.com/hassanhabib/OData3.1WithSwagger/blob/master/WeatherAPI2/Startup.cs
             services.AddSwaggerGen(c =>
@@ -106,6 +113,7 @@ namespace SeriMongo
 
                 /* Odata */
 
+                /*
                 var odataBuilder = new ODataConventionModelBuilder();
                 EntitySetConfiguration<LogEntry> logEntry = odataBuilder.EntitySet<LogEntry>("AppLogs");
 
@@ -118,6 +126,7 @@ namespace SeriMongo
 
                 // Uncomment the following line to Work-around for #1175 in beta1
                 endpoints.EnableDependencyInjection();
+                */
 
                 /* SignalR */
                 endpoints.MapHub<LoggingHub>("/logs");
