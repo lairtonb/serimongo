@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
@@ -51,7 +51,7 @@ namespace SeriMongo.Services
                         FullDocument = ChangeStreamFullDocumentOption.UpdateLookup
                     };
 
-                    //The operationType can be one of the following: 
+                    // The operationType can be one of the following: 
                     // insert, update, replace, delete, invalidate
                     var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<LogEntry>>().Match("{ operationType: { $in: [ 'insert' ] } }");
 
@@ -59,7 +59,7 @@ namespace SeriMongo.Services
 
                     while (changeStream.MoveNext())
                     {
-                        var next = changeStream.Current;                        
+                        var next = changeStream.Current;
                         await _loggingHub.Clients.All.SendAsync("OnReceiveLogEntry", next.FullDocument);
                     }
                 }
