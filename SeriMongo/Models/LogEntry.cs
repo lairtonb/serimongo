@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Options;
 using System;
@@ -34,7 +34,9 @@ namespace SeriMongo.Models
 
 		public string RenderedMessage { get; set; }
 
-		[BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]		
+        public string Exception { get; set; }
+
+        [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]		
 		public Dictionary<string, object> Properties { get; set; }		
 	}
 }
