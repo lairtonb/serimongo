@@ -96,9 +96,13 @@
           <ng-container *ngFor="let p of (log.properties | keyvalue)">
             <tr class="details" style="background-color: white;">
               <td class="label" style="text-align: right" colspan="2">{{p.key}}</td>
-              <td colspan="2"><span [class]="redException(p.key)">{{p.value}}</span></td>
+              <td colspan="2"><span>{{p.value}}</span></td>
             </tr>
           </ng-container>
+          <tr *ngIf="log.exception != null" class="details" style="background-color: white;">
+            <td colspan="2" class="label" style="text-align: right">Exception</td>
+            <td colspan="2"><span class="Exception">{{log.exception}}</span></td>
+          </tr>
         </ng-container>
 
         </ng-container>

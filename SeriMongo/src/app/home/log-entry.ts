@@ -2,7 +2,8 @@ export class LogEntry {
   id: string;
   timestamp: Date | string;
   level: string;
-  renderedMessage: string;s
+  renderedMessage: string;
+  exception: string;
   properties: Property[]
   showDetails: boolean;
   selected: boolean;

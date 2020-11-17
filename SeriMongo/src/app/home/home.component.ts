@@ -16,10 +16,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   title = 'SeriMongo UI';
 
-  searchExpression: string = `{
-    "Level": "Error",
-    "Properties.Country": "Guam"
-}`;
+  searchExpression: string = `{}`;
   logEntries: LogEntry[] = [];
   selectedRow: LogEntry;
   debugInfo: any = {};
@@ -97,11 +94,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
   setClickedRow(le: LogEntry) {
     this.selectedRow = le;
     le.showDetails = !le.showDetails;
-  }
-
-  redException(key) {
-    if (key === 'Exception')
-      return 'Exception';
   }
 
   // TODO: inprove Angular $event handling following best practices
