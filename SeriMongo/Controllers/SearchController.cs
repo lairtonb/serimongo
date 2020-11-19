@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using SeriMongo.Data;
+using SeriMongo.Extensions;
 using SeriMongo.Models;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace SeriMongo.Controllers
             };
 
             // Bson Query
-            var bsonDoc = BsonDocument.Parse(queryText.ToString());
+            var bsonDoc = BsonDocument.Parse(queryText.ToString()).ConvertToIsoDates();
             var cursor = await _logsContext.LogEtries.FindAsync<LogEntry>(bsonDoc, options);
             return await cursor.ToListAsync();
         }
