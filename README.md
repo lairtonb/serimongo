@@ -1,6 +1,6 @@
 # SeriMongo
 
-A simple log viewer for [serilog-sinks-mongodb](https://github.com/serilog/serilog-sinks-mongodb).
+A real-time log viewer for [serilog-sinks-mongodb](https://github.com/serilog/serilog-sinks-mongodb).
 
 ## Features
 
