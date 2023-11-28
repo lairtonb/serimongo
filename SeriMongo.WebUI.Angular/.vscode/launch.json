@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "SeriMongo.WebUI.Angular (Edge)",
+      "type": "edge",
+      "request": "launch",
+      "url": "https://localhost:4200",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "SeriMongo.WebUI.Angular (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "https://localhost:4200",
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}
