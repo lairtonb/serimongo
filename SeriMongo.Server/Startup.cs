@@ -48,7 +48,7 @@ namespace SeriMongo
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .SetIsOriginAllowed(_ => true)
-                // .AllowAnyOrigin and .AllowCredentials not allowed in the same method
+                    // .AllowAnyOrigin and .AllowCredentials not allowed in the same method
                     .AllowCredentials()
                 );
             });
