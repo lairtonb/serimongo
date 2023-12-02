@@ -1,6 +1,7 @@
 version: '3.4'
 
 services:
+
   mongo:
     image: mongo:4.0.4
     container_name: mongodb
@@ -25,7 +26,38 @@ services:
       interval: 10s
       start_period: 30s
       retries: 3
-    command: ["--replSet", "${MONGO_REPLICA_SET_NAME}", "--oplogSize", "50", "--bind_ip_all"] 
+    command: ["--replSet", "${MONGO_REPLICA_SET_NAME}", "--oplogSize", "50", "--bind_ip_all"]
+
+  serimongo-server:
+    build:
+      context: ./SeriMongo.Server
+      dockerfile: Dockerfile # The path to your Dockerfile
+    container_name: serimongo-server
+    environment:
+      # This format overrides appsettings.json from values stored in the .env file
+      # It would be also possible to expose the user secrets from the host machine
+      - ApplicationOptions__ConnectionInfo__ConnectionString=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:27017?authSource=${MONGO_INITDB_DATABASE}
+      - ApplicationOptions__ConnectionInfo__DatabaseName=${MONGO_INITDB_DATABASE}
+      - ApplicationOptions__ConnectionInfo__CollectionName=ApplicationLogs
+      # This instructs the server to use the same port as the proxy in the UI project
+      # Please check the nginx.conf file in the UI project for more details
+      - ASPNETCORE_URLS=http://+:7189;http://+:51983
+    networks:
+      - mongo-compose-network
+    ports:
+      # Using same ports as expect in the proxy.conf.js of the UI project
+      - "7189:7189"
+      - "51983:51983"
+
+  serimongo-ui:
+    build:
+      context: ./SeriMongo.WebUI.Angular
+      dockerfile: Dockerfile
+    container_name: serimongo-ui
+    ports:
+      - "80:80"
+    networks:
+      - mongo-compose-network
 
 networks: 
   mongo-compose-network:

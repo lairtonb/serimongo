@@ -1,4 +1,5 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+# See https://aka.ms/customizecontainer to learn how to customize your debug container and
+# how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
@@ -9,17 +10,17 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["SeriMongo.csproj", "."]
-RUN dotnet restore "./././SeriMongo.csproj"
+COPY ["SeriMongo.Server.csproj", "."]
+RUN dotnet restore "./SeriMongo.Server.csproj"
 COPY . .
 WORKDIR "/src/."
-RUN dotnet build "./SeriMongo.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./SeriMongo.Server.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./SeriMongo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./SeriMongo.Server.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "SeriMongo.dll"]
+ENTRYPOINT ["dotnet", "SeriMongo.Server.dll"]
