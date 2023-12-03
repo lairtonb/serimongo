@@ -1,24 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29709.97
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6202278E-5C13-49B8-AADF-ECB3B2EB168C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeriMongo.Server", "SeriMongo.Server\SeriMongo.Server.csproj", "{FA7FE564-5168-4256-B25B-E0F3B45BF9F6}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "SeriMongo.WebUI.Angular", "SeriMongo.WebUI.Angular\SeriMongo.WebUI.Angular.esproj", "{30E8660A-A4E4-4949-80B3-91B7ED78A12D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{63F8F3EE-0B29-46CF-928A-12CD8DB17379}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.MongoDB.Sample", "Samples\Serilog.Sinks.MongoDB.Sample\Serilog.Sinks.MongoDB.Sample.csproj", "{2C17F366-D7AB-4195-8BB5-002B6CAFEFFD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{54C6B310-7AAF-432F-ADDB-97273E5E4135}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		.gitattributes = .gitattributes
-		.gitignore = .gitignore
-		azure-pipelines.yml = azure-pipelines.yml
-		README.md = README.md
+		docker-compose.yml = docker-compose.yml
 	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeriMongo", "SeriMongo\SeriMongo.csproj", "{2D912A52-31E6-4D36-95C5-903AFA7498E9}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{4C8EA22A-C174-47D0-AF2F-A8F0733B2671}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SerilogSample", "Samples\SeriMongoSample\SerilogSample.csproj", "{004766ED-FA35-483E-AD44-97313226AC15}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SeriMongoDesktopClient", "Samples\SeriMongoDesktopClient\SeriMongoDesktopClient.csproj", "{08462656-CCA7-4C89-8D3C-357886AC62FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,26 +22,28 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2D912A52-31E6-4D36-95C5-903AFA7498E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2D912A52-31E6-4D36-95C5-903AFA7498E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2D912A52-31E6-4D36-95C5-903AFA7498E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2D912A52-31E6-4D36-95C5-903AFA7498E9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{004766ED-FA35-483E-AD44-97313226AC15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{004766ED-FA35-483E-AD44-97313226AC15}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{004766ED-FA35-483E-AD44-97313226AC15}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{004766ED-FA35-483E-AD44-97313226AC15}.Release|Any CPU.Build.0 = Release|Any CPU
-		{08462656-CCA7-4C89-8D3C-357886AC62FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{08462656-CCA7-4C89-8D3C-357886AC62FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{08462656-CCA7-4C89-8D3C-357886AC62FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA7FE564-5168-4256-B25B-E0F3B45BF9F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA7FE564-5168-4256-B25B-E0F3B45BF9F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA7FE564-5168-4256-B25B-E0F3B45BF9F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA7FE564-5168-4256-B25B-E0F3B45BF9F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30E8660A-A4E4-4949-80B3-91B7ED78A12D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30E8660A-A4E4-4949-80B3-91B7ED78A12D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30E8660A-A4E4-4949-80B3-91B7ED78A12D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{30E8660A-A4E4-4949-80B3-91B7ED78A12D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30E8660A-A4E4-4949-80B3-91B7ED78A12D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30E8660A-A4E4-4949-80B3-91B7ED78A12D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2C17F366-D7AB-4195-8BB5-002B6CAFEFFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C17F366-D7AB-4195-8BB5-002B6CAFEFFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C17F366-D7AB-4195-8BB5-002B6CAFEFFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C17F366-D7AB-4195-8BB5-002B6CAFEFFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{004766ED-FA35-483E-AD44-97313226AC15} = {4C8EA22A-C174-47D0-AF2F-A8F0733B2671}
-		{08462656-CCA7-4C89-8D3C-357886AC62FB} = {4C8EA22A-C174-47D0-AF2F-A8F0733B2671}
+		{2C17F366-D7AB-4195-8BB5-002B6CAFEFFD} = {63F8F3EE-0B29-46CF-928A-12CD8DB17379}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {5F8346B7-4348-4B60-8E69-538B334F1A60}
+		SolutionGuid = {65746BEC-3F6A-4240-B0F1-4011ED8AD562}
 	EndGlobalSection
 EndGlobal
