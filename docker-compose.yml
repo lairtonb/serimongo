@@ -55,9 +55,25 @@ services:
       dockerfile: Dockerfile
     container_name: serimongo-ui
     ports:
-      - "80:80"
+      - "4200:80"
     networks:
       - mongo-compose-network
+
+  serilog-sinks-mongodb-sample:
+    build:
+      context: ./Samples/Serilog.Sinks.MongoDB.Sample
+      dockerfile: Dockerfile
+    container_name: serilog-sinks-mongodb-sample
+    environment:
+      # This format overrides appsettings.json from values stored in the .env file
+      # It would be also possible to expose the user secrets from the host machine
+      - ConnectionStrings__BaseLog=mongodb://${MONGO_INITDB_USERNAME}:${MONGO_INITDB_PASSWORD}@mongo:27017/${MONGO_INITDB_DATABASE}?authSource=${MONGO_INITDB_DATABASE}
+      - ASPNETCORE_URLS=http://+:443;http://+:80
+    networks:
+      - mongo-compose-network
+    ports:
+      - "7066:443" 
+      - "5246:80"
 
 networks: 
   mongo-compose-network:

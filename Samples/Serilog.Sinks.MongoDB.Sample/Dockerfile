@@ -8,10 +8,10 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["Serilog.Sinks.MongoDB.Sample/Serilog.Sinks.MongoDB.Sample.csproj", "Serilog.Sinks.MongoDB.Sample/"]
-RUN dotnet restore "./Serilog.Sinks.MongoDB.Sample/./Serilog.Sinks.MongoDB.Sample.csproj"
+COPY ["Serilog.Sinks.MongoDB.Sample.csproj", "."]
+RUN dotnet restore "./Serilog.Sinks.MongoDB.Sample.csproj"
 COPY . .
-WORKDIR "/src/Serilog.Sinks.MongoDB.Sample"
+WORKDIR "/src/."
 RUN dotnet build "./Serilog.Sinks.MongoDB.Sample.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
