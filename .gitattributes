@@ -61,3 +61,9 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+###############################################################################
+# This tells GitHub to treat .json files in your repository as full JavaScript
+# (which, of course, permits comments) instead of JSON.
+###############################################################################
+*.json linguist-language=JavaScript
