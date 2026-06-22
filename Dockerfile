@@ -29,5 +29,6 @@ VOLUME ["/data"]
 
 COPY --from=backend-build /app/publish ./
 COPY --from=ui-build /src/SeriMongo/dist/SeriMongo ./dist/SeriMongo
+COPY seed.sql ./seed.sql
 
 ENTRYPOINT ["dotnet", "SeriMongo.dll"]
