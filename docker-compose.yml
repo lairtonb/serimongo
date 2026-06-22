@@ -1,0 +1,15 @@
+services:
+  serimongo:
+    build: .
+    image: serimongo:local
+    ports:
+      - "51983:8080"
+    environment:
+      ApplicationOptions__Database__ConnectionString: "Data Source=/data/serimongo.db"
+      ApplicationOptions__Seed__Enabled: "true"
+      ApplicationOptions__Seed__ScriptPath: "/app/seed.sql"
+    volumes:
+      - serimongo-data:/data
+
+volumes:
+  serimongo-data:

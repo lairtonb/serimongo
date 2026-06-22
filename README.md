@@ -24,6 +24,22 @@ Run it:
 docker run --rm -p 51983:8080 -v serimongo-data:/data serimongo:local
 ```
 
+Run it with the bundled `seed.sql` enabled:
+
+```bash
+docker run --rm -p 51983:8080 \
+  -e ApplicationOptions__Seed__Enabled=true \
+  -e ApplicationOptions__Seed__ScriptPath=/app/seed.sql \
+  -v serimongo-data:/data \
+  serimongo:local
+```
+
+Or use Docker Compose, which enables the seed by default:
+
+```bash
+docker compose up --build
+```
+
 Open the UI:
 
 ```text
@@ -38,6 +54,15 @@ docker run --rm -p 51983:8080 \
   -v serimongo-data:/data \
   serimongo:local
 ```
+
+## Seed Data
+
+The Docker image includes `seed.sql`, a compact SQLite script that generates 3000 varied log entries. Startup seeding runs only when both conditions are met:
+
+* `ApplicationOptions__Seed__Enabled=true`
+* the configured `ApplicationOptions__Seed__ScriptPath` file exists
+
+The bundled script is idempotent: it inserts only when `LogEntries` is empty, so restarts do not duplicate seed data.
 
 ## LogQL
 

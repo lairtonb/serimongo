@@ -58,6 +58,7 @@ namespace SeriMongo
             services.AddSingleton<ILogEntryNotifier, SignalRLogEntryNotifier>();
             services.AddSingleton<ILogIngestService, LogIngestService>();
             services.AddSingleton<OtlpLogMapper>();
+            services.AddSingleton<StartupSeedService>();
 
             // SignalR remains the client push channel for new log entries.
             services.AddSignalR(configure => { 
@@ -74,6 +75,8 @@ namespace SeriMongo
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.ApplicationServices.GetRequiredService<StartupSeedService>().SeedAsync().GetAwaiter().GetResult();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
