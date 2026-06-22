@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SeriMongo.Models;
+using SeriMongo.Querying;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -75,6 +76,8 @@ CREATE INDEX IF NOT EXISTS IX_LogEntries_Level ON LogEntries (Level);
         System.Threading.Tasks.Task AddAsync(LogEntry logEntry, System.Threading.CancellationToken cancellationToken = default);
 
         System.Threading.Tasks.Task<IReadOnlyList<LogEntry>> GetRecentAsync(int currentPage, int pageSize, System.Threading.CancellationToken cancellationToken = default);
+
+        System.Threading.Tasks.Task<IReadOnlyList<LogEntry>> SearchAsync(LogSqlQuery query, int currentPage, int pageSize, System.Threading.CancellationToken cancellationToken = default);
     }
 
     public class SqliteLogRepository : ILogRepository
@@ -123,6 +126,11 @@ VALUES ($id, $timestampUtc, $level, $renderedMessage, $exception, $propertiesJso
 
         public async System.Threading.Tasks.Task<IReadOnlyList<LogEntry>> GetRecentAsync(int currentPage, int pageSize, System.Threading.CancellationToken cancellationToken = default)
         {
+            return await SearchAsync(new LogSqlQuery("1 = 1", Array.Empty<LogSqlParameter>()), currentPage, pageSize, cancellationToken);
+        }
+
+        public async System.Threading.Tasks.Task<IReadOnlyList<LogEntry>> SearchAsync(LogSqlQuery query, int currentPage, int pageSize, System.Threading.CancellationToken cancellationToken = default)
+        {
             var safePage = Math.Max(currentPage, 1);
             var safePageSize = Math.Clamp(pageSize, 1, 500);
             var offset = (safePage - 1) * safePageSize;
@@ -131,11 +139,18 @@ VALUES ($id, $timestampUtc, $level, $renderedMessage, $exception, $propertiesJso
             await connection.OpenAsync(cancellationToken);
 
             using var command = connection.CreateCommand();
-            command.CommandText = @"
+            command.CommandText = $@"
 SELECT Id, TimestampUtc, Level, RenderedMessage, Exception, PropertiesJson
 FROM LogEntries
+WHERE {query.WhereSql}
 ORDER BY TimestampUtc DESC
 LIMIT $limit OFFSET $offset;";
+
+            foreach (var parameter in query.Parameters)
+            {
+                command.Parameters.AddWithValue(parameter.Name, parameter.Value ?? DBNull.Value);
+            }
+
             command.Parameters.AddWithValue("$limit", safePageSize);
             command.Parameters.AddWithValue("$offset", offset);
 
