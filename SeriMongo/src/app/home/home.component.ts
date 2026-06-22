@@ -21,6 +21,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedRow = signal<LogEntry | null>(null);
   debugInfo = signal<Record<string, unknown>>({});
   tableLogsBodyHeight = signal(200);
+  isTailing = signal(true);
 
   constructor(private signalRService: SignalRService,
     private searchService: SearchService) {
@@ -32,6 +33,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onReceiveLogEntry = (logEntry: LogEntry) => {
+    if (!this.isTailing()) {
+      return;
+    }
+
     this.logEntries.update(entries => [logEntry, ...entries].slice(0, 1000));
   };
 
@@ -45,6 +50,26 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   async onSearchClick(): Promise<void> {
     this.logEntries.set(await this.searchService.search(this.searchExpression));
+  }
+
+  toggleTail(): void {
+    this.isTailing.update(value => !value);
+  }
+
+  trackByLogId(index: number, log: LogEntry): string {
+    return log.id || index.toString();
+  }
+
+  formatValue(value: unknown): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+
+    if (typeof value === 'object') {
+      return JSON.stringify(value, null, 2);
+    }
+
+    return String(value);
   }
 
   @ViewChild('tableContainer')
@@ -81,7 +106,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
    * properties and scope properties saved by Serilog.
    */
   setClickedRow(le: LogEntry) {
-    this.selectedRow.set(le);
+    this.selectedRow.set(le.showDetails ? null : le);
     le.showDetails = !le.showDetails;
     this.logEntries.update(entries => [...entries]);
   }

@@ -1,89 +1,442 @@
 .main {
-  /* inline-flex */
+  --bg: #0e1526;
+  --panel: #ffffff;
+  --panel-muted: #f6f8fb;
+  --line: #dbe3ef;
+  --line-soft: #edf2f8;
+  --text: #182235;
+  --muted: #64748b;
+  --brand: #2563eb;
+  --brand-soft: #dbeafe;
+  --danger: #b42318;
+  --warning: #a15c07;
+  --info: #175cd3;
+  --debug: #475467;
+  --trace: #667085;
   display: flex;
-
-  /* vertical layout */
   flex-direction: column;
-  min-height: calc(100vh - 16px);
+  min-height: 100vh;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, .18), transparent 34rem),
+    linear-gradient(180deg, #f8fbff 0%, #eef4fb 42%, #e8eef7 100%);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 28px;
+  background: rgba(255, 255, 255, .84);
+  border-bottom: 1px solid rgba(148, 163, 184, .32);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, .08);
+  backdrop-filter: blur(14px);
+}
+
+h1 {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(1.55rem, 3vw, 2.3rem);
+  font-weight: 750;
+  letter-spacing: -.04em;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--brand);
+  font-size: .73rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: var(--muted);
+  background: var(--panel-muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: .9rem;
+  white-space: nowrap;
+}
+
+.header-status span {
+  color: #067647;
+  font-weight: 800;
+}
+
+.header-status span.paused {
+  color: var(--warning);
+}
+
+.header-status strong {
+  color: var(--text);
 }
 
 .search-area {
-  padding: 3px;
-  margin-top: 10px;
-  margin-left: 5px;
-  margin-right: 5px;
-  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  margin: 16px 18px 12px;
+  padding: 14px;
+  background: rgba(255, 255, 255, .88);
+  border: 1px solid rgba(148, 163, 184, .34);
+  border-radius: 18px;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, .08);
+}
 
+.query-box {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.query-box label {
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.query-box p {
+  margin: 0;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.query-box code {
+  padding: 2px 6px;
+  color: #1e3a8a;
+  background: #eff6ff;
+  border-radius: 6px;
 }
 
 .search-area #search-logs {
   width: 100%;
-  box-sizing : border-box;
-  padding-left: 8px;
-  border: 1px solid grey;
-  box-shadow: 1px 3px 6px grey;
-  border-radius: 3px;
-  resize: vertical;
+  box-sizing: border-box;
+  min-height: 72px;
   max-height: 200px;
-  min-height: 30px;
+  padding: 12px 14px;
+  color: var(--text);
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, .04);
+  font: 500 .95rem/1.45 Consolas, "SFMono-Regular", Menlo, monospace;
+  resize: vertical;
 }
 
 .search-area #search-logs::placeholder {
-  opacity: .6;
+  color: #94a3b8;
 }
 
 .search-area #search-logs:focus {
-  outline: none !important;
-  border:1px solid blueviolet;
-  box-shadow: 1px 3px 6px #719ECE;
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
 }
 
-.search-area button {
-  border: 1px solid grey;
-  border-radius: 3px;
-  width: 80px;
-  height: 30px;
-  margin-left: 10px;
-  box-shadow: -1px 3px 6px grey;
+.actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.actions button {
+  min-width: 92px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-weight: 800;
   cursor: pointer;
+  transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
 }
 
-.search-area button:hover {
-  background-color: whitesmoke;
+.actions button:hover {
+  transform: translateY(-1px);
 }
 
-.search-area button:active {
-  background-color: orange;
-  box-shadow: 1px 1px 4px grey;
+.actions button:active {
+  transform: translateY(0);
 }
 
-.search-area button:focus {
-    outline: none !important;
+.actions button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .16);
+}
+
+.actions .primary {
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, .26);
+}
+
+.actions .secondary {
+  color: #334155;
+  background: #fff;
+  border-color: #cbd5e1;
+}
+
+.actions .secondary.active {
+  color: #067647;
+  background: #ecfdf3;
+  border-color: #abefc6;
 }
 
 .log-area {
-  margin: 5px;
-  padding: 3px;
-  margin-top: 0px;
-  flex: 1 1 auto;
   display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 18px 18px;
 }
 
-h1 {
-  padding: 10px 0px 10px 10px;
-  font-size: 21pt;
-  background-color: #E2E2E2;
-  border-bottom: 1px #C1C1C2 solid;
-  color: #201F20;
+.tb-container {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .94);
+  border: 1px solid rgba(148, 163, 184, .36);
+  border-radius: 18px;
+  box-shadow: 0 22px 52px rgba(15, 23, 42, .1);
+}
+
+table.logs {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: .88rem;
+}
+
+table.logs thead {
+  width: calc(100% - 14px);
+  background: #f8fafc;
+  border-bottom: 1px solid var(--line);
+}
+
+table.logs thead tr,
+table.logs tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+table.logs tbody {
+  display: block;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 480px;
+  scrollbar-color: #94a3b8 #e2e8f0;
+  scrollbar-width: thin;
+}
+
+table.logs thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 11px 12px;
+  color: #475467;
+  background: linear-gradient(180deg, #f8fafc, #eef4fb);
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-size: .75rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: default;
+}
+
+table.logs > tbody > tr {
+  color: currentColor;
+  background: #fff;
+}
+
+table.logs > tbody > tr:nth-child(4n + 3) {
+  background: #fbfdff;
+}
+
+table.logs > tbody > tr:not(.details):hover,
+table.logs > tbody > tr.active {
+  background: #eef6ff;
+}
+
+table.logs > tbody > tr td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  cursor: pointer;
+  vertical-align: top;
+}
+
+.idcol {
+  width: 225px;
+  color: #475467;
+  font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+  font-size: .78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  color: var(--brand);
+  background: var(--brand-soft);
+  border-radius: 6px;
+  font-size: .72rem;
+  font-weight: 900;
+}
+
+.tstamp {
+  width: 220px;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lvl {
+  width: 120px;
+}
+
+.lvl span {
+  display: inline-flex;
+  align-items: center;
+  min-width: 82px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: .74rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.msg {
+  color: #1f2937;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.Error span,
+.Fatal span {
+  color: var(--danger);
+  background: #fee4e2;
+}
+
+.Warning span {
+  color: var(--warning);
+  background: #fef0c7;
+}
+
+.Information span {
+  color: var(--info);
+  background: #dbeafe;
+}
+
+.Debug span,
+.Trace span {
+  color: var(--debug);
+  background: #eef2f6;
+}
+
+.Exception,
+.Error.msg,
+.Fatal.msg {
+  color: var(--danger);
+  font-weight: 750;
+}
+
+table.logs > tbody > tr.details {
+  background: #f8fbff;
+}
+
+table.logs > tbody > tr.details td {
+  padding: 0;
+  border-bottom: 1px solid #dbeafe;
+  cursor: default;
+}
+
+.details-panel {
+  display: grid;
+  gap: 14px;
   margin: 0;
-  font-weight: normal;
+  padding: 16px 18px 18px 52px;
+  border-left: 4px solid var(--brand);
+  background: linear-gradient(180deg, #f8fbff, #ffffff);
 }
 
-/*********************************/
-/* Visual Aid for Debugging      */
-/*********************************/
+.details-message span,
+.exception-panel span {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.details-message p {
+  margin: 5px 0 0;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.properties {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.properties div {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.properties dt {
+  padding: 8px 10px;
+  color: #1e3a8a;
+  background: #eff6ff;
+  border-bottom: 1px solid #dbeafe;
+  font-size: .76rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.properties dd {
+  margin: 0;
+  padding: 9px 10px;
+}
+
+.properties pre,
+.exception-panel pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 500 .8rem/1.45 Consolas, "SFMono-Regular", Menlo, monospace;
+}
+
+.exception-panel {
+  padding: 12px;
+  color: var(--danger);
+  background: #fff7f7;
+  border: 1px solid #fecdca;
+  border-radius: 12px;
+}
 
 .debugInfoBox {
   position: absolute;
@@ -98,170 +451,38 @@ h1 {
   visibility: hidden;
 }
 
-/*********************************/
+@media (max-width: 840px) {
+  .header,
+  .search-area {
+    grid-template-columns: 1fr;
+  }
 
-.tb-container {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-}
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 
-table.logs {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  border-collapse: collapse;
-  table-layout: fixed;
-  font-size: 10pt;
-}
+  .actions {
+    align-items: stretch;
+  }
 
-table.logs thead {
-  /*
-  Scrollbar is average 1em (16px) width: remove it from thead width
-  In Edge, 1.3em looks good though.
-  Need a way to make sure it works well cross-browser.
-  */
-  width: calc( 100% - 1.3em );
-}
+  .actions button {
+    flex: 1;
+  }
 
-table.logs tbody {
-  overflow-x: hidden;
-  overflow-y: auto;
-  /*
-  Arbitrary initial height.
-  The actual height is computed in code.
-  */
-  height: 480px;
-}
+  .idcol {
+    width: 92px;
+  }
 
-table.logs tr {
-  height: 26px;
-}
+  .tstamp {
+    width: 168px;
+  }
 
-table.logs thead th {
-  color: #505050;
-  background: #E7E7E8;
-  text-align: left;
-  border: 1px solid #ddd;
-  cursor: default;
-}
+  .lvl {
+    width: 86px;
+  }
 
-table.logs thead tr {
-  display: table;
-  width: 100%;
-}
-
-table.logs > thead > tr th {
-  border: 1px solid rgb(214, 214, 218);
-  padding: 3px 6px 5px 5px;
-}
-
-table.logs tbody tr {
-  color: currentColor;
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-}
-
-table.logs > tbody > tr td {
-  cursor: pointer;
-  vertical-align: top;
-  margin: 0px;
-  padding: 3px 6px 5px 5px;
-}
-
-table.logs > tbody > tr:nth-child(even) {
-  background: #F7F7F8;
-}
-
-table.logs > tbody > tr:hover {
-  background: rgb(235, 235, 240);
-}
-
-table.logs > tbody > tr.active {
-  background: rgb(235, 235, 240);
-}
-
-.idcol {
-  width: 180px;
-}
-
-.tstamp {
-  width: 210px;
-}
-
-.lvl {
-  width: 85px;
-}
-
-.msgcol {
-  background-color: defaulColor;
-}
-
-.message {
-  background: white;
-}
-
-.msg {
-  display: flexbox;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  box-sizing: content-box;
-}
-
-.Error {
-  color: red;
-}
-
-.Error > span {
-  color: red;
-  font-weight: bold;
-}
-
-.Exception {
-  color: red;
-}
-
-.Warning {
-  color: darkgoldenrod;
-  font-weight: lighter;
-}
-
-.Information {
-  color: defaultColor;
-  font-weight: lighter;
-}
-
-.Debug {
-  font-weight: lighter;
-  color: grey;
-}
-
-/* LogEntry details */
-
-table.logs > tbody > tr.details  {
-  height: 16px;
-}
-table.logs > tbody > tr.details td  {
-  padding-top: 2px;
-  padding-left: 2px;
-  padding-bottom: 2px;
-  padding-right: 10px;
-  border: none;
-  font-size: 9pt;
-  cursor: default;
-}
-
-table.logs > tbody > tr.details td:nth-child(2) {
-  padding-left: 2px;
-}
-
-.label {
-  width: 402px;
-  padding-right: 2px;
-}
-
-.label:first-child::after {
-    content:' :';
+  .details-panel {
+    padding-left: 16px;
+  }
 }
