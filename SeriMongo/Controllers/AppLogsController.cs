@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SeriMongo.Data;
 using SeriMongo.Models;
+using SeriMongo.Services;
 
 namespace SeriMongo.Controllers
 {
@@ -13,12 +14,15 @@ namespace SeriMongo.Controllers
     public class AppLogsController: ControllerBase
     {
         private readonly ILogRepository _logRepository;
+        private readonly ILogIngestService _logIngestService;
         private readonly ILogger<AppLogsController> _logger;
 
         public AppLogsController(ILogger<AppLogsController> logger,
-            ILogRepository logRepository)
+            ILogRepository logRepository,
+            ILogIngestService logIngestService)
         {
             _logRepository = logRepository;
+            _logIngestService = logIngestService;
             _logger = logger;
         }
 
@@ -31,7 +35,7 @@ namespace SeriMongo.Controllers
         [HttpPost]
         public async Task<ActionResult<LogEntry>> Add(LogEntry logEntry, CancellationToken cancellationToken = default)
         {
-            await _logRepository.AddAsync(logEntry, cancellationToken);
+            await _logIngestService.IngestAsync(logEntry, cancellationToken);
             return CreatedAtAction(nameof(GetAll), new { id = logEntry.Id }, logEntry);
         }
     }
