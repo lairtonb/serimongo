@@ -11,5 +11,17 @@ services:
     volumes:
       - serimongo-data:/data
 
+  simulator:
+    build:
+      context: .
+      dockerfile: Simulator/SeriMongo.Simulator/Dockerfile
+    image: serimongo-simulator:local
+    ports:
+      - "51984:8080"
+    environment:
+      SimulatorOptions__TargetBaseUrl: "http://serimongo:8080"
+    depends_on:
+      - serimongo
+
 volumes:
   serimongo-data:
