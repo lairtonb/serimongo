@@ -13,6 +13,7 @@ using Microsoft.OpenApi;
 using SeriMongo.Data;
 using SeriMongo.Hubs;
 using SeriMongo.Models;
+using SeriMongo.Querying;
 using SeriMongo.Services;
 
 namespace SeriMongo
@@ -53,6 +54,7 @@ namespace SeriMongo
             // SQLite Data Access
             services.AddSingleton<AppLogsContext>();
             services.AddSingleton<ILogRepository, SqliteLogRepository>();
+            services.AddTransient<LogQueryCompiler>();
             services.AddSingleton<ILogEntryNotifier, SignalRLogEntryNotifier>();
             services.AddSingleton<ILogIngestService, LogIngestService>();
 
