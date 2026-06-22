@@ -5,17 +5,32 @@
   </div>
 
   <div class="header">
-    <h1>{{title}}</h1>
+    <div>
+      <p class="eyebrow">SQLite + SignalR log stream</p>
+      <h1>{{title}}</h1>
+    </div>
+    <div class="header-status">
+      <span [class.paused]="!isTailing()">{{isTailing() ? 'Live tailing' : 'Tail paused'}}</span>
+      <strong>{{logEntries().length}}</strong> rows
+    </div>
   </div>
 
   <div class="search-area">
-    <textarea id="search-logs" #search rows="3"
-      (keydown)="handleTab($event, search)"
-      (input)="controlHeight(search)"
-      [(ngModel)]="searchExpression"
-      placeholder='level = Error or message contains "timeout"'></textarea>
-    <button id="search-button" (click)="onSearchClick()">Search</button>
-    <button id="tail-button">Tail</button>
+    <div class="query-box">
+      <label for="search-logs">LogQL query</label>
+      <textarea id="search-logs" #search rows="3"
+        (keydown)="handleTab($event, search)"
+        (input)="controlHeight(search)"
+        [(ngModel)]="searchExpression"
+        placeholder='level = Error or message contains "timeout"'></textarea>
+      <p>Examples: <code>*</code>, <code>level in (Error, Warning)</code>, <code>prop.CustomerId = 42</code></p>
+    </div>
+    <div class="actions">
+      <button id="search-button" class="primary" (click)="onSearchClick()">Search</button>
+      <button id="tail-button" class="secondary" [class.active]="isTailing()" (click)="toggleTail()">
+        {{isTailing() ? 'Pause' : 'Tail'}}
+      </button>
+    </div>
   </div>
 
   <div class="log-area">
@@ -42,11 +57,11 @@
         </tr>
       </thead>
       <tbody #tableLogsBody [style.height.px]="tableLogsBodyHeight()">
-        <ng-container *ngFor="let log of logEntries()">
+        <ng-container *ngFor="let log of logEntries(); trackBy: trackByLogId">
 
         <!-- log entry -->
         <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()">
-          <td class="idcol">{{log.id}}</td>
+          <td class="idcol"><span class="row-caret">{{log.showDetails ? 'v' : '>'}}</span>{{log.id}}</td>
           <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
           <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
           <td [class]="{
@@ -88,22 +103,26 @@
         -->
 
         <!-- Log Entry Properties -->
-        <ng-container *ngIf="log.showDetails">
-          <tr class="details" style="background-color: white;">
-            <td colspan="2" class="label" style="text-align: right">Message</td>
-            <td colspan="2">{{log.renderedMessage}}</td>
-          </tr>
-          <ng-container *ngFor="let p of (log.properties | keyvalue)">
-            <tr class="details" style="background-color: white;">
-              <td class="label" style="text-align: right" colspan="2">{{p.key}}</td>
-              <td colspan="2"><span>{{p.value}}</span></td>
-            </tr>
-          </ng-container>
-          <tr *ngIf="log.exception != null" class="details" style="background-color: white;">
-            <td colspan="2" class="label" style="text-align: right">Exception</td>
-            <td colspan="2"><span class="Exception">{{log.exception}}</span></td>
-          </tr>
-        </ng-container>
+        <tr *ngIf="log.showDetails" class="details">
+          <td colspan="4">
+            <div class="details-panel">
+              <div class="details-message">
+                <span>Message</span>
+                <p>{{log.renderedMessage}}</p>
+              </div>
+              <dl class="properties">
+                <div *ngFor="let p of (log.properties | keyvalue)">
+                  <dt>{{p.key}}</dt>
+                  <dd><pre>{{formatValue(p.value)}}</pre></dd>
+                </div>
+              </dl>
+              <div *ngIf="log.exception != null" class="exception-panel">
+                <span>Exception</span>
+                <pre>{{log.exception}}</pre>
+              </div>
+            </div>
+          </td>
+        </tr>
 
         </ng-container>
       </tbody>
