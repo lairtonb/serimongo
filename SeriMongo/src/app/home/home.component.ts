@@ -6,6 +6,20 @@ import { LogEntry } from './log-entry';
 import { SignalRService } from '../services/signalr.service';
 import { SearchService } from '../services/search.service';
 
+type PeriodUnit = 'minute' | 'hour' | 'day' | 'month';
+
+interface PeriodOption {
+  id: string;
+  label: string;
+  amount: number;
+  unit: PeriodUnit;
+}
+
+interface LevelOption {
+  name: string;
+  tone: string;
+}
+
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
@@ -22,6 +36,36 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   debugInfo = signal<Record<string, unknown>>({});
   tableLogsBodyHeight = signal(200);
   isTailing = signal(true);
+  selectedPeriod = signal<string | null>(null);
+  selectedPeriodSince = signal<string | null>(null);
+  selectedLevels = signal<string[]>([]);
+
+  readonly periodOptions: PeriodOption[] = [
+    { id: '5m', label: '5m', amount: 5, unit: 'minute' },
+    { id: '15m', label: '15m', amount: 15, unit: 'minute' },
+    { id: '30m', label: '30m', amount: 30, unit: 'minute' },
+    { id: '1h', label: '1h', amount: 1, unit: 'hour' },
+    { id: '2h', label: '2h', amount: 2, unit: 'hour' },
+    { id: '4h', label: '4h', amount: 4, unit: 'hour' },
+    { id: '12h', label: '12h', amount: 12, unit: 'hour' },
+    { id: '1d', label: '1d', amount: 1, unit: 'day' },
+    { id: '3d', label: '3d', amount: 3, unit: 'day' },
+    { id: '7d', label: '7d', amount: 7, unit: 'day' },
+    { id: '1mo', label: '1 mo', amount: 1, unit: 'month' },
+    { id: '2mo', label: '2 mo', amount: 2, unit: 'month' },
+    { id: '3mo', label: '3 mo', amount: 3, unit: 'month' }
+  ];
+
+  readonly levelOptions: LevelOption[] = [
+    { name: 'Verbose', tone: 'verbose' },
+    { name: 'Trace', tone: 'trace' },
+    { name: 'Debug', tone: 'debug' },
+    { name: 'Information', tone: 'information' },
+    { name: 'Warning', tone: 'warning' },
+    { name: 'Error', tone: 'error' },
+    { name: 'Fatal', tone: 'fatal' },
+    { name: 'Critical', tone: 'critical' }
+  ];
 
   constructor(private signalRService: SignalRService,
     private searchService: SearchService) {
@@ -49,7 +93,37 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async onSearchClick(): Promise<void> {
-    this.logEntries.set(await this.searchService.search(this.searchExpression));
+    this.refreshPeriodWindow();
+    this.logEntries.set(await this.searchService.search(this.buildLogQuery()));
+  }
+
+  async selectPeriod(periodId: string): Promise<void> {
+    const nextPeriod = this.selectedPeriod() === periodId ? null : periodId;
+    this.selectedPeriod.set(nextPeriod);
+    this.selectedPeriodSince.set(nextPeriod ? this.calculatePeriodSince(nextPeriod) : null);
+    await this.onSearchClick();
+  }
+
+  async toggleLevel(level: string): Promise<void> {
+    this.selectedLevels.update(levels => levels.includes(level)
+      ? levels.filter(selected => selected !== level)
+      : [...levels, level]);
+    await this.onSearchClick();
+  }
+
+  async clearQuickFilters(): Promise<void> {
+    this.selectedPeriod.set(null);
+    this.selectedPeriodSince.set(null);
+    this.selectedLevels.set([]);
+    await this.onSearchClick();
+  }
+
+  isLevelSelected(level: string): boolean {
+    return this.selectedLevels().includes(level);
+  }
+
+  effectiveQueryPreview(): string {
+    return this.buildLogQuery();
   }
 
   toggleTail(): void {
@@ -70,6 +144,62 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return String(value);
+  }
+
+  private buildLogQuery(): string {
+    const clauses: string[] = [];
+    const manualQuery = this.searchExpression.trim();
+
+    if (manualQuery && manualQuery !== '*') {
+      clauses.push(`(${manualQuery})`);
+    }
+
+    const periodClause = this.buildPeriodClause();
+    if (periodClause) {
+      clauses.push(periodClause);
+    }
+
+    const levels = this.selectedLevels();
+    if (levels.length > 0 && levels.length < this.levelOptions.length) {
+      clauses.push(`level in (${levels.join(', ')})`);
+    }
+
+    return clauses.length > 0 ? clauses.join(' and ') : '*';
+  }
+
+  private buildPeriodClause(): string | null {
+    const since = this.selectedPeriodSince();
+    return since ? `timestamp >= "${since}"` : null;
+  }
+
+  private refreshPeriodWindow(): void {
+    const selectedPeriod = this.selectedPeriod();
+    this.selectedPeriodSince.set(selectedPeriod ? this.calculatePeriodSince(selectedPeriod) : null);
+  }
+
+  private calculatePeriodSince(periodId: string): string | null {
+    const period = this.periodOptions.find(option => option.id === periodId);
+    if (!period) {
+      return null;
+    }
+
+    const since = new Date();
+    switch (period.unit) {
+      case 'minute':
+        since.setMinutes(since.getMinutes() - period.amount);
+        break;
+      case 'hour':
+        since.setHours(since.getHours() - period.amount);
+        break;
+      case 'day':
+        since.setDate(since.getDate() - period.amount);
+        break;
+      case 'month':
+        since.setMonth(since.getMonth() - period.amount);
+        break;
+    }
+
+    return since.toISOString();
   }
 
   @ViewChild('tableContainer')
