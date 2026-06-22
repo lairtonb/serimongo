@@ -13,6 +13,7 @@ using Microsoft.OpenApi;
 using SeriMongo.Data;
 using SeriMongo.Hubs;
 using SeriMongo.Models;
+using SeriMongo.Services;
 
 namespace SeriMongo
 {
@@ -52,6 +53,8 @@ namespace SeriMongo
             // SQLite Data Access
             services.AddSingleton<AppLogsContext>();
             services.AddSingleton<ILogRepository, SqliteLogRepository>();
+            services.AddSingleton<ILogEntryNotifier, SignalRLogEntryNotifier>();
+            services.AddSingleton<ILogIngestService, LogIngestService>();
 
             // SignalR remains the client push channel for new log entries.
             services.AddSignalR(configure => { 
