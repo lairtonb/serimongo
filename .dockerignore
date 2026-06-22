@@ -1,0 +1,14 @@
+.git
+.vs
+.vscode
+**/.angular
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/out-tsc
+**/*.db
+**/*.db-shm
+**/*.db-wal
+Dockerfile
+README.md
