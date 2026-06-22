@@ -1,51 +1,47 @@
 <div class="main">
-
   <div class="debugInfoBox">
     <pre>{{debugInfo() | json}}</pre>
   </div>
 
-  <div class="header">
-    <div>
+  <header class="app-header z-card">
+    <div class="title-stack">
       <p class="eyebrow">SQLite + SignalR log stream</p>
       <h1>{{title}}</h1>
+      <p class="subtitle">Query structured logs with LogQL and watch fresh entries arrive in realtime.</p>
     </div>
-    <div class="header-status">
-      <span [class.paused]="!isTailing()">{{isTailing() ? 'Live tailing' : 'Tail paused'}}</span>
-      <strong>{{logEntries().length}}</strong> rows
-    </div>
-  </div>
 
-  <div class="content-shell">
-    <aside class="filter-panel" aria-label="Quick filters">
+    <div class="header-metrics" aria-label="Stream status">
+      <div class="metric-card">
+        <span>Status</span>
+        <strong [class.paused]="!isTailing()">{{isTailing() ? 'Live' : 'Paused'}}</strong>
+      </div>
+      <div class="metric-card">
+        <span>Rows</span>
+        <strong>{{logEntries().length}}</strong>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-shell">
+    <aside class="filter-panel z-card" aria-label="Quick filters">
       <div class="panel-title">
         <div>
           <p class="eyebrow">Quick filters</p>
-          <h2>Refine logs</h2>
+          <h2>Log levels</h2>
         </div>
-        <button class="icon-button" type="button" title="Clear filters" (click)="clearQuickFilters()">x</button>
+        <button class="z-button ghost compact" type="button" title="Clear filters" (click)="clearQuickFilters()">Clear</button>
       </div>
 
       <section class="filter-card">
-        <h3>Period</h3>
-        <div class="period-grid">
-          <button type="button"
-            *ngFor="let period of periodOptions"
-            [class.selected]="selectedPeriod() === period.id"
-            (click)="selectPeriod(period.id)">
-            {{period.label}}
-          </button>
-        </div>
-      </section>
-
-      <section class="filter-card">
-        <h3>Log level</h3>
+        <h3>Severity</h3>
         <div class="level-list">
           <button type="button"
             *ngFor="let level of levelOptions"
+            class="filter-chip"
             [class.selected]="isLevelSelected(level.name)"
             (click)="toggleLevel(level.name)">
             <span [class]="['level-dot', level.tone]"></span>
-            {{level.name}}
+            <span>{{level.name}}</span>
           </button>
         </div>
       </section>
@@ -57,25 +53,43 @@
     </aside>
 
     <section class="workspace">
-      <div class="search-area">
-        <div class="query-box">
-          <label for="search-logs">LogQL query</label>
-          <textarea id="search-logs" #search rows="3"
-            (keydown)="handleTab($event, search)"
-            (input)="controlHeight(search)"
-            [(ngModel)]="searchExpression"
-            placeholder='level = Error or message contains "timeout"'></textarea>
-          <p>Examples: <code>*</code>, <code>level in (Error, Warning)</code>, <code>prop.CustomerId = 42</code></p>
+      <section class="query-card z-card" aria-label="Search logs">
+        <div class="period-toolbar">
+          <div>
+            <span class="toolbar-label">Period</span>
+            <strong>{{selectedPeriod() || 'All time'}}</strong>
+          </div>
+          <div class="segmented-control" aria-label="Period quick filters">
+            <button type="button"
+              *ngFor="let period of periodOptions"
+              [class.selected]="selectedPeriod() === period.id"
+              (click)="selectPeriod(period.id)">
+              {{period.label}}
+            </button>
+          </div>
         </div>
-        <div class="actions">
-          <button id="search-button" class="primary" (click)="onSearchClick()">Search</button>
-          <button id="tail-button" class="secondary" [class.active]="isTailing()" (click)="toggleTail()">
-            {{isTailing() ? 'Pause' : 'Tail'}}
-          </button>
-        </div>
-      </div>
 
-      <div class="log-area">
+        <div class="search-area">
+          <div class="query-box">
+            <label for="search-logs">LogQL query</label>
+            <textarea id="search-logs" #search rows="2"
+              (keydown)="handleTab($event, search)"
+              (input)="controlHeight(search)"
+              [(ngModel)]="searchExpression"
+              placeholder='level = Error or message contains "timeout"'></textarea>
+            <p>Examples: <code>*</code>, <code>level in (Error, Warning)</code>, <code>prop.CustomerId = 42</code></p>
+          </div>
+
+          <div class="actions" aria-label="Search actions">
+            <button id="search-button" class="z-button primary compact" type="button" (click)="onSearchClick()">Search</button>
+            <button id="tail-button" class="z-button outline compact" type="button" [class.active]="isTailing()" (click)="toggleTail()">
+              {{isTailing() ? 'Pause' : 'Tail'}}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="log-area z-card" aria-label="Log entries">
         <div #tableContainer class="tb-container">
           <table class="logs table-scroll">
             <thead>
@@ -130,7 +144,7 @@
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </section>
-  </div>
+  </main>
 </div>
