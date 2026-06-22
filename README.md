@@ -9,6 +9,7 @@ SeriMongo is a real-time log viewer backed by SQLite. It receives logs through H
 * LogQL search dialect compiled to parameterized SQLite queries.
 * OTLP logs receiver at `/v1/logs` and `/otlp/v1/logs` for `http/json` exporters.
 * Docker image with Angular UI and ASP.NET Core backend.
+* Docker Compose simulator UI for emitting realtime sample logs.
 
 ## Run With Docker
 
@@ -46,6 +47,12 @@ Open the UI:
 http://localhost:51983
 ```
 
+Open the simulator UI and click a severity button to send logs to SeriMongo:
+
+```text
+http://localhost:51984
+```
+
 The container stores SQLite data at `/data/serimongo.db`. Override it with:
 
 ```bash
@@ -63,6 +70,18 @@ The Docker image includes `seed.sql`, a compact SQLite script that generates 300
 * the configured `ApplicationOptions__Seed__ScriptPath` file exists
 
 The bundled script is idempotent: it inserts only when `LogEntries` is empty, so restarts do not duplicate seed data.
+
+## Simulator
+
+The simulator is a separate ASP.NET Core + Angular app in `Simulator/SeriMongo.Simulator`. Docker Compose runs it on port `51984` and configures it to post OTLP/HTTP JSON logs to the main `serimongo` service.
+
+Configure a different target with:
+
+```text
+SimulatorOptions__TargetBaseUrl=http://localhost:51983
+```
+
+The UI can emit one log for each supported level or generate mixed bursts of sample traffic.
 
 ## LogQL
 

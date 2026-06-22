@@ -1,0 +1,67 @@
+<main class="page-shell">
+  <section class="hero-card z-card">
+    <div>
+      <p class="eyebrow">SeriMongo simulator</p>
+      <h1>Emit realtime logs on demand</h1>
+      <p class="subtitle">Click a level to send an OTLP/HTTP JSON log into the viewer.</p>
+    </div>
+
+    <div class="target-card">
+      <span>Target</span>
+      <strong>{{targetBaseUrl()}}</strong>
+    </div>
+  </section>
+
+  <section class="content-grid">
+    <section class="z-card controls-card">
+      <div class="section-title">
+        <p class="eyebrow">Single events</p>
+        <h2>Choose severity</h2>
+      </div>
+
+      <div class="level-grid">
+        <button type="button"
+          *ngFor="let item of levels"
+          [class]="['level-button', item.tone]"
+          [disabled]="pendingAction() !== null"
+          (click)="emit(item.level)">
+          <span>{{item.level}}</span>
+          <small>{{item.description}}</small>
+        </button>
+      </div>
+
+      <div class="burst-panel">
+        <div>
+          <p class="eyebrow">Traffic burst</p>
+          <h2>Generate mixed logs</h2>
+        </div>
+        <div class="burst-actions">
+          <button type="button" class="z-button outline" [disabled]="pendingAction() !== null" (click)="emitBurst(10)">10 logs</button>
+          <button type="button" class="z-button outline" [disabled]="pendingAction() !== null" (click)="emitBurst(50)">50 logs</button>
+          <button type="button" class="z-button primary" [disabled]="pendingAction() !== null" (click)="emitBurst(150)">150 logs</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="z-card status-card">
+      <div class="stat">
+        <span>Total emitted</span>
+        <strong>{{totalEmitted()}}</strong>
+      </div>
+
+      <div class="stat">
+        <span>Current action</span>
+        <strong>{{pendingAction() || 'Idle'}}</strong>
+      </div>
+
+      <div class="activity-list">
+        <p class="eyebrow">Recent activity</p>
+        <p *ngIf="activity().length === 0" class="empty">No logs emitted yet.</p>
+        <article *ngFor="let item of activity()" [class]="['activity-item', item.tone]">
+          <time>{{item.timestamp | date:'HH:mm:ss'}}</time>
+          <span>{{item.text}}</span>
+        </article>
+      </div>
+    </aside>
+  </section>
+</main>
