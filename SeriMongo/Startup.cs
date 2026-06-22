@@ -57,6 +57,7 @@ namespace SeriMongo
             services.AddTransient<LogQueryCompiler>();
             services.AddSingleton<ILogEntryNotifier, SignalRLogEntryNotifier>();
             services.AddSingleton<ILogIngestService, LogIngestService>();
+            services.AddSingleton<OtlpLogMapper>();
 
             // SignalR remains the client push channel for new log entries.
             services.AddSignalR(configure => { 
