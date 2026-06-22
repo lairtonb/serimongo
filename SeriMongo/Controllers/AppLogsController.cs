@@ -1,16 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Versioning;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.OData;
-using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.OData;
-using MongoDB.Bson;
-using MongoDB.Driver;
 using SeriMongo.Data;
 using SeriMongo.Models;
 
@@ -20,63 +12,27 @@ namespace SeriMongo.Controllers
     [Route("api/[controller]")]
     public class AppLogsController: ControllerBase
     {
-        private readonly AppLogsContext _logsContext;
+        private readonly ILogRepository _logRepository;
         private readonly ILogger<AppLogsController> _logger;
 
         public AppLogsController(ILogger<AppLogsController> logger,
-            AppLogsContext logsContext)
+            ILogRepository logRepository)
         {
-            _logsContext = logsContext;
+            _logRepository = logRepository;
             _logger = logger;
         }
 
         [HttpGet]
-        public async Task<IEnumerable<LogEntry>> GetAll(int currentPage = 1, int pageSize = 2)
+        public async Task<IEnumerable<LogEntry>> GetAll(int currentPage = 1, int pageSize = 100, CancellationToken cancellationToken = default)
         {
-            var filter = FilterDefinition<LogEntry>.Empty;
-            var options = new FindOptions<LogEntry>
-            {
-                BatchSize = 5,
-                Limit = pageSize,
-                Skip = currentPage - 1,
-                Sort = Builders<LogEntry>.Sort.Descending(field => field.Timestamp),
-                // Projection = Builders<LogEntry>.Projection.Include("item").Include("status"),
-                /*Projection = Builders<LogEntry>.Projection.Expression(p => new LogEntry
-                {
-                    RenderedMessage = p.RenderedMessage
-                }),*/
-                NoCursorTimeout = false
-            };
-            var list = await _logsContext.LogEtries.FindAsync(filter, options);
-            
-            return list.ToList();
-
-            /*
-            // Implement projection and return result with pageCount
-            double totalDocuments = await collection.CountAsync(FilterDefinition<Student>.Empty);
-            var totalPages = Math.Ceiling(totalDocuments / pageSize);             
-            */
+            return await _logRepository.GetRecentAsync(currentPage, pageSize, cancellationToken);
         }
 
-
-
-        /*
-        [HttpGet("blah")]
-        public ActionResult Blah(string applicationName = "*", string level = "*", IDictionary<string, object> propertyFilter = default(IDictionary<string, object>))
+        [HttpPost]
+        public async Task<ActionResult<LogEntry>> Add(LogEntry logEntry, CancellationToken cancellationToken = default)
         {
-            return Ok(
-                new[]
-                {
-                    new LogEntry
-                    {
-                        // Id = Guid.NewGuid(),
-                        Level = "Information",
-                        RenderedMessage = "Teste",
-                        Timestamp = DateTime.Now.ToUniversalTime()
-                    }
-                }
-            );
+            await _logRepository.AddAsync(logEntry, cancellationToken);
+            return CreatedAtAction(nameof(GetAll), new { id = logEntry.Id }, logEntry);
         }
-        */
     }
 }

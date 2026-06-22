@@ -1,16 +1,12 @@
-using MongoDB.Driver;
-
 namespace SeriMongo.Models
 {
     public class ApplicationOptions
-    {        
-        public DatabaseSettings ConnectionInfo { get; set; }
+    {
+        public DatabaseSettings Database { get; set; } = new DatabaseSettings();
     }
 
     public class DatabaseSettings
     {
-        public string ConnectionString { get; set; }
-        public string DatabaseName { get; set; }
-        public string CollectionName { get; set; }
+        public string ConnectionString { get; set; } = "Data Source=serimongo.db";
     }
 }
