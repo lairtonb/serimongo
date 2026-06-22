@@ -1,7 +1,7 @@
 <div class="main">
 
   <div class="debugInfoBox">
-    <pre>{{debugInfo | json}}</pre>
+    <pre>{{debugInfo() | json}}</pre>
   </div>
 
   <div class="header">
@@ -9,11 +9,11 @@
   </div>
 
   <div class="search-area">
-    <textarea id="search-logs" #search type="text" rows="3"
+    <textarea id="search-logs" #search rows="3"
       (keydown)="handleTab($event, search)"
       (input)="controlHeight(search)"
       [(ngModel)]="searchExpression"
-      placeholder='{}'></textarea>
+      placeholder='level = Error or message contains "timeout"'></textarea>
     <button id="search-button" (click)="onSearchClick()">Search</button>
     <button id="tail-button">Tail</button>
   </div>
@@ -41,11 +41,11 @@
           -->
         </tr>
       </thead>
-      <tbody #tableLogsBody [style.height.px]="tableLogsBodyHeight">
-        <ng-container *ngFor="let log of logEntries">
+      <tbody #tableLogsBody [style.height.px]="tableLogsBodyHeight()">
+        <ng-container *ngFor="let log of logEntries()">
 
         <!-- log entry -->
-        <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow">
+        <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()">
           <td class="idcol">{{log.id}}</td>
           <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
           <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>

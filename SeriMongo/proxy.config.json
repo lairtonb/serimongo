@@ -2,5 +2,18 @@
   "/api": {
     "target": "http://localhost:51983",
     "secure": false
+  },
+  "/logs": {
+    "target": "http://localhost:51983",
+    "secure": false,
+    "ws": true
+  },
+  "/v1": {
+    "target": "http://localhost:51983",
+    "secure": false
+  },
+  "/otlp": {
+    "target": "http://localhost:51983",
+    "secure": false
   }
 }
