@@ -538,14 +538,14 @@ table.logs > tbody > tr.tail-injected td::after {
   position: absolute;
   inset: 0;
   background: #ff9fd6;
-  animation: tail-row-highlight .85s linear both;
+  animation: tail-hi 1.1s linear var(--tail-delay, 0ms) both;
 }
 
-@keyframes tail-row-highlight {
+@keyframes tail-hi {
   0% { opacity: 0; }
-  6%, 18% { opacity: .62; }
-  45% { opacity: .34; }
-  72% { opacity: .14; }
+  5%, 16% { opacity: .64; }
+  48% { opacity: .28; }
+  76% { opacity: .12; }
   to { opacity: 0; }
 }
 
