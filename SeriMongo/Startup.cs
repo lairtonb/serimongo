@@ -57,6 +57,7 @@ namespace SeriMongo
             services.AddTransient<LogQueryCompiler>();
             services.AddSingleton<ILogEntryNotifier, SignalRLogEntryNotifier>();
             services.AddSingleton<ILogServiceNameCatalog, LogServiceNameCatalog>();
+            services.AddSingleton<ITailSubscriptionStore, TailSubscriptionStore>();
             services.AddSingleton<ILogIngestService, LogIngestService>();
             services.AddSingleton<OtlpLogMapper>();
             services.AddSingleton<StartupSeedService>();

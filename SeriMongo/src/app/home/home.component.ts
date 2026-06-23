@@ -113,7 +113,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   async onSearchClick(): Promise<void> {
     this.refreshPeriodWindow();
-    this.logEntries.set(await this.searchService.search(this.buildLogQuery()));
+    const query = this.buildLogQuery();
+    await this.signalRService.setTailQuery(query);
+    this.logEntries.set(await this.searchService.search(query));
   }
 
   async selectPeriod(periodId: string): Promise<void> {
@@ -165,8 +167,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.buildLogQuery();
   }
 
-  toggleTail(): void {
-    this.isTailing.update(value => !value);
+  async toggleTail(): Promise<void> {
+    const next = !this.isTailing();
+    this.isTailing.set(next);
+    if (next) {
+      await this.signalRService.setTailQuery(this.buildLogQuery());
+    }
   }
 
   trackByLogId(index: number, log: LogEntry): string {
