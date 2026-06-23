@@ -142,7 +142,7 @@ h2 {
   flex-direction: column;
   gap: 8px;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: 10px;
 }
 
@@ -161,12 +161,32 @@ h2 {
   border: 0;
 }
 
-.filter-card h3 {
-  margin: 0 0 6px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .12em;
+.filter-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.filter-accordion {
+  border-bottom: 1px solid var(--line);
+}
+
+.accordion-trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.accordion-trigger span:first-child {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 750;
   text-transform: uppercase;
 }
 
@@ -184,7 +204,6 @@ h2 {
   border-radius: 2px;
   font: inherit;
   cursor: pointer;
-  transition: background .1s ease, border-color .1s ease, color .1s ease;
 }
 
 .filter-chip {
@@ -265,6 +284,8 @@ h2 {
 }
 
 .effective-query {
+  flex: 0 0 auto;
+  margin-top: auto;
   padding-top: 8px;
   border-top: 1px solid var(--line);
 }
@@ -362,10 +383,6 @@ h2 {
   resize: vertical;
 }
 
-.query-box textarea::placeholder {
-  color: #8c959f;
-}
-
 .query-box textarea:focus,
 .filter-chip:focus,
 .action-button:focus,
@@ -378,14 +395,6 @@ h2 {
   margin-bottom: 0;
   color: var(--muted);
   font-size: 11px;
-}
-
-.query-box code {
-  padding: 1px 4px;
-  color: #174ea6;
-  background: #edf4ff;
-  border: 1px solid #c9ddff;
-  border-radius: 2px;
 }
 
 .actions {

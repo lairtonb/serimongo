@@ -22,26 +22,60 @@
       <div class="panel-title">
         <div>
           <p class="eyebrow">Filters</p>
-          <h2>Severity</h2>
+          <h2>Quick filters</h2>
         </div>
         <button class="action-button ghost" type="button" title="Clear filters" (click)="clearQuickFilters()">Clear</button>
       </div>
 
-      <section class="filter-card">
-        <div class="level-list">
-          <button type="button"
-            *ngFor="let level of levelOptions"
-            class="filter-chip"
-            [class.selected]="isLevelSelected(level.name)"
-            (click)="toggleLevel(level.name)">
-            <span [class]="['level-dot', level.tone]"></span>
-            <span>{{level.name}}</span>
+      <div class="filter-scroll">
+        <section class="filter-card filter-accordion">
+          <button class="accordion-trigger" type="button" [attr.aria-expanded]="levelFilterOpen()" (click)="toggleLevelFilter()">
+            <span>Log Level</span>
+            <strong>{{selectedLevels().length > 0 ? selectedLevels().length + ' selected' : 'All'}}</strong>
+            <span class="accordion-state" aria-hidden="true">{{levelFilterOpen() ? '-' : '+'}}</span>
           </button>
-        </div>
-      </section>
+
+          <div class="accordion-panel" *ngIf="levelFilterOpen()">
+            <div class="level-list">
+              <button type="button"
+                *ngFor="let level of levelOptions"
+                class="filter-chip"
+                [class.selected]="isLevelSelected(level.name)"
+                (click)="toggleLevel(level.name)">
+                <span [class]="['level-dot', level.tone]"></span>
+                <span>{{level.name}}</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="filter-card filter-accordion">
+          <button class="accordion-trigger" type="button" [attr.aria-expanded]="serviceFilterOpen()" (click)="toggleServiceFilter()">
+            <span>Service Name</span>
+            <strong>{{selectedServiceNames().length > 0 ? selectedServiceNames().length + ' selected' : 'All'}}</strong>
+            <span class="accordion-state" aria-hidden="true">{{serviceFilterOpen() ? '-' : '+'}}</span>
+          </button>
+
+          <div class="accordion-panel" *ngIf="serviceFilterOpen()">
+            <div class="level-list" *ngIf="serviceNames().length > 0; else noServiceNames">
+              <button type="button"
+                *ngFor="let serviceName of serviceNames()"
+                class="filter-chip service-chip"
+                [class.selected]="isServiceNameSelected(serviceName)"
+                (click)="toggleServiceName(serviceName)">
+                <span class="level-dot information"></span>
+                <span>{{serviceName}}</span>
+              </button>
+            </div>
+            <ng-template #noServiceNames>
+              <p class="filter-empty">Waiting for service names.</p>
+            </ng-template>
+          </div>
+        </section>
+      </div>
 
       <section class="filter-card effective-query">
-        <h3>Effective query</h3>
+        <h3 class="eyebrow">Effective query</h3>
         <pre>{{effectiveQueryPreview()}}</pre>
       </section>
     </aside>
@@ -71,7 +105,7 @@
               (input)="controlHeight(search)"
               [(ngModel)]="searchExpression"
               placeholder='level = Error or message contains "timeout"'></textarea>
-            <p>Examples: <code>*</code>, <code>level in (Error, Warning)</code>, <code>prop.CustomerId = 42</code></p>
+            <p>Examples: <code>*</code>, <code>level in (Error, Warning)</code>, <code>serviceName = "api"</code></p>
           </div>
 
           <div class="actions" aria-label="Search actions">

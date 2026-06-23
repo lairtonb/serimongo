@@ -14,16 +14,24 @@ namespace SeriMongo.Services
     {
         private readonly ILogRepository _logRepository;
         private readonly ILogEntryNotifier _logEntryNotifier;
+        private readonly ILogServiceNameCatalog _serviceNameCatalog;
 
-        public LogIngestService(ILogRepository logRepository, ILogEntryNotifier logEntryNotifier)
+        public LogIngestService(ILogRepository logRepository, ILogEntryNotifier logEntryNotifier, ILogServiceNameCatalog serviceNameCatalog)
         {
             _logRepository = logRepository;
             _logEntryNotifier = logEntryNotifier;
+            _serviceNameCatalog = serviceNameCatalog;
         }
 
         public async Task<LogEntry> IngestAsync(LogEntry logEntry, CancellationToken cancellationToken = default)
         {
+            await _serviceNameCatalog.EnsureInitializedAsync(cancellationToken);
             await _logRepository.AddAsync(logEntry, cancellationToken);
+            if (await _serviceNameCatalog.AddFromLogEntryAsync(logEntry, cancellationToken))
+            {
+                await _logEntryNotifier.PublishServiceNamesAsync(_serviceNameCatalog.GetSnapshot(), cancellationToken);
+            }
+
             await _logEntryNotifier.PublishAsync(logEntry, cancellationToken);
             return logEntry;
         }

@@ -37,6 +37,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedPeriod = signal<string | null>(null);
   selectedPeriodSince = signal<string | null>(null);
   selectedLevels = signal<string[]>([]);
+  serviceNames = signal<string[]>([]);
+  selectedServiceNames = signal<string[]>([]);
+  levelFilterOpen = signal(true);
+  serviceFilterOpen = signal(true);
   detailSidebarWidth = signal(360);
 
   readonly minDetailSidebarWidth = 280;
@@ -80,6 +84,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     window.addEventListener('resize', this.clampSidebarToViewport);
     this.signalRService.getLogEntries(this.onReceiveLogEntry);
+    this.signalRService.getServiceNames(this.onReceiveServiceNames);
     await this.signalRService.start();
   }
 
@@ -89,6 +94,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     this.logEntries.update(entries => [logEntry, ...entries].slice(0, 1000));
+  };
+
+  onReceiveServiceNames = (serviceNames: string[]) => {
+    const nextServiceNames = serviceNames
+      .map(serviceName => serviceName.trim())
+      .filter(serviceName => serviceName.length > 0);
+
+    this.serviceNames.set(nextServiceNames);
+    this.selectedServiceNames.update(selected => selected.filter(serviceName => nextServiceNames.includes(serviceName)));
   };
 
   async ngOnDestroy(): Promise<void> {
@@ -116,15 +130,35 @@ export class HomeComponent implements OnInit, OnDestroy {
     await this.onSearchClick();
   }
 
+  async toggleServiceName(serviceName: string): Promise<void> {
+    this.selectedServiceNames.update(serviceNames => serviceNames.includes(serviceName)
+      ? serviceNames.filter(selected => selected !== serviceName)
+      : [...serviceNames, serviceName]);
+    await this.onSearchClick();
+  }
+
   async clearQuickFilters(): Promise<void> {
     this.selectedPeriod.set(null);
     this.selectedPeriodSince.set(null);
     this.selectedLevels.set([]);
+    this.selectedServiceNames.set([]);
     await this.onSearchClick();
   }
 
   isLevelSelected(level: string): boolean {
     return this.selectedLevels().includes(level);
+  }
+
+  isServiceNameSelected(serviceName: string): boolean {
+    return this.selectedServiceNames().includes(serviceName);
+  }
+
+  toggleLevelFilter(): void {
+    this.levelFilterOpen.update(open => !open);
+  }
+
+  toggleServiceFilter(): void {
+    this.serviceFilterOpen.update(open => !open);
   }
 
   effectiveQueryPreview(): string {
@@ -173,7 +207,16 @@ export class HomeComponent implements OnInit, OnDestroy {
       clauses.push(`level in (${levels.join(', ')})`);
     }
 
+    const serviceNames = this.selectedServiceNames();
+    if (serviceNames.length > 0) {
+      clauses.push(`serviceName in (${serviceNames.map(serviceName => this.quoteLogQueryValue(serviceName)).join(', ')})`);
+    }
+
     return clauses.length > 0 ? clauses.join(' and ') : '*';
+  }
+
+  private quoteLogQueryValue(value: string): string {
+    return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   }
 
   private buildPeriodClause(): string | null {

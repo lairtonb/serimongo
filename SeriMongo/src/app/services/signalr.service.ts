@@ -37,6 +37,12 @@ export class SignalRService {
     });
   }
 
+  getServiceNames(next: (serviceNames: string[]) => void): void {
+    this.connection.on('OnReceiveServiceNames', (serviceNames: string[]) => {
+      next(serviceNames);
+    });
+  }
+
   async stop(): Promise<void> {
     await this.connection.stop();
   }

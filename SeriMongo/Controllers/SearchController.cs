@@ -34,7 +34,7 @@ namespace SeriMongo.Controllers
             {
                 Name = "LogQL",
                 Operators = new[] { "=", "!=", ">", ">=", "<", "<=", "contains", "startswith", "endswith", "in", "exists", "and", "or" },
-                Fields = new[] { "id", "timestamp", "level", "message", "exception", "prop.<name>" },
+                Fields = new[] { "id", "timestamp", "level", "message", "exception", "serviceName", "prop.<name>" },
                 LogQueryCompiler.Examples
             });
         }
