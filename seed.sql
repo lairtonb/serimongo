@@ -7,6 +7,15 @@ WITH RECURSIVE seq(n) AS (
 ), generated AS (
     SELECT
         n,
+        CASE ((random() % 7) + 7) % 7
+            WHEN 0 THEN 'customer-api'
+            WHEN 1 THEN 'customer-worker'
+            WHEN 2 THEN 'order-api'
+            WHEN 3 THEN 'order-consumer'
+            WHEN 4 THEN 'order-producer'
+            WHEN 5 THEN 'checkout-api'
+            ELSE 'payment-api'
+        END AS ServiceName,
         CASE n % 8
             WHEN 0 THEN 'Verbose'
             WHEN 1 THEN 'Trace'
@@ -71,6 +80,7 @@ SELECT
             ELSE 'australia-east'
         END,
         'MachineName', 'seed-node-' || printf('%02d', n % 18),
+        'resource.service.name', ServiceName,
         'RequestPath', CASE n % 7
             WHEN 0 THEN '/api/checkout'
             WHEN 1 THEN '/api/payments/authorize'

@@ -4,6 +4,17 @@ namespace SeriMongo.Simulator.Services;
 
 public sealed class LogScenarioFactory
 {
+    public static readonly string[] ServiceNames =
+    [
+        "customer-api",
+        "customer-worker",
+        "order-api",
+        "order-consumer",
+        "order-producer",
+        "checkout-api",
+        "payment-api"
+    ];
+
     private static readonly IReadOnlyDictionary<string, int> SeverityNumbers = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
     {
         ["Trace"] = 1,
@@ -43,29 +54,36 @@ public sealed class LogScenarioFactory
     public IReadOnlyList<SimulatedLog> CreateBurst(int count)
     {
         var levels = SeverityNumbers.Keys.ToArray();
+        var initialServices = ServiceNames.OrderBy(_ => Random.Shared.Next()).ToArray();
         var logs = new List<SimulatedLog>(count);
 
         for (var index = 0; index < count; index++)
         {
-            logs.Add(Create(levels[Random.Shared.Next(levels.Length)]));
+            var serviceName = index < initialServices.Length
+                ? initialServices[index]
+                : ServiceNames[Random.Shared.Next(ServiceNames.Length)];
+
+            logs.Add(Create(levels[Random.Shared.Next(levels.Length)], serviceName));
         }
 
         return logs;
     }
 
-    private static SimulatedLog Create(string level)
+    private static SimulatedLog Create(string level, string? serviceName = null)
     {
         var route = Routes[Random.Shared.Next(Routes.Length)];
+        serviceName ??= ServiceNames[Random.Shared.Next(ServiceNames.Length)];
         var tenant = Tenants[Random.Shared.Next(Tenants.Length)];
         var region = Regions[Random.Shared.Next(Regions.Length)];
         var duration = Random.Shared.Next(8, 4800);
         var orderId = Random.Shared.Next(10_000, 99_999);
         var customerId = Random.Shared.Next(1_000, 9_999);
         var scenarioId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..12];
-        var message = CreateMessage(level, route, tenant, duration, orderId);
+        var message = CreateMessage(level, serviceName, route, tenant, duration, orderId);
         var properties = new Dictionary<string, object?>
         {
             ["ScenarioId"] = scenarioId,
+            ["ServiceName"] = serviceName,
             ["CustomerId"] = customerId,
             ["OrderId"] = orderId,
             ["Tenant"] = tenant,
@@ -84,7 +102,7 @@ public sealed class LogScenarioFactory
             properties["exception.stacktrace"] = exception;
         }
 
-        return new SimulatedLog(level, SeverityNumbers[level], message, properties, exception);
+        return new SimulatedLog(serviceName, level, SeverityNumbers[level], message, properties, exception);
     }
 
     private static string? GetCanonicalLevel(string level)
@@ -93,17 +111,17 @@ public sealed class LogScenarioFactory
             string.Equals(candidate, level, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static string CreateMessage(string level, string route, string tenant, int duration, int orderId)
+    private static string CreateMessage(string level, string serviceName, string route, string tenant, int duration, int orderId)
     {
         return level switch
         {
-            "Trace" => $"Trace probe crossed {route} for tenant {tenant} in {duration}ms.",
-            "Debug" => $"Debug snapshot captured order {orderId} for {tenant}.",
-            "Information" => $"Processed request {route} for tenant {tenant} in {duration}ms.",
-            "Warning" => $"Slow request on {route}: {duration}ms for tenant {tenant}.",
-            "Error" => $"Checkout operation failed for order {orderId} on {route}.",
-            "Fatal" => $"Fatal worker failure while processing order {orderId}.",
-            _ => $"{level} simulator event on {route}."
+            "Trace" => $"{serviceName} trace probe crossed {route} for tenant {tenant} in {duration}ms.",
+            "Debug" => $"{serviceName} debug snapshot captured order {orderId} for {tenant}.",
+            "Information" => $"{serviceName} processed request {route} for tenant {tenant} in {duration}ms.",
+            "Warning" => $"{serviceName} slow request on {route}: {duration}ms for tenant {tenant}.",
+            "Error" => $"{serviceName} operation failed for order {orderId} on {route}.",
+            "Fatal" => $"{serviceName} fatal worker failure while processing order {orderId}.",
+            _ => $"{serviceName} {level} simulator event on {route}."
         };
     }
 
