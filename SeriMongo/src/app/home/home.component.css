@@ -1,22 +1,22 @@
 .main {
-  --bg: #0d1117;
-  --surface: #111820;
-  --surface-alt: #0f151c;
-  --surface-raised: #151d26;
-  --line: #27313d;
-  --line-strong: #3a4654;
-  --text: #d7dde5;
-  --text-strong: #f2f6fb;
-  --muted: #8d99a8;
-  --muted-strong: #aab4c2;
-  --accent: #4f8cff;
-  --accent-soft: #17253d;
-  --ok: #35c46a;
-  --warning: #e7a53a;
-  --danger: #ff5f57;
-  --critical: #c084fc;
-  --trace: #7d8793;
-  --debug: #9aa4b2;
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --surface-alt: #f7f8fa;
+  --surface-raised: #eef2f6;
+  --line: #d0d7de;
+  --line-strong: #aeb8c4;
+  --text: #24292f;
+  --text-strong: #0f172a;
+  --muted: #57606a;
+  --muted-strong: #3f4a56;
+  --accent: #2563eb;
+  --accent-soft: #eaf1ff;
+  --ok: #128a42;
+  --warning: #9a5b00;
+  --danger: #c22f2a;
+  --critical: #7e3fb2;
+  --trace: #6e7781;
+  --debug: #57606a;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -199,7 +199,7 @@ h2 {
 .segmented-control button.selected {
   color: var(--text-strong);
   background: var(--accent-soft);
-  border-color: #3f6fb5;
+  border-color: #8cb4ff;
 }
 
 .filter-chip.selected {
@@ -328,7 +328,7 @@ h2 {
   max-height: 140px;
   padding: 7px 8px;
   color: var(--text-strong);
-  background: #0a0f14;
+  background: #ffffff;
   border: 1px solid var(--line-strong);
   border-radius: 2px;
   box-shadow: none;
@@ -337,7 +337,7 @@ h2 {
 }
 
 .query-box textarea::placeholder {
-  color: #66717f;
+  color: #8c959f;
 }
 
 .query-box textarea:focus,
@@ -356,9 +356,9 @@ h2 {
 
 .query-box code {
   padding: 1px 4px;
-  color: #b8cdf7;
-  background: #111d2d;
-  border: 1px solid #243754;
+  color: #174ea6;
+  background: #edf4ff;
+  border: 1px solid #c9ddff;
   border-radius: 2px;
 }
 
@@ -382,9 +382,9 @@ h2 {
 }
 
 .action-button.primary {
-  color: #fff;
+  color: #ffffff;
   background: #2563eb;
-  border-color: #3975f4;
+  border-color: #1d4ed8;
 }
 
 .action-button.primary:hover {
@@ -398,9 +398,9 @@ h2 {
 }
 
 .action-button.outline.active {
-  color: #bdf7cf;
-  background: #0f2519;
-  border-color: #247a43;
+  color: #0f6b32;
+  background: #e9f8ee;
+  border-color: #8fd3a6;
 }
 
 .log-area {
@@ -462,7 +462,7 @@ table.logs tbody {
   height: 480px;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-color: #516070 #101720;
+  scrollbar-color: #9aa6b2 #edf1f5;
   scrollbar-width: thin;
 }
 
@@ -483,21 +483,21 @@ table.logs thead th {
 
 table.logs > tbody > tr {
   color: var(--text);
-  background: #0f151c;
+  background: #ffffff;
 }
 
 table.logs > tbody > tr:nth-child(4n + 3) {
-  background: #111922;
+  background: #f8fafc;
 }
 
 table.logs > tbody > tr:not(.details):hover,
 table.logs > tbody > tr.active {
-  background: #172338;
+  background: #edf4ff;
 }
 
 table.logs > tbody > tr td {
   padding: 6px 8px;
-  border-bottom: 1px solid #1f2934;
+  border-bottom: 1px solid #e3e8ef;
   cursor: pointer;
   vertical-align: top;
 }
@@ -520,7 +520,7 @@ table.logs > tbody > tr td {
   height: 14px;
   margin-right: 5px;
   color: var(--muted-strong);
-  background: #0b1016;
+  background: #eef2f6;
   border: 1px solid var(--line);
   border-radius: 1px;
   font-size: 10px;
@@ -529,7 +529,7 @@ table.logs > tbody > tr td {
 
 .tstamp {
   width: 205px;
-  color: #b7c0cc;
+  color: #374151;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -561,46 +561,46 @@ table.logs > tbody > tr td {
 .Verbose span,
 .Trace span,
 .Debug span {
-  color: #c0c7d2;
-  background: #17202a;
-  border-color: #2a3542;
+  color: #48515c;
+  background: #eef2f6;
+  border-color: #d0d7de;
 }
 
 .Information span {
-  color: #b9d1ff;
-  background: #14213a;
-  border-color: #2b4a7f;
+  color: #174ea6;
+  background: #edf4ff;
+  border-color: #b7cdf7;
 }
 
 .Warning span {
-  color: #ffd996;
-  background: #30230d;
-  border-color: #6d4a13;
+  color: #8a4b00;
+  background: #fff6df;
+  border-color: #e8c66a;
 }
 
 .Error span {
-  color: #ffc1bd;
-  background: #341817;
-  border-color: #7f2c29;
+  color: #a8201a;
+  background: #fff0ef;
+  border-color: #f0b8b4;
 }
 
 .Fatal span,
 .Critical span {
-  color: #dfc4ff;
-  background: #261537;
-  border-color: #5f3585;
+  color: #6b2ea0;
+  background: #f6efff;
+  border-color: #d6bcfa;
 }
 
 .Exception,
 .Error.msg,
 .Fatal.msg,
 .Critical.msg {
-  color: #ffaaa5;
+  color: var(--danger);
   font-weight: 650;
 }
 
 table.logs > tbody > tr.details {
-  background: #0b1016;
+  background: #f6f8fa;
 }
 
 table.logs > tbody > tr.details td {
@@ -615,7 +615,7 @@ table.logs > tbody > tr.details td {
   margin: 0;
   padding: 10px 12px 12px 32px;
   border-left: 2px solid var(--accent);
-  background: #0b1016;
+  background: #f6f8fa;
 }
 
 .details-message span,
@@ -642,7 +642,7 @@ table.logs > tbody > tr.details td {
 
 .properties div {
   overflow: hidden;
-  background: #0f151c;
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 2px;
 }
@@ -650,7 +650,7 @@ table.logs > tbody > tr.details td {
 .properties dt {
   padding: 5px 7px;
   color: var(--muted-strong);
-  background: #111922;
+  background: #eef2f6;
   border-bottom: 1px solid var(--line);
   font-size: 11px;
   font-weight: 750;
@@ -673,9 +673,9 @@ table.logs > tbody > tr.details td {
 
 .exception-panel {
   padding: 8px;
-  color: #ffc1bd;
-  background: #2a1212;
-  border: 1px solid #74302e;
+  color: var(--danger);
+  background: #fff0ef;
+  border: 1px solid #f0b8b4;
   border-radius: 2px;
 }
 
