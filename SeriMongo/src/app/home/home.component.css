@@ -422,14 +422,9 @@ h2 {
   border-color: #1d4ed8;
 }
 
-.action-button.primary:hover {
-  background: #1d4ed8;
-}
-
 .action-button.outline:hover,
 .action-button.ghost:hover {
   background: var(--surface-raised);
-  border-color: var(--line-strong);
 }
 
 .action-button.outline.active {
@@ -519,13 +514,13 @@ table.logs thead th {
   text-align: left;
   font-size: 10px;
   font-weight: 750;
-  letter-spacing: .1em;
   text-transform: uppercase;
 }
 
 table.logs > tbody > tr {
   color: var(--text);
   background: #ffffff;
+  transition: background .9s ease-out;
 }
 
 table.logs > tbody > tr:nth-child(4n + 3) {
@@ -535,6 +530,10 @@ table.logs > tbody > tr:nth-child(4n + 3) {
 table.logs > tbody > tr:not(.details):hover,
 table.logs > tbody > tr.active {
   background: #edf4ff;
+}
+
+table.logs > tbody > tr.tail-injected {
+  background: #fff1b8;
 }
 
 table.logs > tbody > tr td {

@@ -33,6 +33,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   searchExpression = '*';
   logEntries = signal<LogEntry[]>([]);
   selectedRow = signal<LogEntry | null>(null);
+  tailInjectedLogIds = signal<ReadonlySet<string>>(new Set<string>());
   isTailing = signal(true);
   selectedPeriod = signal<string | null>(null);
   selectedPeriodSince = signal<string | null>(null);
@@ -47,6 +48,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly maxDetailSidebarWidth = 640;
 
   private readonly minLogAreaWidth = 380;
+  private readonly tailInjectedHighlightMs = 700;
+  private readonly tailInjectedTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private resizeStartX = 0;
   private resizeStartWidth = 0;
 
@@ -93,6 +96,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.markTailInjected(logEntry);
     this.logEntries.update(entries => [logEntry, ...entries].slice(0, 1000));
   };
 
@@ -107,6 +111,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   async ngOnDestroy(): Promise<void> {
     window.removeEventListener('resize', this.clampSidebarToViewport);
+    this.clearTailInjectedRows();
     this.stopSidebarResize();
     await this.signalRService.stop();
   }
@@ -115,6 +120,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.refreshPeriodWindow();
     const query = this.buildLogQuery();
     await this.signalRService.setTailQuery(query);
+    this.clearTailInjectedRows();
     this.logEntries.set(await this.searchService.search(query));
   }
 
@@ -179,6 +185,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     return log.id || index.toString();
   }
 
+  isTailInjected(log: LogEntry): boolean {
+    return !!log.id && this.tailInjectedLogIds().has(log.id);
+  }
+
   formatValue(value: unknown): string {
     if (value === null || value === undefined) {
       return '';
@@ -223,6 +233,37 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private quoteLogQueryValue(value: string): string {
     return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  }
+
+  private markTailInjected(logEntry: LogEntry): void {
+    if (!logEntry.id) {
+      return;
+    }
+
+    const logEntryId = logEntry.id;
+    const existingTimer = this.tailInjectedTimers.get(logEntryId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    this.tailInjectedLogIds.update(ids => new Set(ids).add(logEntryId));
+    this.tailInjectedTimers.set(logEntryId, setTimeout(() => {
+      this.tailInjectedTimers.delete(logEntryId);
+      this.tailInjectedLogIds.update(ids => {
+        const nextIds = new Set(ids);
+        nextIds.delete(logEntryId);
+        return nextIds;
+      });
+    }, this.tailInjectedHighlightMs));
+  }
+
+  private clearTailInjectedRows(): void {
+    for (const timer of this.tailInjectedTimers.values()) {
+      clearTimeout(timer);
+    }
+
+    this.tailInjectedTimers.clear();
+    this.tailInjectedLogIds.set(new Set<string>());
   }
 
   private buildPeriodClause(): string | null {
