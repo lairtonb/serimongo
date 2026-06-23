@@ -28,7 +28,7 @@ interface LevelOption {
 })
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  title = 'SeriMongo UI';
+  title = 'SeriMongo';
 
   searchExpression = '*';
   logEntries = signal<LogEntry[]>([]);

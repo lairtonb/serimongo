@@ -3,16 +3,16 @@
     <pre>{{debugInfo() | json}}</pre>
   </div>
 
-  <header class="app-header z-card">
+  <header class="app-header">
     <div class="title-stack">
-      <p class="eyebrow">SQLite + SignalR log stream</p>
+      <p class="eyebrow">SQLite / SignalR / LogQL</p>
       <h1>{{title}}</h1>
-      <p class="subtitle">Query structured logs with LogQL and watch fresh entries arrive in realtime.</p>
+      <p class="subtitle">Realtime structured log inspection</p>
     </div>
 
     <div class="header-metrics" aria-label="Stream status">
       <div class="metric-card">
-        <span>Status</span>
+        <span>Stream</span>
         <strong [class.paused]="!isTailing()">{{isTailing() ? 'Live' : 'Paused'}}</strong>
       </div>
       <div class="metric-card">
@@ -23,17 +23,16 @@
   </header>
 
   <main class="content-shell">
-    <aside class="filter-panel z-card" aria-label="Quick filters">
+    <aside class="filter-panel" aria-label="Quick filters">
       <div class="panel-title">
         <div>
-          <p class="eyebrow">Quick filters</p>
-          <h2>Log levels</h2>
+          <p class="eyebrow">Filters</p>
+          <h2>Severity</h2>
         </div>
-        <button class="z-button ghost compact" type="button" title="Clear filters" (click)="clearQuickFilters()">Clear</button>
+        <button class="action-button ghost" type="button" title="Clear filters" (click)="clearQuickFilters()">Clear</button>
       </div>
 
       <section class="filter-card">
-        <h3>Severity</h3>
         <div class="level-list">
           <button type="button"
             *ngFor="let level of levelOptions"
@@ -53,10 +52,10 @@
     </aside>
 
     <section class="workspace">
-      <section class="query-card z-card" aria-label="Search logs">
+      <section class="query-panel" aria-label="Search logs">
         <div class="period-toolbar">
-          <div>
-            <span class="toolbar-label">Period</span>
+          <div class="period-summary">
+            <span class="toolbar-label">Window</span>
             <strong>{{selectedPeriod() || 'All time'}}</strong>
           </div>
           <div class="segmented-control" aria-label="Period quick filters">
@@ -71,7 +70,7 @@
 
         <div class="search-area">
           <div class="query-box">
-            <label for="search-logs">LogQL query</label>
+            <label for="search-logs">LogQL</label>
             <textarea id="search-logs" #search rows="2"
               (keydown)="handleTab($event, search)"
               (input)="controlHeight(search)"
@@ -81,15 +80,19 @@
           </div>
 
           <div class="actions" aria-label="Search actions">
-            <button id="search-button" class="z-button primary compact" type="button" (click)="onSearchClick()">Search</button>
-            <button id="tail-button" class="z-button outline compact" type="button" [class.active]="isTailing()" (click)="toggleTail()">
+            <button id="search-button" class="action-button primary" type="button" (click)="onSearchClick()">Search</button>
+            <button id="tail-button" class="action-button outline" type="button" [class.active]="isTailing()" (click)="toggleTail()">
               {{isTailing() ? 'Pause' : 'Tail'}}
             </button>
           </div>
         </div>
       </section>
 
-      <section class="log-area z-card" aria-label="Log entries">
+      <section class="log-area" aria-label="Log entries">
+        <div class="table-titlebar">
+          <span>Log entries</span>
+          <span>{{logEntries().length}} loaded</span>
+        </div>
         <div #tableContainer class="tb-container">
           <table class="logs table-scroll">
             <thead>
