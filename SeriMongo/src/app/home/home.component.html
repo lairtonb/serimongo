@@ -136,7 +136,7 @@
               </thead>
               <tbody>
                 <ng-container *ngFor="let log of logEntries(); trackBy: trackByLogId">
-                  <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)">
+                  <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)" [style.--tail-delay]="tailHighlightDelay(log)">
                     <td class="idcol"><span class="row-marker" aria-hidden="true"></span>{{log.id}}</td>
                     <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
                     <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
