@@ -130,7 +130,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   async onSearchClick(): Promise<void> {
     this.refreshPeriodWindow();
     const query = this.buildLogQuery();
-    await this.signalRService.setTailQuery(query);
+    this.isTailing.set(false);
+    await this.signalRService.pauseTail();
     this.clearTailInjectedRows();
     this.logEntries.set(await this.searchService.search(query));
   }

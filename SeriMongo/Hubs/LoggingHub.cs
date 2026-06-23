@@ -48,6 +48,12 @@ namespace SeriMongo.Hubs
             }
         }
 
+        public Task PauseTail()
+        {
+            _tailSubscriptionStore.Remove(Context.ConnectionId);
+            return Task.CompletedTask;
+        }
+
         public async Task SendLogEntry(LogEntry logEntry)
         {
             await _logIngestService.IngestAsync(logEntry, Context.ConnectionAborted);
