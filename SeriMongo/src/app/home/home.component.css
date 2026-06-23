@@ -35,7 +35,6 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 2px;
-  box-shadow: none;
 }
 
 .app-header {
@@ -362,7 +361,6 @@ h2 {
   color: var(--muted);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: .12em;
   text-transform: uppercase;
 }
 
@@ -376,7 +374,6 @@ h2 {
   background: #ffffff;
   border: 1px solid var(--line-strong);
   border-radius: 2px;
-  box-shadow: none;
   font: 500 13px/1.35 Consolas, "SFMono-Regular", Menlo, monospace;
   resize: vertical;
 }
@@ -529,21 +526,27 @@ table.logs > tbody > tr.active {
 }
 
 table.logs > tbody > tr td {
+  position: relative;
   padding: 6px 8px;
   border-bottom: 1px solid #e3e8ef;
   cursor: pointer;
   vertical-align: top;
 }
 
-table.logs > tbody > tr.tail-injected td {
-  animation: tail-row-highlight .65s linear both;
+table.logs > tbody > tr.tail-injected td::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #ff9fd6;
+  animation: tail-row-highlight .85s linear both;
 }
 
 @keyframes tail-row-highlight {
-  0% { background: #ffb6dbe0; }
-  35% { background: #ffc4e18c; }
-  70% { background: #ffd6e838; }
-  to { background:#0000; }
+  0% { opacity: 0; }
+  6%, 18% { opacity: .62; }
+  45% { opacity: .34; }
+  72% { opacity: .14; }
+  to { opacity: 0; }
 }
 
 .idcol {
