@@ -28,7 +28,8 @@
 .app-header,
 .filter-panel,
 .query-panel,
-.log-area {
+.log-area,
+.detail-sidebar {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 2px;
@@ -423,6 +424,14 @@ h2 {
   border-color: #8fd3a6;
 }
 
+.results-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .log-area {
   display: flex;
   flex: 1 1 auto;
@@ -532,19 +541,17 @@ table.logs > tbody > tr td {
   text-overflow: ellipsis;
 }
 
-.row-caret {
+.row-marker {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
+  width: 3px;
   height: 14px;
   margin-right: 5px;
-  color: var(--muted-strong);
-  background: #eef2f6;
-  border: 1px solid var(--line);
-  border-radius: 1px;
-  font-size: 10px;
-  font-weight: 800;
+  background: transparent;
+  vertical-align: -2px;
+}
+
+table.logs > tbody > tr.active .row-marker {
+  background: var(--accent);
 }
 
 .tstamp {
@@ -629,26 +636,28 @@ table.logs > tbody > tr td {
   font-weight: 650;
 }
 
-table.logs > tbody > tr.details {
-  background: #f6f8fa;
+.detail-sidebar {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
-table.logs > tbody > tr.details td {
-  padding: 0;
-  border-bottom: 1px solid var(--line);
-  cursor: default;
-}
-
-.details-panel {
-  display: grid;
+.detail-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  margin: 0;
-  padding: 10px 12px 12px 32px;
-  border-left: 2px solid var(--accent);
-  background: #f6f8fa;
+  min-height: 40px;
+  padding: 6px 8px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--line);
 }
 
-.details-message span,
+.detail-titlebar span,
+.detail-section h3,
+.detail-meta dt,
 .exception-panel span {
   color: var(--muted);
   font-size: 10px;
@@ -657,9 +666,79 @@ table.logs > tbody > tr.details td {
   text-transform: uppercase;
 }
 
-.details-message p {
-  margin: 3px 0 0;
+.detail-titlebar strong {
+  display: block;
+  margin-top: 2px;
   color: var(--text-strong);
+  font-size: 13px;
+}
+
+.detail-body {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 0;
+  padding: 10px;
+  overflow: auto;
+}
+
+.detail-section {
+  display: grid;
+  gap: 6px;
+}
+
+.detail-section h3 {
+  margin: 0;
+}
+
+.detail-section p {
+  margin: 0;
+  color: var(--text-strong);
+  line-height: 1.45;
+}
+
+.detail-meta {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.detail-meta div {
+  padding: 6px 7px;
+  background: var(--surface-alt);
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+.detail-meta dt {
+  margin-bottom: 3px;
+}
+
+.detail-meta dd {
+  margin: 0;
+  color: var(--text-strong);
+  font: 500 11px/1.4 Consolas, "SFMono-Regular", Menlo, monospace;
+  overflow-wrap: anywhere;
+}
+
+.detail-empty {
+  display: grid;
+  align-content: center;
+  min-height: 220px;
+  padding: 16px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.detail-empty span {
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.detail-empty p {
+  margin: 4px 0 0;
+  font-size: 12px;
   line-height: 1.45;
 }
 
@@ -690,6 +769,10 @@ table.logs > tbody > tr.details td {
 .properties dd {
   margin: 0;
   padding: 6px 7px;
+}
+
+.sidebar-properties {
+  grid-template-columns: 1fr;
 }
 
 .properties pre,
@@ -737,6 +820,14 @@ table.logs > tbody > tr.details td {
 
   .level-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .results-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-sidebar {
+    min-height: 320px;
   }
 }
 

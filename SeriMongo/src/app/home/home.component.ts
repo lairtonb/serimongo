@@ -235,14 +235,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     window.requestAnimationFrame(this.resize);
   };
 
-  /**
-   * Expands current log entry line to show structured logging
-   * properties and scope properties saved by Serilog.
-   */
+  /** Selects a log entry for inspection in the details sidebar. */
   setClickedRow(le: LogEntry) {
-    this.selectedRow.set(le.showDetails ? null : le);
-    le.showDetails = !le.showDetails;
-    this.logEntries.update(entries => [...entries]);
+    this.selectedRow.update(selected => selected === le ? null : le);
+  }
+
+  clearSelectedRow(): void {
+    this.selectedRow.set(null);
   }
 
   // TODO: inprove Angular $event handling following best practices
