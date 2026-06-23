@@ -11,6 +11,7 @@ export class SignalRService {
   private readonly baseApiUrl = environment.apiBaseUrl;
   private readonly connection: signalR.HubConnection;
   private currentTailQuery = '*';
+  private tailEnabled = true;
 
   constructor() {
     this.connection = new signalR.HubConnectionBuilder()
@@ -20,7 +21,7 @@ export class SignalRService {
       .build();
 
     this.connection.onreconnected(() => {
-      void this.syncTailQuery();
+      void this.syncTailState();
     });
   }
 
@@ -31,7 +32,7 @@ export class SignalRService {
 
     try {
       await this.connection.start();
-      await this.syncTailQuery();
+      await this.syncTailState();
     } catch (err) {
       console.error(err);
     }
@@ -39,7 +40,13 @@ export class SignalRService {
 
   async setTailQuery(query: string): Promise<void> {
     this.currentTailQuery = query?.trim() || '*';
-    await this.syncTailQuery();
+    this.tailEnabled = true;
+    await this.syncTailState();
+  }
+
+  async pauseTail(): Promise<void> {
+    this.tailEnabled = false;
+    await this.syncTailState();
   }
 
   getLogEntries(next: (logEntry: LogEntry) => void): void {
@@ -58,9 +65,13 @@ export class SignalRService {
     await this.connection.stop();
   }
 
-  private async syncTailQuery(): Promise<void> {
+  private async syncTailState(): Promise<void> {
     if (this.connection.state === signalR.HubConnectionState.Connected) {
-      await this.connection.invoke('SetTailQuery', this.currentTailQuery);
+      if (this.tailEnabled) {
+        await this.connection.invoke('SetTailQuery', this.currentTailQuery);
+      } else {
+        await this.connection.invoke('PauseTail');
+      }
     }
   }
 }
