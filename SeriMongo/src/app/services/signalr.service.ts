@@ -10,6 +10,7 @@ import { environment } from '../../environments/environment';
 export class SignalRService {
   private readonly baseApiUrl = environment.apiBaseUrl;
   private readonly connection: signalR.HubConnection;
+  private currentTailQuery = '*';
 
   constructor() {
     this.connection = new signalR.HubConnectionBuilder()
@@ -17,6 +18,10 @@ export class SignalRService {
       .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Information)
       .build();
+
+    this.connection.onreconnected(() => {
+      void this.syncTailQuery();
+    });
   }
 
   async start(): Promise<void> {
@@ -26,9 +31,15 @@ export class SignalRService {
 
     try {
       await this.connection.start();
+      await this.syncTailQuery();
     } catch (err) {
       console.error(err);
     }
+  }
+
+  async setTailQuery(query: string): Promise<void> {
+    this.currentTailQuery = query?.trim() || '*';
+    await this.syncTailQuery();
   }
 
   getLogEntries(next: (logEntry: LogEntry) => void): void {
@@ -45,5 +56,11 @@ export class SignalRService {
 
   async stop(): Promise<void> {
     await this.connection.stop();
+  }
+
+  private async syncTailQuery(): Promise<void> {
+    if (this.connection.state === signalR.HubConnectionState.Connected) {
+      await this.connection.invoke('SetTailQuery', this.currentTailQuery);
+    }
   }
 }

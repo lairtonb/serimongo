@@ -79,6 +79,8 @@ CREATE INDEX IF NOT EXISTS IX_LogEntries_Level ON LogEntries (Level);
 
         System.Threading.Tasks.Task<IReadOnlyList<LogEntry>> SearchAsync(LogSqlQuery query, int currentPage, int pageSize, System.Threading.CancellationToken cancellationToken = default);
 
+        System.Threading.Tasks.Task<bool> MatchesAsync(string logEntryId, LogSqlQuery query, System.Threading.CancellationToken cancellationToken = default);
+
         System.Threading.Tasks.Task<IReadOnlyList<string>> GetServiceNamesAsync(System.Threading.CancellationToken cancellationToken = default);
     }
 
@@ -164,6 +166,28 @@ LIMIT $limit OFFSET $offset;";
             }
 
             return logEntries;
+        }
+
+        public async System.Threading.Tasks.Task<bool> MatchesAsync(string logEntryId, LogSqlQuery query, System.Threading.CancellationToken cancellationToken = default)
+        {
+            using var connection = _context.CreateConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            using var command = connection.CreateCommand();
+            command.CommandText = $@"
+SELECT 1
+FROM LogEntries
+WHERE Id = $id AND ({query.WhereSql})
+LIMIT 1;";
+
+            command.Parameters.AddWithValue("$id", logEntryId);
+            foreach (var parameter in query.Parameters)
+            {
+                command.Parameters.AddWithValue(parameter.Name, parameter.Value ?? DBNull.Value);
+            }
+
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+            return result != null;
         }
 
         public async System.Threading.Tasks.Task<IReadOnlyList<string>> GetServiceNamesAsync(System.Threading.CancellationToken cancellationToken = default)
