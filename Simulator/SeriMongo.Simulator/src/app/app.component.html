@@ -48,6 +48,36 @@
           <button type="button" class="z-button primary" [disabled]="pendingAction() !== null" (click)="emitBurst(150)">150 logs</button>
         </div>
       </div>
+
+      <div class="continuous-panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Continuous traffic</p>
+            <h2>Run a repeating stream</h2>
+          </div>
+          <strong [class.running]="continuousRunning()">{{continuousRunning() ? 'Running' : 'Stopped'}}</strong>
+        </div>
+
+        <div class="continuous-form">
+          <label>
+            <span>Logs per interval</span>
+            <input type="number" min="1" max="200" step="1" [value]="continuousCount" (input)="updateContinuousCount($event)">
+          </label>
+          <label>
+            <span>Interval ms</span>
+            <input type="number" min="250" max="60000" step="250" [value]="continuousIntervalMs" (input)="updateContinuousIntervalMs($event)">
+          </label>
+          <label>
+            <span>Jitter ms</span>
+            <input type="number" min="0" max="60000" step="250" [value]="continuousJitterMs" (input)="updateContinuousJitterMs($event)">
+          </label>
+        </div>
+
+        <div class="burst-actions">
+          <button type="button" class="z-button primary" [disabled]="continuousRunning()" (click)="startContinuous()">Start continuous</button>
+          <button type="button" class="z-button outline" [disabled]="!continuousRunning()" (click)="stopContinuous()">Stop</button>
+        </div>
+      </div>
     </section>
 
     <aside class="z-card status-card">
@@ -59,6 +89,17 @@
       <div class="stat">
         <span>Current action</span>
         <strong>{{pendingAction() || 'Idle'}}</strong>
+      </div>
+
+      <div class="stat">
+        <span>Continuous</span>
+        <strong>{{continuousRunning() ? 'Running' : 'Stopped'}}</strong>
+        <small *ngIf="nextContinuousDelayMs() !== null">Next tick in {{nextContinuousDelayMs()}}ms</small>
+      </div>
+
+      <div class="stat">
+        <span>Continuous emitted</span>
+        <strong>{{continuousEmitted()}}</strong>
       </div>
 
       <div class="activity-list">
