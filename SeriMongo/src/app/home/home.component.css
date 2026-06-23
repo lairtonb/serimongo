@@ -76,7 +76,6 @@ h1 {
   color: var(--text-strong);
   font-size: 22px;
   font-weight: 650;
-  letter-spacing: -.03em;
   line-height: 1.1;
 }
 
@@ -113,7 +112,6 @@ h2 {
   color: var(--muted);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
@@ -461,7 +459,6 @@ h2 {
   border-bottom: 1px solid var(--line);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
@@ -520,7 +517,6 @@ table.logs thead th {
 table.logs > tbody > tr {
   color: var(--text);
   background: #ffffff;
-  transition: background .3s ease-out;
 }
 
 table.logs > tbody > tr:nth-child(4n + 3) {
@@ -532,15 +528,22 @@ table.logs > tbody > tr.active {
   background: #edf4ff;
 }
 
-table.logs > tbody > tr.tail-injected {
-  background: #99f6e4;
-}
-
 table.logs > tbody > tr td {
   padding: 6px 8px;
   border-bottom: 1px solid #e3e8ef;
   cursor: pointer;
   vertical-align: top;
+}
+
+table.logs > tbody > tr.tail-injected td {
+  animation: tail-row-highlight .65s linear both;
+}
+
+@keyframes tail-row-highlight {
+  0% { background: #ffb6dbe0; }
+  35% { background: #ffc4e18c; }
+  70% { background: #ffd6e838; }
+  to { background:#0000; }
 }
 
 .idcol {
@@ -569,7 +572,6 @@ table.logs > tbody > tr.active .row-marker {
 .tstamp {
   width: 205px;
   color: #374151;
-  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -703,7 +705,6 @@ table.logs > tbody > tr.active .row-marker {
   color: var(--muted);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: .12em;
   text-transform: uppercase;
 }
 

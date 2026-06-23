@@ -48,7 +48,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly maxDetailSidebarWidth = 640;
 
   private readonly minLogAreaWidth = 380;
-  private readonly tailInjectedHighlightMs = 180;
+  private readonly tailInjectedHighlightMs = 650;
   private readonly tailInjectedTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private resizeStartX = 0;
   private resizeStartWidth = 0;
