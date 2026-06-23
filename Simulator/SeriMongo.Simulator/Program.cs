@@ -23,7 +23,8 @@ app.UseStaticFiles();
 
 app.MapGet("/api/info", (IOptions<SimulatorOptions> options) => new
 {
-    targetBaseUrl = options.Value.TargetBaseUrl
+    targetBaseUrl = options.Value.TargetBaseUrl,
+    serviceNames = LogScenarioFactory.ServiceNames
 });
 
 app.MapPost("/api/logs/{level}", async (
@@ -45,8 +46,9 @@ app.MapPost("/api/logs/{level}", async (
     return Results.Ok(new
     {
         level = log.Level,
+        serviceName = log.ServiceName,
         count = 1,
-        message = log.Message
+        message = $"Emitted {log.Level} from {log.ServiceName}."
     });
 });
 
@@ -64,7 +66,7 @@ app.MapPost("/api/logs/burst", async (
     return Results.Ok(new
     {
         count,
-        message = $"Emitted {count} simulated logs."
+        message = $"Emitted {count} simulated logs across {LogScenarioFactory.ServiceNames.Length} services."
     });
 });
 

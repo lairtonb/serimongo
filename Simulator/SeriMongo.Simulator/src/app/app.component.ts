@@ -10,12 +10,14 @@ interface LevelAction {
 
 interface EmitResponse {
   level?: string;
+  serviceName?: string;
   count: number;
   message: string;
 }
 
 interface InfoResponse {
   targetBaseUrl: string;
+  serviceNames: string[];
 }
 
 interface ActivityItem {
@@ -37,6 +39,7 @@ export class AppComponent implements OnInit {
   private nextActivityId = 1;
 
   readonly targetBaseUrl = signal('loading...');
+  readonly serviceNames = signal<string[]>([]);
   readonly pendingAction = signal<string | null>(null);
   readonly totalEmitted = signal(0);
   readonly activity = signal<ActivityItem[]>([]);
@@ -52,7 +55,10 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.http.get<InfoResponse>('/api/info').subscribe({
-      next: info => this.targetBaseUrl.set(info.targetBaseUrl),
+      next: info => {
+        this.targetBaseUrl.set(info.targetBaseUrl);
+        this.serviceNames.set(info.serviceNames);
+      },
       error: () => this.targetBaseUrl.set('unavailable')
     });
   }

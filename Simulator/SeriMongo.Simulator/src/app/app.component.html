@@ -3,7 +3,7 @@
     <div>
       <p class="eyebrow">SeriMongo simulator</p>
       <h1>Emit realtime logs on demand</h1>
-      <p class="subtitle">Click a level to send an OTLP/HTTP JSON log into the viewer.</p>
+      <p class="subtitle">Each emitted log randomly picks one fictitious service.</p>
     </div>
 
     <div class="target-card">
@@ -28,6 +28,13 @@
           <span>{{item.level}}</span>
           <small>{{item.description}}</small>
         </button>
+      </div>
+
+      <div class="service-panel">
+        <p class="eyebrow">Service pool</p>
+        <div class="service-grid">
+          <span *ngFor="let serviceName of serviceNames()">{{serviceName}}</span>
+        </div>
       </div>
 
       <div class="burst-panel">

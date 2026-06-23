@@ -27,31 +27,36 @@ public sealed class LogEmitterClient(HttpClient httpClient)
     {
         return new
         {
-            resourceLogs = new[]
+            resourceLogs = logs
+                .GroupBy(log => log.ServiceName, StringComparer.OrdinalIgnoreCase)
+                .Select(BuildResourceLog)
+                .ToArray()
+        };
+    }
+
+    private static object BuildResourceLog(IGrouping<string, SimulatedLog> logs)
+    {
+        return new
+        {
+            resource = new
+            {
+                attributes = BuildAttributes(new Dictionary<string, object?>
+                {
+                    ["service.name"] = logs.Key,
+                    ["service.namespace"] = "SeriMongo.Simulator",
+                    ["deployment.environment"] = "local"
+                })
+            },
+            scopeLogs = new[]
             {
                 new
                 {
-                    resource = new
+                    scope = new
                     {
-                        attributes = BuildAttributes(new Dictionary<string, object?>
-                        {
-                            ["service.name"] = "serimongo-simulator",
-                            ["service.namespace"] = "SeriMongo",
-                            ["deployment.environment"] = "local"
-                        })
+                        name = "SeriMongo.Simulator",
+                        version = "1.0.0"
                     },
-                    scopeLogs = new[]
-                    {
-                        new
-                        {
-                            scope = new
-                            {
-                                name = "SeriMongo.Simulator",
-                                version = "1.0.0"
-                            },
-                            logRecords = logs.Select(BuildLogRecord).ToArray()
-                        }
-                    }
+                    logRecords = logs.Select(BuildLogRecord).ToArray()
                 }
             }
         };

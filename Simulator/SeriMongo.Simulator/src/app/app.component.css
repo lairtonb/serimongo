@@ -195,6 +195,28 @@ h2 {
   border-radius: .8rem;
 }
 
+.service-panel {
+  padding: .875rem;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: .8rem;
+}
+
+.service-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+
+.service-grid span {
+  padding: .3rem .5rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
 .burst-actions {
   display: flex;
   flex-wrap: wrap;
