@@ -100,6 +100,7 @@
                 <th class="idcol">Id</th>
                 <th class="tstamp">Timestamp</th>
                 <th class="lvl">Level</th>
+                <th class="service-name">Service Name</th>
                 <th>Message</th>
               </tr>
             </thead>
@@ -109,6 +110,7 @@
                   <td class="idcol"><span class="row-caret">{{log.showDetails ? 'v' : '>'}}</span>{{log.id}}</td>
                   <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
                   <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
+                  <td class="service-name">{{serviceName(log)}}</td>
                   <td [class]="{
                     'msgcol': true,
                     'msg': true,
@@ -124,7 +126,7 @@
                 </tr>
 
                 <tr *ngIf="log.showDetails" class="details">
-                  <td colspan="4">
+                  <td colspan="5">
                     <div class="details-panel">
                       <div class="details-message">
                         <span>Message</span>

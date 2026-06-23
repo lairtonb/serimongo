@@ -146,6 +146,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     return String(value);
   }
 
+  serviceName(log: LogEntry): string {
+    return this.formatValue(log.properties['resource.service.name']) || '-';
+  }
+
   private buildLogQuery(): string {
     const clauses: string[] = [];
     const manualQuery = this.searchExpression.trim();

@@ -558,6 +558,16 @@ table.logs > tbody > tr td {
   width: 108px;
 }
 
+.service-name {
+  width: 165px;
+  color: var(--muted-strong);
+  font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .lvl span {
   display: inline-flex;
   align-items: center;
@@ -771,6 +781,10 @@ table.logs > tbody > tr.details td {
 
   .lvl {
     width: 82px;
+  }
+
+  .service-name {
+    width: 118px;
   }
 
   .details-panel {
