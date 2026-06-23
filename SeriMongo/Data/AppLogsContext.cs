@@ -78,6 +78,8 @@ CREATE INDEX IF NOT EXISTS IX_LogEntries_Level ON LogEntries (Level);
         System.Threading.Tasks.Task<IReadOnlyList<LogEntry>> GetRecentAsync(int currentPage, int pageSize, System.Threading.CancellationToken cancellationToken = default);
 
         System.Threading.Tasks.Task<IReadOnlyList<LogEntry>> SearchAsync(LogSqlQuery query, int currentPage, int pageSize, System.Threading.CancellationToken cancellationToken = default);
+
+        System.Threading.Tasks.Task<IReadOnlyList<string>> GetServiceNamesAsync(System.Threading.CancellationToken cancellationToken = default);
     }
 
     public class SqliteLogRepository : ILogRepository
@@ -162,6 +164,40 @@ LIMIT $limit OFFSET $offset;";
             }
 
             return logEntries;
+        }
+
+        public async System.Threading.Tasks.Task<IReadOnlyList<string>> GetServiceNamesAsync(System.Threading.CancellationToken cancellationToken = default)
+        {
+            using var connection = _context.CreateConnection();
+            await connection.OpenAsync(cancellationToken);
+
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
+SELECT DISTINCT CAST(json_extract(PropertiesJson, $serviceNamePath) AS TEXT) AS ServiceName
+FROM LogEntries
+WHERE json_type(PropertiesJson, $serviceNamePath) IS NOT NULL
+  AND TRIM(CAST(json_extract(PropertiesJson, $serviceNamePath) AS TEXT)) <> ''
+ORDER BY ServiceName COLLATE NOCASE;";
+
+            command.Parameters.AddWithValue("$serviceNamePath", "$.\"resource.service.name\"");
+
+            var serviceNames = new List<string>();
+            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                if (reader.IsDBNull(0))
+                {
+                    continue;
+                }
+
+                var serviceName = reader.GetString(0).Trim();
+                if (!string.IsNullOrEmpty(serviceName))
+                {
+                    serviceNames.Add(serviceName);
+                }
+            }
+
+            return serviceNames;
         }
 
         internal static LogEntry ReadLogEntry(SqliteDataReader reader)

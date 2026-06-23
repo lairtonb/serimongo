@@ -49,6 +49,7 @@ namespace SeriMongo.Querying
         {
             "*",
             "level = Error",
+            "serviceName = \"serimongo-simulator\"",
             "level in (Error, Warning) and timestamp >= \"2026-01-01T00:00:00Z\"",
             "message contains \"checkout failed\"",
             "exception exists",
@@ -250,6 +251,10 @@ namespace SeriMongo.Querying
                     return FieldReference.Column("RenderedMessage", FieldKind.Text);
                 case "exception":
                     return FieldReference.Column("Exception", FieldKind.Text);
+                case "service":
+                case "servicename":
+                case "service.name":
+                    return FieldReference.PropertyKey("resource.service.name");
             }
 
             const string propPrefix = "prop.";
@@ -271,7 +276,7 @@ namespace SeriMongo.Querying
                 return FieldReference.Property(normalized.Substring(propertiesPrefix.Length));
             }
 
-            throw new LogQueryException($"Unknown field '{fieldName}'. Use id, timestamp, level, message, exception or prop.<name>.");
+            throw new LogQueryException($"Unknown field '{fieldName}'. Use id, timestamp, level, message, exception, serviceName or prop.<name>.");
         }
 
         private string AddParameter(object value)
@@ -575,6 +580,14 @@ namespace SeriMongo.Querying
                 return new FieldReference(valueSql, $"CAST({valueSql} AS TEXT)", existsSql, FieldKind.Property);
             }
 
+            public static FieldReference PropertyKey(string propertyName)
+            {
+                var jsonPath = BuildJsonKeyPath(propertyName);
+                var valueSql = $"json_extract(PropertiesJson, '{jsonPath}')";
+                var existsSql = $"json_type(PropertiesJson, '{jsonPath}') IS NOT NULL";
+                return new FieldReference(valueSql, $"CAST({valueSql} AS TEXT)", existsSql, FieldKind.Property);
+            }
+
             private static string BuildJsonPath(string propertyName)
             {
                 var segments = propertyName.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
@@ -592,6 +605,16 @@ namespace SeriMongo.Querying
                 }
 
                 return "$." + string.Join(".", segments.Select(segment => $"\"{segment}\""));
+            }
+
+            private static string BuildJsonKeyPath(string propertyName)
+            {
+                if (string.IsNullOrWhiteSpace(propertyName) || !propertyName.All(c => IsSafePropertyNameChar(c) || c == '.'))
+                {
+                    throw new LogQueryException("Unsafe property key. Use letters, numbers, '_', '-' or '.'.");
+                }
+
+                return "$." + $"\"{propertyName}\"";
             }
 
             private static bool IsSafePropertyNameChar(char c)
