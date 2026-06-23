@@ -87,68 +87,105 @@
         </div>
       </section>
 
-      <section class="log-area" aria-label="Log entries">
-        <div class="table-titlebar">
-          <span>Log entries</span>
-          <span>{{logEntries().length}} loaded</span>
-        </div>
-        <div #tableContainer class="tb-container">
-          <table class="logs table-scroll">
-            <thead>
-              <tr>
-                <th class="idcol">Id</th>
-                <th class="tstamp">Timestamp</th>
-                <th class="lvl">Level</th>
-                <th class="service-name">Service Name</th>
-                <th>Message</th>
-              </tr>
-            </thead>
-            <tbody #tableLogsBody [style.height.px]="tableLogsBodyHeight()">
-              <ng-container *ngFor="let log of logEntries(); trackBy: trackByLogId">
-                <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()">
-                  <td class="idcol"><span class="row-caret">{{log.showDetails ? 'v' : '>'}}</span>{{log.id}}</td>
-                  <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
-                  <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
-                  <td class="service-name">{{serviceName(log)}}</td>
-                  <td [class]="{
-                    'msgcol': true,
-                    'msg': true,
-                    'Verbose': log.level === 'Verbose',
-                    'Trace': log.level === 'Trace',
-                    'Debug': log.level === 'Debug',
-                    'Information': log.level === 'Information',
-                    'Warning': log.level === 'Warning',
-                    'Error': log.level === 'Error',
-                    'Fatal': log.level === 'Fatal',
-                    'Critical': log.level === 'Critical'
-                  }">{{log.renderedMessage}}</td>
+      <div class="results-shell">
+        <section class="log-area" aria-label="Log entries">
+          <div class="table-titlebar">
+            <span>Log entries</span>
+            <span>{{logEntries().length}} loaded</span>
+          </div>
+          <div #tableContainer class="tb-container">
+            <table class="logs table-scroll">
+              <thead>
+                <tr>
+                  <th class="idcol">Id</th>
+                  <th class="tstamp">Timestamp</th>
+                  <th class="lvl">Level</th>
+                  <th class="service-name">Service Name</th>
+                  <th>Message</th>
                 </tr>
+              </thead>
+              <tbody #tableLogsBody [style.height.px]="tableLogsBodyHeight()">
+                <ng-container *ngFor="let log of logEntries(); trackBy: trackByLogId">
+                  <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()">
+                    <td class="idcol"><span class="row-marker" aria-hidden="true"></span>{{log.id}}</td>
+                    <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
+                    <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
+                    <td class="service-name">{{serviceName(log)}}</td>
+                    <td [class]="{
+                      'msgcol': true,
+                      'msg': true,
+                      'Verbose': log.level === 'Verbose',
+                      'Trace': log.level === 'Trace',
+                      'Debug': log.level === 'Debug',
+                      'Information': log.level === 'Information',
+                      'Warning': log.level === 'Warning',
+                      'Error': log.level === 'Error',
+                      'Fatal': log.level === 'Fatal',
+                      'Critical': log.level === 'Critical'
+                    }">{{log.renderedMessage}}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-                <tr *ngIf="log.showDetails" class="details">
-                  <td colspan="5">
-                    <div class="details-panel">
-                      <div class="details-message">
-                        <span>Message</span>
-                        <p>{{log.renderedMessage}}</p>
-                      </div>
-                      <dl class="properties">
-                        <div *ngFor="let p of (log.properties | keyvalue)">
-                          <dt>{{p.key}}</dt>
-                          <dd><pre>{{formatValue(p.value)}}</pre></dd>
-                        </div>
-                      </dl>
-                      <div *ngIf="log.exception != null" class="exception-panel">
-                        <span>Exception</span>
-                        <pre>{{log.exception}}</pre>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </ng-container>
-            </tbody>
-          </table>
-        </div>
-      </section>
+        <aside class="detail-sidebar" aria-label="Log details">
+          <ng-container *ngIf="selectedRow() as selectedLog; else noSelectedLog">
+            <div class="detail-titlebar">
+              <div>
+                <span>Selected event</span>
+                <strong>{{selectedLog.level}}</strong>
+              </div>
+              <button class="action-button ghost" type="button" (click)="clearSelectedRow()">Close</button>
+            </div>
+
+            <div class="detail-body">
+              <section class="detail-section">
+                <h3>Message</h3>
+                <p>{{selectedLog.renderedMessage}}</p>
+              </section>
+
+              <dl class="detail-meta">
+                <div>
+                  <dt>Timestamp</dt>
+                  <dd>{{selectedLog.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</dd>
+                </div>
+                <div>
+                  <dt>Service</dt>
+                  <dd>{{serviceName(selectedLog)}}</dd>
+                </div>
+                <div>
+                  <dt>Id</dt>
+                  <dd>{{selectedLog.id}}</dd>
+                </div>
+              </dl>
+
+              <section *ngIf="selectedLog.exception != null" class="exception-panel">
+                <span>Exception</span>
+                <pre>{{selectedLog.exception}}</pre>
+              </section>
+
+              <section class="detail-section">
+                <h3>Properties</h3>
+                <dl class="properties sidebar-properties">
+                  <div *ngFor="let p of (selectedLog.properties | keyvalue)">
+                    <dt>{{p.key}}</dt>
+                    <dd><pre>{{formatValue(p.value)}}</pre></dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+          </ng-container>
+
+          <ng-template #noSelectedLog>
+            <div class="detail-empty">
+              <span>No event selected</span>
+              <p>Select a row to inspect message, exception and structured properties.</p>
+            </div>
+          </ng-template>
+        </aside>
+      </div>
     </section>
   </main>
 </div>
