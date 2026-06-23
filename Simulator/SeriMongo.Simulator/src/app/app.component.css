@@ -93,6 +93,13 @@ h2 {
   font-size: .95rem;
 }
 
+.stat small {
+  display: block;
+  margin-top: .25rem;
+  color: var(--muted-foreground);
+  font-size: .78rem;
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 21rem;
@@ -195,6 +202,48 @@ h2 {
   border-radius: .8rem;
 }
 
+.continuous-panel {
+  display: grid;
+  gap: .875rem;
+  padding: .875rem;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: .8rem;
+}
+
+.continuous-panel strong {
+  color: var(--muted-foreground);
+  font-size: .85rem;
+}
+
+.continuous-panel strong.running {
+  color: #166534;
+}
+
+.continuous-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+}
+
+.continuous-form label {
+  display: grid;
+  gap: .3rem;
+  color: var(--muted-foreground);
+  font-size: .75rem;
+  font-weight: 750;
+}
+
+.continuous-form input {
+  min-height: 2.25rem;
+  padding: 0 .55rem;
+  color: var(--foreground);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: .65rem;
+  font: inherit;
+}
+
 .service-panel {
   padding: .875rem;
   background: #fafafa;
@@ -287,6 +336,10 @@ h2 {
 
   .level-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .continuous-form {
+    grid-template-columns: 1fr;
   }
 }
 
