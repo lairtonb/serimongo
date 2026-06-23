@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { LogEntry } from './log-entry';
@@ -26,19 +26,25 @@ interface LevelOption {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
+export class HomeComponent implements OnInit, OnDestroy {
 
   title = 'SeriMongo';
 
   searchExpression = '*';
   logEntries = signal<LogEntry[]>([]);
   selectedRow = signal<LogEntry | null>(null);
-  debugInfo = signal<Record<string, unknown>>({});
-  tableLogsBodyHeight = signal(200);
   isTailing = signal(true);
   selectedPeriod = signal<string | null>(null);
   selectedPeriodSince = signal<string | null>(null);
   selectedLevels = signal<string[]>([]);
+  detailSidebarWidth = signal(360);
+
+  readonly minDetailSidebarWidth = 280;
+  readonly maxDetailSidebarWidth = 640;
+
+  private readonly minLogAreaWidth = 380;
+  private resizeStartX = 0;
+  private resizeStartWidth = 0;
 
   readonly periodOptions: PeriodOption[] = [
     { id: '5m', label: '5m', amount: 5, unit: 'minute' },
@@ -72,6 +78,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
+    window.addEventListener('resize', this.clampSidebarToViewport);
     this.signalRService.getLogEntries(this.onReceiveLogEntry);
     await this.signalRService.start();
   }
@@ -84,11 +91,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.logEntries.update(entries => [logEntry, ...entries].slice(0, 1000));
   };
 
-  ngAfterViewInit(): void {
-    window.requestAnimationFrame(this.resize);
-  }
-
   async ngOnDestroy(): Promise<void> {
+    window.removeEventListener('resize', this.clampSidebarToViewport);
+    this.stopSidebarResize();
     await this.signalRService.stop();
   }
 
@@ -206,34 +211,69 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     return since.toISOString();
   }
 
-  @ViewChild('tableContainer')
-  tableContainerElement?: ElementRef<HTMLElement>;
+  @ViewChild('resultsShell')
+  resultsShellElement?: ElementRef<HTMLElement>;
 
-  @ViewChild('tableLogsBody')
-  tableLogsBodyElement?: ElementRef<HTMLElement>;
-
-  resize = () => {
-    if (this.tableContainerElement && this.tableLogsBodyElement) {
-
-      const tableLogsBodyTop = this.tableLogsBodyElement.nativeElement.offsetTop;
-      const tableContainerTop = this.tableContainerElement.nativeElement.offsetTop;
-
-      this.debugInfo.set({
-        'tableLogsBodyOffsetHeight': this.tableLogsBodyElement.nativeElement.offsetHeight,
-        'tableLogsBody':  this.tableLogsBodyElement.nativeElement.clientTop,
-        '------------------------': '',
-        'windowInnerHeight': window.innerHeight,
-        'tableLogsBodyTop': this.tableLogsBodyElement.nativeElement.offsetTop,
-        'tableContainerTop': this.tableContainerElement.nativeElement.offsetTop,
-        'tableLogs.Body.Height': `${window.innerHeight} - ${tableLogsBodyTop} - ${tableContainerTop} - 10`,
-        'tableLogsBodyHeight': window.innerHeight - tableLogsBodyTop - tableContainerTop - 10
-      });
-
-      this.tableLogsBodyHeight.set(window.innerHeight - tableLogsBodyTop - tableContainerTop - 10);
+  startSidebarResize(event: PointerEvent): void {
+    if (event.button !== 0) {
+      return;
     }
 
-    window.requestAnimationFrame(this.resize);
+    event.preventDefault();
+    this.resizeStartX = event.clientX;
+    this.resizeStartWidth = this.detailSidebarWidth();
+    document.body.classList.add('resizing-details');
+    window.addEventListener('pointermove', this.resizeSidebar);
+    window.addEventListener('pointerup', this.stopSidebarResize);
+    window.addEventListener('pointercancel', this.stopSidebarResize);
+  }
+
+  resizeSidebarWithKeyboard(event: KeyboardEvent): void {
+    const step = event.shiftKey ? 48 : 16;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        this.detailSidebarWidth.set(this.clampDetailSidebarWidth(this.detailSidebarWidth() + step));
+        event.preventDefault();
+        break;
+      case 'ArrowRight':
+        this.detailSidebarWidth.set(this.clampDetailSidebarWidth(this.detailSidebarWidth() - step));
+        event.preventDefault();
+        break;
+      case 'Home':
+        this.detailSidebarWidth.set(this.minDetailSidebarWidth);
+        event.preventDefault();
+        break;
+      case 'End':
+        this.detailSidebarWidth.set(this.clampDetailSidebarWidth(this.maxDetailSidebarWidth));
+        event.preventDefault();
+        break;
+    }
+  }
+
+  private readonly resizeSidebar = (event: PointerEvent): void => {
+    const delta = this.resizeStartX - event.clientX;
+    this.detailSidebarWidth.set(this.clampDetailSidebarWidth(this.resizeStartWidth + delta));
   };
+
+  private readonly stopSidebarResize = (): void => {
+    document.body.classList.remove('resizing-details');
+    window.removeEventListener('pointermove', this.resizeSidebar);
+    window.removeEventListener('pointerup', this.stopSidebarResize);
+    window.removeEventListener('pointercancel', this.stopSidebarResize);
+  };
+
+  private readonly clampSidebarToViewport = (): void => {
+    this.detailSidebarWidth.set(this.clampDetailSidebarWidth(this.detailSidebarWidth()));
+  };
+
+  private clampDetailSidebarWidth(width: number): number {
+    const resultsWidth = this.resultsShellElement?.nativeElement.clientWidth ?? window.innerWidth;
+    const maxAvailableWidth = Math.max(this.minDetailSidebarWidth, resultsWidth - this.minLogAreaWidth - 8);
+    const maxWidth = Math.max(this.minDetailSidebarWidth, Math.min(this.maxDetailSidebarWidth, maxAvailableWidth));
+
+    return Math.min(Math.max(width, this.minDetailSidebarWidth), maxWidth);
+  }
 
   /** Selects a log entry for inspection in the details sidebar. */
   setClickedRow(le: LogEntry) {

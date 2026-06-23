@@ -1,8 +1,4 @@
 <div class="main">
-  <div class="debugInfoBox">
-    <pre>{{debugInfo() | json}}</pre>
-  </div>
-
   <header class="app-header">
     <div class="title-stack">
       <h1>{{title}}</h1>
@@ -87,13 +83,13 @@
         </div>
       </section>
 
-      <div class="results-shell">
+      <div #resultsShell class="results-shell" [style.--detail-sidebar-width]="detailSidebarWidth() + 'px'">
         <section class="log-area" aria-label="Log entries">
           <div class="table-titlebar">
             <span>Log entries</span>
             <span>{{logEntries().length}} loaded</span>
           </div>
-          <div #tableContainer class="tb-container">
+          <div class="tb-container">
             <table class="logs table-scroll">
               <thead>
                 <tr>
@@ -104,7 +100,7 @@
                   <th>Message</th>
                 </tr>
               </thead>
-              <tbody #tableLogsBody [style.height.px]="tableLogsBodyHeight()">
+              <tbody>
                 <ng-container *ngFor="let log of logEntries(); trackBy: trackByLogId">
                   <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()">
                     <td class="idcol"><span class="row-marker" aria-hidden="true"></span>{{log.id}}</td>
@@ -129,6 +125,18 @@
             </table>
           </div>
         </section>
+
+        <button class="splitter" type="button"
+          role="separator"
+          aria-label="Resize details panel"
+          aria-orientation="vertical"
+          [attr.aria-valuemin]="minDetailSidebarWidth"
+          [attr.aria-valuemax]="maxDetailSidebarWidth"
+          [attr.aria-valuenow]="detailSidebarWidth()"
+          (pointerdown)="startSidebarResize($event)"
+          (keydown)="resizeSidebarWithKeyboard($event)">
+          <span class="splitter-grip" aria-hidden="true"></span>
+        </button>
 
         <aside class="detail-sidebar" aria-label="Log details">
           <ng-container *ngIf="selectedRow() as selectedLog; else noSelectedLog">
