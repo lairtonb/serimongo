@@ -179,7 +179,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private normalizeContinuousSettings(): void {
     this.continuousCount = this.clampInteger(this.continuousCount, 1, 200, 25);
-    this.continuousIntervalMs = this.clampInteger(this.continuousIntervalMs, 250, 60_000, 2000);
+    this.continuousIntervalMs = this.clampInteger(this.continuousIntervalMs, 1, 60_000, 2000);
     this.continuousJitterMs = this.clampInteger(this.continuousJitterMs, 0, 60_000, 500);
   }
 
@@ -189,7 +189,7 @@ export class AppComponent implements OnInit, OnDestroy {
       ? 0
       : Math.round((Math.random() * 2 - 1) * this.continuousJitterMs);
 
-    return Math.max(100, this.continuousIntervalMs + jitterOffset);
+    return Math.max(1, this.continuousIntervalMs + jitterOffset);
   }
 
   private clampInteger(value: number, min: number, max: number, fallback: number): number {

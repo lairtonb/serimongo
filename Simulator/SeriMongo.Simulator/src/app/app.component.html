@@ -65,11 +65,11 @@
           </label>
           <label>
             <span>Interval ms</span>
-            <input type="number" min="250" max="60000" step="250" [value]="continuousIntervalMs" (input)="updateContinuousIntervalMs($event)">
+            <input type="number" min="1" max="60000" step="1" [value]="continuousIntervalMs" (input)="updateContinuousIntervalMs($event)">
           </label>
           <label>
             <span>Jitter ms</span>
-            <input type="number" min="0" max="60000" step="250" [value]="continuousJitterMs" (input)="updateContinuousJitterMs($event)">
+            <input type="number" min="0" max="60000" step="1" [value]="continuousJitterMs" (input)="updateContinuousJitterMs($event)">
           </label>
         </div>
 
