@@ -526,27 +526,15 @@ table.logs > tbody > tr.active {
 }
 
 table.logs > tbody > tr td {
-  position: relative;
   padding: 6px 8px;
   border-bottom: 1px solid #e3e8ef;
   cursor: pointer;
   vertical-align: top;
 }
 
-table.logs > tbody > tr.tail-injected td::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: #ff9fd6;
-  animation: tail-hi 1.1s linear var(--tail-delay, 0ms) both;
-}
-
-@keyframes tail-hi {
-  0% { opacity: 0; }
-  5%, 16% { opacity: .64; }
-  48% { opacity: .28; }
-  76% { opacity: .12; }
-  to { opacity: 0; }
+table.logs > tbody > tr.tail-injected,
+table.logs > tbody > tr.tail-injected:nth-child(4n + 3) {
+  background: #d9f99d;
 }
 
 .idcol {

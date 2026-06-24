@@ -20,11 +20,6 @@ interface LevelOption {
   tone: string;
 }
 
-interface PendingTailLogEntry {
-  logEntry: LogEntry;
-  sequence: number;
-}
-
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
@@ -53,15 +48,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly maxDetailSidebarWidth = 640;
 
   private readonly minLogAreaWidth = 380;
-  private readonly tailFlushDelayMs = 35;
-  private readonly tailHighlightDurationMs = 1100;
-  private readonly tailHighlightOffsetMs = 45;
-  private readonly maxTailHighlightedRows = 24;
+  private readonly tailInjectedHighlightMs = 120;
   private readonly tailInjectedTimers = new Map<string, ReturnType<typeof setTimeout>>();
-  private tailInjectedOffsets = signal<ReadonlyMap<string, number>>(new Map<string, number>());
-  private pendingTailLogEntries: PendingTailLogEntry[] = [];
-  private pendingTailFlushTimer: ReturnType<typeof setTimeout> | null = null;
-  private tailArrivalSequence = 0;
   private resizeStartX = 0;
   private resizeStartWidth = 0;
 
@@ -108,7 +96,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.enqueueTailLogEntry(logEntry);
+    this.markTailInjected(logEntry);
+    this.logEntries.update(entries => [logEntry, ...entries].slice(0, 1000));
   };
 
   onReceiveServiceNames = (serviceNames: string[]) => {
@@ -201,15 +190,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     return !!log.id && this.tailInjectedLogIds().has(log.id);
   }
 
-  tailHighlightDelay(log: LogEntry): string | null {
-    if (!log.id) {
-      return null;
-    }
-
-    const offset = this.tailInjectedOffsets().get(log.id);
-    return offset === undefined ? null : `-${offset}ms`;
-  }
-
   formatValue(value: unknown): string {
     if (value === null || value === undefined) {
       return '';
@@ -256,48 +236,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
   }
 
-  private enqueueTailLogEntry(logEntry: LogEntry): void {
-    this.pendingTailLogEntries.push({ logEntry, sequence: ++this.tailArrivalSequence });
-
-    if (this.pendingTailFlushTimer === null) {
-      this.pendingTailFlushTimer = setTimeout(() => this.flushTailLogEntries(), this.tailFlushDelayMs);
-    }
-  }
-
-  private flushTailLogEntries(): void {
-    this.pendingTailFlushTimer = null;
-
-    if (!this.isTailing()) {
-      this.pendingTailLogEntries = [];
-      return;
-    }
-
-    const batch = this.pendingTailLogEntries.splice(0)
-      .sort((left, right) => this.compareTailLogEntries(left, right))
-      .map(item => item.logEntry);
-
-    if (batch.length === 0) {
-      return;
-    }
-
-    batch.slice(0, this.maxTailHighlightedRows).forEach((logEntry, index) => {
-      this.markTailInjected(logEntry, index * this.tailHighlightOffsetMs);
-    });
-
-    this.logEntries.update(entries => [...batch, ...entries].slice(0, 1000));
-  }
-
-  private compareTailLogEntries(left: PendingTailLogEntry, right: PendingTailLogEntry): number {
-    const timestampDifference = this.timestampValue(right.logEntry) - this.timestampValue(left.logEntry);
-    return timestampDifference === 0 ? right.sequence - left.sequence : timestampDifference;
-  }
-
-  private timestampValue(logEntry: LogEntry): number {
-    const value = new Date(logEntry.timestamp).getTime();
-    return Number.isFinite(value) ? value : 0;
-  }
-
-  private markTailInjected(logEntry: LogEntry, offsetMs: number): void {
+  private markTailInjected(logEntry: LogEntry): void {
     if (!logEntry.id) {
       return;
     }
@@ -309,7 +248,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     this.tailInjectedLogIds.update(ids => new Set(ids).add(logEntryId));
-    this.tailInjectedOffsets.update(offsets => new Map(offsets).set(logEntryId, offsetMs));
     this.tailInjectedTimers.set(logEntryId, setTimeout(() => {
       this.tailInjectedTimers.delete(logEntryId);
       this.tailInjectedLogIds.update(ids => {
@@ -317,29 +255,16 @@ export class HomeComponent implements OnInit, OnDestroy {
         nextIds.delete(logEntryId);
         return nextIds;
       });
-      this.tailInjectedOffsets.update(offsets => {
-        const nextOffsets = new Map(offsets);
-        nextOffsets.delete(logEntryId);
-        return nextOffsets;
-      });
-    }, Math.max(100, this.tailHighlightDurationMs - offsetMs)));
+    }, this.tailInjectedHighlightMs));
   }
 
   private clearTailInjectedRows(): void {
-    if (this.pendingTailFlushTimer !== null) {
-      clearTimeout(this.pendingTailFlushTimer);
-      this.pendingTailFlushTimer = null;
-    }
-
-    this.pendingTailLogEntries = [];
-
     for (const timer of this.tailInjectedTimers.values()) {
       clearTimeout(timer);
     }
 
     this.tailInjectedTimers.clear();
     this.tailInjectedLogIds.set(new Set<string>());
-    this.tailInjectedOffsets.set(new Map<string, number>());
   }
 
   private buildPeriodClause(): string | null {
