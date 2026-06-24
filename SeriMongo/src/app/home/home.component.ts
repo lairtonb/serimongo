@@ -119,8 +119,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   async onSearchClick(): Promise<void> {
     this.refreshPeriodWindow();
     const query = this.buildLogQuery();
-    this.isTailing.set(false);
-    await this.signalRService.pauseTail();
+    await this.pauseTail();
     this.clearTailInjectedRows();
     this.logEntries.set(await this.searchService.search(query));
   }
@@ -129,21 +128,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     const nextPeriod = this.selectedPeriod() === periodId ? null : periodId;
     this.selectedPeriod.set(nextPeriod);
     this.selectedPeriodSince.set(nextPeriod ? this.calculatePeriodSince(nextPeriod) : null);
-    await this.onSearchClick();
+    await this.onFilterChange();
   }
 
   async toggleLevel(level: string): Promise<void> {
     this.selectedLevels.update(levels => levels.includes(level)
       ? levels.filter(selected => selected !== level)
       : [...levels, level]);
-    await this.onSearchClick();
+    await this.onFilterChange();
   }
 
   async toggleServiceName(serviceName: string): Promise<void> {
     this.selectedServiceNames.update(serviceNames => serviceNames.includes(serviceName)
       ? serviceNames.filter(selected => selected !== serviceName)
       : [...serviceNames, serviceName]);
-    await this.onSearchClick();
+    await this.onFilterChange();
   }
 
   async clearQuickFilters(): Promise<void> {
@@ -151,7 +150,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.selectedPeriodSince.set(null);
     this.selectedLevels.set([]);
     this.selectedServiceNames.set([]);
-    await this.onSearchClick();
+    await this.onFilterChange();
   }
 
   isLevelSelected(level: string): boolean {
@@ -367,12 +366,38 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   /** Selects a log entry for inspection in the details sidebar. */
-  setClickedRow(le: LogEntry) {
-    this.selectedRow.update(selected => selected === le ? null : le);
+  async setClickedRow(le: LogEntry): Promise<void> {
+    const nextSelected = this.selectedRow() === le ? null : le;
+    this.selectedRow.set(nextSelected);
+    if (nextSelected) {
+      await this.pauseTail();
+    }
   }
 
   clearSelectedRow(): void {
     this.selectedRow.set(null);
+  }
+
+  private async onFilterChange(): Promise<void> {
+    this.refreshPeriodWindow();
+    const query = this.buildLogQuery();
+    this.clearTailInjectedRows();
+
+    if (this.isTailing()) {
+      await this.signalRService.setTailQuery(query);
+    }
+
+    this.logEntries.set(await this.searchService.search(query));
+  }
+
+  private async pauseTail(): Promise<void> {
+    if (!this.isTailing()) {
+      return;
+    }
+
+    this.isTailing.set(false);
+    await this.signalRService.pauseTail();
+    this.clearTailInjectedRows();
   }
 
   // TODO: inprove Angular $event handling following best practices
