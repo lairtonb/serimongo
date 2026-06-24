@@ -154,20 +154,17 @@ h2 {
   border-left: 2px solid var(--accent);
 }
 
-.filter-card {
-  padding: 0;
-  background: transparent;
-  border: 0;
-}
-
 .filter-scroll {
+  display: grid;
+  gap: 8px;
   flex: 1;
   min-height: 0;
   overflow: auto;
 }
 
 .filter-accordion {
-  border-bottom: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--line-strong);
 }
 
 .accordion-trigger {
@@ -175,8 +172,8 @@ h2 {
   align-items: center;
   gap: 6px;
   width: 100%;
-  padding: 0;
-  background: transparent;
+  padding: 7px 8px;
+  background: var(--surface-alt);
   border: 0;
   font: inherit;
   cursor: pointer;
@@ -184,10 +181,20 @@ h2 {
 
 .accordion-trigger span:first-child {
   flex: 1;
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 800;
   text-align: left;
   text-transform: uppercase;
+}
+
+.accordion-trigger span + span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.accordion-panel {
+  padding: 7px 7px 7px 13px;
+  border-left: 1px solid var(--line);
 }
 
 .accordion-trigger[aria-expanded="true"] .accordion-state {
@@ -239,19 +246,10 @@ h2 {
   content: "\2713";
   position: absolute;
   right: 7px;
-  top: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  color: #ffffff;
-  background: var(--accent);
-  border-radius: 50%;
-  font-size: 10px;
+  top: 5px;
+  color: var(--accent);
+  font-size: 12px;
   font-weight: 800;
-  line-height: 1;
-  transform: translateY(-50%);
 }
 
 .level-dot {
