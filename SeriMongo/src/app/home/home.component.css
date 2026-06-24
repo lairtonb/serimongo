@@ -29,7 +29,6 @@
 
 .app-header,
 .filter-panel,
-.query-panel,
 .log-area,
 .detail-sidebar {
   background: var(--surface);
@@ -38,12 +37,12 @@
 }
 
 .app-header {
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 8px 8px 0;
-  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 220px auto minmax(240px, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 4px 0;
+  padding: 5px 8px;
 }
 
 .title-stack {
@@ -52,8 +51,7 @@
   min-width: 0;
 }
 
-.eyebrow,
-.toolbar-label {
+.eyebrow {
   margin: 0 0 2px;
   color: var(--muted);
   font-size: 10px;
@@ -71,9 +69,9 @@ p {
 }
 
 h1 {
-  margin-bottom: 2px;
+  margin-bottom: 0;
   color: var(--text-strong);
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 650;
   line-height: 1.1;
 }
@@ -88,26 +86,26 @@ h2 {
 .subtitle {
   margin-bottom: 0;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .header-metrics {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .metric-card {
   display: grid;
   align-content: center;
-  min-width: 88px;
-  padding: 7px 9px;
+  min-width: 66px;
+  min-height: 26px;
+  padding: 3px 7px;
   background: var(--surface-alt);
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
 }
 
 .metric-card span {
-  margin-bottom: 2px;
   color: var(--muted);
   font-size: 10px;
   font-weight: 700;
@@ -116,7 +114,7 @@ h2 {
 
 .metric-card strong {
   color: var(--ok);
-  font-size: 15px;
+  font-size: 12px;
   line-height: 1.1;
 }
 
@@ -131,7 +129,7 @@ h2 {
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
-  padding: 8px;
+  padding: 4px;
 }
 
 .filter-panel {
@@ -212,7 +210,7 @@ h2 {
 
 .filter-chip,
 .action-button,
-.segmented-control button {
+.period-toolbar button {
   color: var(--text);
   background: var(--surface-alt);
   border: 1px solid var(--line);
@@ -235,8 +233,8 @@ h2 {
 
 .filter-chip:hover,
 .filter-chip.selected,
-.segmented-control button:hover,
-.segmented-control button.selected {
+.period-toolbar button:hover,
+.period-toolbar button.selected {
   color: var(--text-strong);
   background: var(--accent-soft);
   border-color: #8cb4ff;
@@ -314,98 +312,51 @@ h2 {
   gap: 8px;
 }
 
-.query-panel {
-  display: grid;
-  flex: 0 0 auto;
-  gap: 8px;
-  padding: 10px;
-}
-
 .period-toolbar {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line);
-}
-
-.period-summary {
-  min-width: 92px;
-}
-
-.period-toolbar strong {
-  display: block;
-  color: var(--text-strong);
-  font-size: 12px;
-}
-
-.segmented-control {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
   gap: 4px;
 }
 
-.segmented-control button {
-  height: 26px;
+.period-toolbar button {
+  height: 24px;
   padding: 0 8px;
   font-size: 11px;
   font-weight: 650;
 }
 
-.search-area {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 8px;
-}
-
 .query-box {
-  display: grid;
-  gap: 4px;
-}
-
-.query-box label {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
+  min-width: 0;
 }
 
 .query-box textarea {
   width: 100%;
   box-sizing: border-box;
-  min-height: 44px;
-  max-height: 140px;
-  padding: 7px 8px;
+  height: 28px;
+  min-height: 28px;
+  max-height: 28px;
+  padding: 5px 8px;
   color: var(--text-strong);
   background: #ffffff;
   border: 1px solid var(--line-strong);
   border-radius: 2px;
   font: 500 13px/1.35 Consolas, "SFMono-Regular", Menlo, monospace;
-  resize: vertical;
+  overflow: hidden;
+  resize: none;
 }
 
 .query-box textarea:focus,
 .filter-chip:focus,
 .action-button:focus,
-.segmented-control button:focus {
+.period-toolbar button:focus {
   outline: 1px solid var(--accent);
   outline-offset: 0;
-}
-
-.query-box p {
-  margin-bottom: 0;
-  color: var(--muted);
-  font-size: 11px;
 }
 
 .actions {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding-bottom: 18px;
 }
 
 .action-button {
@@ -866,20 +817,17 @@ table.logs > tbody > tr.active .row-marker {
 }
 
 @media (max-width: 720px) {
-  .app-header,
-  .search-area,
-  .period-toolbar {
+  .app-header {
     grid-template-columns: 1fr;
   }
 
   .app-header {
     align-items: flex-start;
-    flex-direction: column;
   }
 
   .header-metrics,
   .actions,
-  .segmented-control {
+  .period-toolbar {
     width: 100%;
     justify-content: flex-start;
   }

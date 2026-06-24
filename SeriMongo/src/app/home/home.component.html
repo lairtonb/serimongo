@@ -2,7 +2,31 @@
   <header class="app-header">
     <div class="title-stack">
       <h1>{{title}}</h1>
-      <p class="subtitle">Realtime structured log inspection</p>
+      <p class="subtitle">log inspection</p>
+    </div>
+
+    <div class="period-toolbar" aria-label="Period quick filters">
+      <button type="button"
+        *ngFor="let period of periodOptions"
+        [class.selected]="selectedPeriod() === period.id"
+        (click)="selectPeriod(period.id)">
+        {{period.label}}
+      </button>
+    </div>
+
+    <div class="query-box">
+      <textarea id="search-logs" #search rows="1"
+        aria-label="LogQL"
+        (keydown)="handleTab($event, search)"
+        [(ngModel)]="searchExpression"
+        placeholder='level = Error or message contains "timeout"'></textarea>
+    </div>
+
+    <div class="actions" aria-label="Search actions">
+      <button id="search-button" class="action-button primary" type="button" (click)="onSearchClick()">Search</button>
+      <button id="tail-button" class="action-button outline" type="button" [class.active]="isTailing()" (click)="toggleTail()">
+        {{isTailing() ? 'Pause' : 'Tail'}}
+      </button>
     </div>
 
     <div class="header-metrics" aria-label="Stream status">
@@ -85,42 +109,6 @@
     </aside>
 
     <section class="workspace">
-      <section class="query-panel" aria-label="Search logs">
-        <div class="period-toolbar">
-          <div class="period-summary">
-            <span class="toolbar-label">Window</span>
-            <strong>{{selectedPeriod() || 'All time'}}</strong>
-          </div>
-          <div class="segmented-control" aria-label="Period quick filters">
-            <button type="button"
-              *ngFor="let period of periodOptions"
-              [class.selected]="selectedPeriod() === period.id"
-              (click)="selectPeriod(period.id)">
-              {{period.label}}
-            </button>
-          </div>
-        </div>
-
-        <div class="search-area">
-          <div class="query-box">
-            <label for="search-logs">LogQL</label>
-            <textarea id="search-logs" #search rows="2"
-              (keydown)="handleTab($event, search)"
-              (input)="controlHeight(search)"
-              [(ngModel)]="searchExpression"
-              placeholder='level = Error or message contains "timeout"'></textarea>
-            <p>Examples: <code>*</code>, <code>level in (Error, Warning)</code>, <code>serviceName = "api"</code></p>
-          </div>
-
-          <div class="actions" aria-label="Search actions">
-            <button id="search-button" class="action-button primary" type="button" (click)="onSearchClick()">Search</button>
-            <button id="tail-button" class="action-button outline" type="button" [class.active]="isTailing()" (click)="toggleTail()">
-              {{isTailing() ? 'Pause' : 'Tail'}}
-            </button>
-          </div>
-        </div>
-      </section>
-
       <div #resultsShell class="results-shell" [style.--detail-sidebar-width]="detailSidebarWidth() + 'px'">
         <section class="log-area" aria-label="Log entries">
           <div class="table-titlebar">
