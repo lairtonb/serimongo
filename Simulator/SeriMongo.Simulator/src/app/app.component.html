@@ -59,18 +59,24 @@
         </div>
 
         <div class="continuous-form">
-          <label>
+          <label class="form-field">
             <span>Logs per interval</span>
             <input type="number" min="1" max="200" step="1" [value]="continuousCount" (input)="updateContinuousCount($event)">
           </label>
-          <label>
+          <label class="form-field">
             <span>Interval ms</span>
             <input type="number" min="1" max="60000" step="1" [value]="continuousIntervalMs" (input)="updateContinuousIntervalMs($event)">
           </label>
-          <label>
-            <span>Jitter ms</span>
-            <input type="number" min="0" max="60000" step="1" [value]="continuousJitterMs" (input)="updateContinuousJitterMs($event)">
-          </label>
+          <div class="form-field jitter-field" [class.disabled]="!continuousJitterEnabled()">
+            <div class="field-heading">
+              <span>Jitter ms</span>
+              <button type="button" class="jitter-toggle" [class.active]="continuousJitterEnabled()" (click)="toggleContinuousJitter()">
+                {{continuousJitterEnabled() ? 'On' : 'Off'}}
+              </button>
+            </div>
+            <input type="number" min="0" max="60000" step="1" [disabled]="!continuousJitterEnabled()" [value]="continuousJitterMs" (input)="updateContinuousJitterMs($event)">
+            <p class="jitter-popover" *ngIf="continuousJitterWarning() as warning">{{warning}}</p>
+          </div>
         </div>
 
         <div class="burst-actions">

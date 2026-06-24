@@ -46,6 +46,7 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly continuousRunning = signal(false);
   readonly continuousEmitted = signal(0);
   readonly nextContinuousDelayMs = signal<number | null>(null);
+  readonly continuousJitterEnabled = signal(true);
   readonly activity = signal<ActivityItem[]>([]);
 
   continuousCount = 25;
@@ -101,7 +102,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.normalizeContinuousSettings();
     this.continuousRunning.set(true);
-    this.addActivity(`Continuous logging started: ${this.continuousCount} logs every ${this.continuousIntervalMs}ms +/- ${this.continuousJitterMs}ms.`, 'ok');
+    this.addActivity(this.describeContinuousStart(), 'ok');
     this.scheduleContinuousBurst(0);
   }
 
@@ -126,6 +127,38 @@ export class AppComponent implements OnInit, OnDestroy {
 
   updateContinuousJitterMs(event: Event): void {
     this.continuousJitterMs = this.readNumberInput(event, this.continuousJitterMs);
+  }
+
+  toggleContinuousJitter(): void {
+    this.continuousJitterEnabled.update(enabled => !enabled);
+  }
+
+  continuousJitterWarning(): string | null {
+    if (!this.continuousJitterEnabled()) {
+      return null;
+    }
+
+    const count = this.clampInteger(this.continuousCount, 1, 200, 25);
+    const intervalMs = this.clampInteger(this.continuousIntervalMs, 1, 60_000, 2000);
+    const jitterMs = this.clampInteger(this.continuousJitterMs, 0, 60_000, 500);
+
+    if (jitterMs === 0) {
+      return 'Jitter is on but set to 0ms, so it behaves the same as Off.';
+    }
+
+    if (jitterMs >= intervalMs) {
+      return 'Jitter is greater than or equal to the interval, so many ticks may clamp to 1ms.';
+    }
+
+    if (intervalMs <= 4) {
+      return 'At 4ms or lower, browsers may clamp timers; jitter precision is not reliable.';
+    }
+
+    if (intervalMs <= 10 && count >= 50) {
+      return 'This combines very low interval and high volume; it can saturate the browser or backend.';
+    }
+
+    return null;
   }
 
   private recordSuccess(result: EmitResponse): void {
@@ -185,11 +218,22 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private getNextContinuousDelayMs(): number {
     this.normalizeContinuousSettings();
-    const jitterOffset = this.continuousJitterMs === 0
+    const jitterMs = this.effectiveContinuousJitterMs();
+    const jitterOffset = jitterMs === 0
       ? 0
-      : Math.round((Math.random() * 2 - 1) * this.continuousJitterMs);
+      : Math.round((Math.random() * 2 - 1) * jitterMs);
 
     return Math.max(1, this.continuousIntervalMs + jitterOffset);
+  }
+
+  private effectiveContinuousJitterMs(): number {
+    return this.continuousJitterEnabled() ? this.continuousJitterMs : 0;
+  }
+
+  private describeContinuousStart(): string {
+    const jitterMs = this.effectiveContinuousJitterMs();
+    const jitterDescription = jitterMs === 0 ? 'with jitter off' : `+/- ${jitterMs}ms`;
+    return `Continuous logging started: ${this.continuousCount} logs every ${this.continuousIntervalMs}ms ${jitterDescription}.`;
   }
 
   private clampInteger(value: number, min: number, max: number, fallback: number): number {

@@ -226,12 +226,38 @@ h2 {
   gap: .75rem;
 }
 
-.continuous-form label {
+.continuous-form .form-field {
   display: grid;
   gap: .3rem;
   color: var(--muted-foreground);
   font-size: .75rem;
   font-weight: 750;
+}
+
+.field-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+.jitter-toggle {
+  height: 1.55rem;
+  padding: 0 .55rem;
+  color: var(--muted-foreground);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font: inherit;
+  font-size: .68rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.jitter-toggle.active {
+  color: #166534;
+  background: #ecfdf5;
+  border-color: #86efac;
 }
 
 .continuous-form input {
@@ -242,6 +268,32 @@ h2 {
   border: 1px solid var(--border);
   border-radius: .65rem;
   font: inherit;
+}
+
+.continuous-form input:disabled {
+  color: #94a3b8;
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+.jitter-field {
+  position: relative;
+}
+
+.jitter-field.disabled {
+  color: #94a3b8;
+}
+
+.jitter-popover {
+  margin: .15rem 0 0;
+  padding: .5rem .6rem;
+  color: #92400e;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: .6rem;
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .service-panel {
