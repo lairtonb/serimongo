@@ -143,19 +143,19 @@ export class AppComponent implements OnInit, OnDestroy {
     const jitterMs = this.clampInteger(this.continuousJitterMs, 0, 60_000, 500);
 
     if (jitterMs === 0) {
-      return 'Jitter is on but set to 0ms, so it behaves the same as Off.';
+      return 'Jitter is on but set to 0ms; same as Off.';
     }
 
     if (jitterMs >= intervalMs) {
-      return 'Jitter is greater than or equal to the interval, so many ticks may clamp to 1ms.';
+      return 'Jitter >= interval; many ticks may clamp to 1ms.';
     }
 
     if (intervalMs <= 4) {
-      return 'At 4ms or lower, browsers may clamp timers; jitter precision is not reliable.';
+      return 'Browser timers may clamp at 4ms or lower.';
     }
 
     if (intervalMs <= 10 && count >= 50) {
-      return 'This combines very low interval and high volume; it can saturate the browser or backend.';
+      return 'High volume at low interval can saturate browser/backend.';
     }
 
     return null;
