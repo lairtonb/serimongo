@@ -31,8 +31,10 @@
         <section class="filter-card filter-accordion">
           <button class="accordion-trigger" type="button" [attr.aria-expanded]="levelFilterOpen()" (click)="toggleLevelFilter()">
             <span>Log Level</span>
-            <strong>{{selectedLevels().length > 0 ? selectedLevels().length + ' selected' : 'All'}}</strong>
-            <span class="accordion-state" aria-hidden="true">{{levelFilterOpen() ? '-' : '+'}}</span>
+            <span>{{selectedLevels().length > 0 ? selectedLevels().length + ' selected' : 'All'}}</span>
+            <svg class="accordion-state" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true" focusable="false">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
           </button>
 
           <div class="accordion-panel" *ngIf="levelFilterOpen()">
@@ -52,8 +54,10 @@
         <section class="filter-card filter-accordion">
           <button class="accordion-trigger" type="button" [attr.aria-expanded]="serviceFilterOpen()" (click)="toggleServiceFilter()">
             <span>Service Name</span>
-            <strong>{{selectedServiceNames().length > 0 ? selectedServiceNames().length + ' selected' : 'All'}}</strong>
-            <span class="accordion-state" aria-hidden="true">{{serviceFilterOpen() ? '-' : '+'}}</span>
+            <span>{{selectedServiceNames().length > 0 ? selectedServiceNames().length + ' selected' : 'All'}}</span>
+            <svg class="accordion-state" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true" focusable="false">
+              <path d="m6 9 6 6 6-6"></path>
+            </svg>
           </button>
 
           <div class="accordion-panel" *ngIf="serviceFilterOpen()">
