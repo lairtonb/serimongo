@@ -67,7 +67,7 @@
             <span>Interval ms</span>
             <input type="number" min="1" max="60000" step="1" [value]="continuousIntervalMs" (input)="updateContinuousIntervalMs($event)">
           </label>
-          <div class="form-field jitter-field" [class.disabled]="!continuousJitterEnabled()">
+          <div class="form-field jitter-field" [class.disabled]="!continuousJitterEnabled()" [class.has-warning]="continuousJitterWarning() !== null">
             <div class="field-heading">
               <span>Jitter ms</span>
               <button type="button" class="jitter-toggle" [class.active]="continuousJitterEnabled()" (click)="toggleContinuousJitter()">
@@ -75,7 +75,10 @@
               </button>
             </div>
             <input type="number" min="0" max="60000" step="1" [disabled]="!continuousJitterEnabled()" [value]="continuousJitterMs" (input)="updateContinuousJitterMs($event)">
-            <p class="jitter-popover" *ngIf="continuousJitterWarning() as warning"><span aria-hidden="true">!</span>{{warning}}</p>
+            <ng-container *ngIf="continuousJitterWarning() as warning">
+              <button type="button" class="jitter-warning-trigger" [attr.aria-label]="warning" [title]="warning">!</button>
+              <p class="jitter-popover" role="tooltip">{{warning}}</p>
+            </ng-container>
           </div>
         </div>
 

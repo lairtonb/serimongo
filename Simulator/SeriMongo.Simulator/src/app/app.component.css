@@ -295,32 +295,56 @@ h2 {
 }
 
 .jitter-popover {
-  display: flex;
-  align-items: flex-start;
-  gap: .35rem;
-  margin: .1rem 0 0;
-  padding: .35rem .45rem;
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + .35rem);
+  z-index: 10;
+  width: min(20rem, 100%);
+  margin: 0;
+  padding: .45rem .55rem;
   color: #92400e;
   background: #fff7ed;
   border: 1px solid #fed7aa;
+  box-shadow: 0 10px 24px rgba(146, 64, 14, .14);
   border-radius: .5rem;
   font-size: .66rem;
   font-weight: 700;
   line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(.25rem);
+  transition: opacity .12s ease, transform .12s ease;
 }
 
-.jitter-popover span {
+.jitter-warning-trigger {
+  position: absolute;
+  right: .45rem;
+  bottom: .52rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  width: .95rem;
-  height: .95rem;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
   color: #fff;
   background: #d97706;
+  border: 0;
   border-radius: 50%;
+  font: inherit;
   font-size: .62rem;
+  font-weight: 900;
   line-height: 1;
+  cursor: help;
+}
+
+.jitter-field.has-warning input {
+  padding-right: 1.75rem;
+}
+
+.jitter-field:hover .jitter-popover,
+.jitter-field:focus-within .jitter-popover {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .service-panel {
