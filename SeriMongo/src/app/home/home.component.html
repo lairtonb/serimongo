@@ -28,7 +28,7 @@
       </div>
 
       <div class="filter-scroll">
-        <section class="filter-card filter-accordion">
+        <section class="filter-accordion">
           <button class="accordion-trigger" type="button" [attr.aria-expanded]="levelFilterOpen()" (click)="toggleLevelFilter()">
             <span>Log Level</span>
             <span>{{selectedLevels().length > 0 ? selectedLevels().length + ' selected' : 'All'}}</span>
@@ -51,7 +51,7 @@
           </div>
         </section>
 
-        <section class="filter-card filter-accordion">
+        <section class="filter-accordion">
           <button class="accordion-trigger" type="button" [attr.aria-expanded]="serviceFilterOpen()" (click)="toggleServiceFilter()">
             <span>Service Name</span>
             <span>{{selectedServiceNames().length > 0 ? selectedServiceNames().length + ' selected' : 'All'}}</span>
@@ -64,7 +64,7 @@
             <div class="level-list" *ngIf="serviceNames().length > 0; else noServiceNames">
               <button type="button"
                 *ngFor="let serviceName of serviceNames()"
-                class="filter-chip service-chip"
+                class="filter-chip"
                 [class.selected]="isServiceNameSelected(serviceName)"
                 (click)="toggleServiceName(serviceName)">
                 <span class="level-dot information"></span>
@@ -78,7 +78,7 @@
         </section>
       </div>
 
-      <section class="filter-card effective-query">
+      <section class="effective-query">
         <h3 class="eyebrow">Effective query</h3>
         <pre>{{effectiveQueryPreview()}}</pre>
       </section>
