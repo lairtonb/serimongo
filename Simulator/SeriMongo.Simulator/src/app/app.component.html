@@ -75,7 +75,7 @@
               </button>
             </div>
             <input type="number" min="0" max="60000" step="1" [disabled]="!continuousJitterEnabled()" [value]="continuousJitterMs" (input)="updateContinuousJitterMs($event)">
-            <p class="jitter-popover" *ngIf="continuousJitterWarning() as warning">{{warning}}</p>
+            <p class="jitter-popover" *ngIf="continuousJitterWarning() as warning"><span aria-hidden="true">!</span>{{warning}}</p>
           </div>
         </div>
 
