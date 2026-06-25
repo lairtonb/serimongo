@@ -117,9 +117,8 @@
               <span>{{logEntries().length}} loaded</span>
             </div>
             <div class="field-menu" aria-label="Visible columns">
-              <button class="action-button ghost field-menu-trigger" type="button" style="gap:6px" [attr.aria-expanded]="columnsMenuOpen()" (click)="toggleColumnsMenu()">
-                <span>Fields</span>
-                <span class="field-count">{{visibleLogColumnCount()}}</span>
+              <button class="action-button ghost ionicon-button" type="button" aria-label="Choose visible fields" title="Choose visible fields" [attr.aria-expanded]="columnsMenuOpen()" (click)="toggleColumnsMenu()">
+                <ng-icon name="ionOptionsOutline" size="17px"></ng-icon>
               </button>
               <div class="field-menu-panel" *ngIf="columnsMenuOpen()">
                 <button type="button"
@@ -129,7 +128,7 @@
                   [disabled]="visibleLogColumnCount() === 1 && isLogColumnVisible(column.id)"
                   [attr.aria-pressed]="isLogColumnVisible(column.id)"
                   (click)="toggleLogColumn(column.id)">
-                  <span class="checkmark" aria-hidden="true">&#10003;</span>
+                  <ng-icon class="checkmark" name="ionCheckmarkOutline" size="14px"></ng-icon>
                   <span>{{column.label}}</span>
                 </button>
               </div>
@@ -203,7 +202,7 @@
               </div>
               <div class="detail-actions">
                 <button class="action-button ghost ionicon-button" type="button" aria-label="Copy details as Markdown" title="Copy details as Markdown" (click)="copyLogDetails(selectedLog)">
-                  <svg width="17" height="17" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" aria-hidden="true" focusable="false"><rect x="128" y="128" width="336" height="336" rx="24"></rect><path d="M96 384H72a24 24 0 0 1-24-24V72a24 24 0 0 1 24-24h288a24 24 0 0 1 24 24v24"></path></svg>
+                  <ng-icon name="ionCopyOutline" size="17px"></ng-icon>
                 </button>
                 <button class="action-button ghost" type="button" (click)="clearSelectedRow()">Close</button>
               </div>
@@ -214,7 +213,7 @@
                 <h3>Message</h3>
                 <div class="copy-field">
                   <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:5px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy message" title="Copy message" (click)="copyText(selectedLog.renderedMessage)">
-                    <svg width="15" height="15" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" aria-hidden="true" focusable="false"><rect x="128" y="128" width="336" height="336" rx="24"></rect><path d="M96 384H72a24 24 0 0 1-24-24V72a24 24 0 0 1 24-24h288a24 24 0 0 1 24 24v24"></path></svg>
+                    <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
                   </button>
                   <p style="padding-right:34px">{{selectedLog.renderedMessage}}</p>
                 </div>
@@ -238,13 +237,10 @@
               <section *ngIf="selectedLog.exception != null || exceptionStacktrace(selectedLog)" class="exception-panel">
                 <span>Exception</span>
                 <div class="copy-field">
-                  <button *ngIf="selectedLog.exception != null" class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:5px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy exception" title="Copy exception" (click)="copyText(selectedLog.exception)">
-                    <svg width="15" height="15" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" aria-hidden="true" focusable="false"><rect x="128" y="128" width="336" height="336" rx="24"></rect><path d="M96 384H72a24 24 0 0 1-24-24V72a24 24 0 0 1 24-24h288a24 24 0 0 1 24 24v24"></path></svg>
+                  <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:5px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy exception" title="Copy exception" (click)="copyText(selectedLog.exception || exceptionStacktrace(selectedLog))">
+                    <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
                   </button>
-                  <button *ngIf="exceptionStacktrace(selectedLog)" class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:34px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy stacktrace" title="Copy stacktrace" (click)="copyText(exceptionStacktrace(selectedLog))">
-                    <svg width="15" height="15" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" aria-hidden="true" focusable="false"><path d="m160 368-96-112 96-112"></path><path d="m352 368 96-112-96-112"></path><path d="m304 96-96 320"></path></svg>
-                  </button>
-                  <pre style="padding-right:64px">{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
+                  <pre style="padding-right:34px">{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
                 </div>
               </section>
 

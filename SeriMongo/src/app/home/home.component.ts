@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import { ionCheckmarkOutline, ionCopyOutline, ionOptionsOutline } from '@ng-icons/ionicons';
 
 import { LogEntry } from './log-entry';
 import { SignalRService } from '../services/signalr.service';
@@ -29,7 +31,8 @@ interface LogColumnOption {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgIcon],
+  providers: [provideIcons({ ionCheckmarkOutline, ionCopyOutline, ionOptionsOutline })],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
