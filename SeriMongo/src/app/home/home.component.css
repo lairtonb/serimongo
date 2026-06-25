@@ -544,6 +544,19 @@ table.logs > tbody > tr td {
   vertical-align: top;
 }
 
+.log-row {
+  height: 32px;
+}
+
+.virtual-spacer {
+  background: transparent;
+}
+
+.virtual-spacer td {
+  padding: 0;
+  border: 0;
+}
+
 table.logs > tbody > tr.tail-injected,
 table.logs > tbody > tr.tail-injected:nth-child(4n + 3) {
   background: #d9f99d;
