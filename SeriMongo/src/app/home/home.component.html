@@ -6,10 +6,11 @@
     </div>
 
     <div class="toolbar-actions">
-      <button class="action-button ghost" type="button" title="Config">Config</button>
-      <button class="action-button ghost" type="button" title="Ajuda" [style.background]="helpMode() ? '#eaf1ff' : null" (click)="toggleHelpMode()">
-        <ng-icon name="ionBookOutline" size="15px"></ng-icon>
-        Ajuda
+      <button class="action-button ghost ionicon-button" type="button" style="width:36px;height:36px;border-radius:999px" aria-label="Config" title="Config">
+        <ng-icon name="ionSettingsOutline" size="18px"></ng-icon>
+      </button>
+      <button class="action-button ghost ionicon-button" type="button" style="width:36px;height:36px;border-radius:999px" aria-label="Ajuda" title="Ajuda" [style.background]="helpMode() ? '#eaf1ff' : null" [style.border-color]="helpMode() ? '#8cb4ff' : null" (click)="toggleHelpMode()">
+        <ng-icon name="ionHelpCircleOutline" size="20px"></ng-icon>
       </button>
     </div>
   </header>
@@ -278,14 +279,54 @@
     </div>
   </main>
 
-  <section *ngIf="activeHelpTopic()" style="position:fixed;right:16px;bottom:68px;z-index:30;box-sizing:border-box;width:min(360px,calc(100vw - 32px));padding:12px 14px;background:#fff;border:1px solid #b7cdf7;border-radius:4px;box-shadow:0 12px 28px rgba(15,23,42,.16);font-size:12px;line-height:1.45">
+  <section *ngIf="activeHelpTopic()" style="position:fixed;right:16px;top:54px;z-index:30;box-sizing:border-box;width:min(540px,calc(100vw - 32px));max-height:calc(100vh - 86px);overflow:auto;padding:14px 16px;background:#fff;border:1px solid #b7cdf7;border-radius:6px;box-shadow:0 14px 36px rgba(15,23,42,.18);font-size:12px;line-height:1.45">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;color:#0f172a;font-weight:750">
       <span>{{activeHelpTitle()}}</span>
       <button class="action-button ghost ionicon-button" type="button" style="width:24px;height:24px" aria-label="Close help" title="Close help" (click)="closeHelp()">
         <ng-icon name="ionCloseOutline" size="15px"></ng-icon>
       </button>
     </div>
-    <p style="margin:0;color:#3f4a56">{{activeHelpBody()}}</p>
+    <ng-container *ngIf="activeHelpTopic() === 'logql'; else contextualHelp">
+      <p style="margin:0 0 10px;color:#3f4a56">Use LogQL to combine direct fields, structured properties, text search and time windows.</p>
+      <section style="display:grid;gap:8px">
+        <div>
+          <strong>Fields</strong>
+          <p style="margin:4px 0 0;color:#3f4a56"><code>id</code>, <code>timestamp</code>, <code>level</code>, <code>message</code>, <code>exception</code>, <code>serviceName</code>, and <code>prop.&lt;name&gt;</code> for structured properties.</p>
+        </div>
+        <div>
+          <strong>Operators</strong>
+          <p style="margin:4px 0 0;color:#3f4a56"><code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>contains</code>, and <code>in (...)</code>.</p>
+        </div>
+        <div>
+          <strong>Boolean logic</strong>
+          <p style="margin:4px 0 0;color:#3f4a56">Use <code>and</code>, <code>or</code>, and parentheses to group conditions.</p>
+        </div>
+        <div>
+          <strong>Strings and dates</strong>
+          <p style="margin:4px 0 0;color:#3f4a56">Quote strings with spaces. Use ISO timestamps like <code>2026-06-25T12:00:00Z</code>.</p>
+        </div>
+        <div>
+          <strong>Examples</strong>
+          <pre style="margin:6px 0 0;padding:8px;background:#f7f8fa;border:1px solid #d0d7de;white-space:pre-wrap;font:500 11px/1.45 Consolas, SFMono-Regular, Menlo, monospace">level = Error
+level in (Warning, Error, Fatal)
+message contains "timeout"
+exception contains "OutOfMemoryException"
+serviceName = "checkout-api"
+timestamp &gt;= "2026-06-25T12:00:00Z"
+prop.TraceId = "abc123"
+prop.DurationMs &gt; 500
+(level = Error or level = Fatal) and serviceName = "worker"</pre>
+        </div>
+        <div>
+          <strong>Quick filters</strong>
+          <p style="margin:4px 0 0;color:#3f4a56">Level, service and period filters are merged with the typed LogQL using <code>and</code>. The Effective query panel shows the final expression.</p>
+        </div>
+      </section>
+    </ng-container>
+    <ng-template #contextualHelp>
+      <p style="margin:0;color:#3f4a56">{{activeHelpBody()}}</p>
+      <button class="action-button ghost" type="button" style="margin-top:10px" (click)="showHelp('logql')">Open LogQL reference</button>
+    </ng-template>
   </section>
 
   <div *ngIf="toastMessage()" style="position:fixed;right:16px;bottom:16px;z-index:40;padding:9px 12px;color:#0f172a;background:#ffffff;border:1px solid #8fd3a6;border-left:3px solid #128a42;border-radius:3px;box-shadow:0 10px 24px rgba(15,23,42,.14);font-size:12px;font-weight:650">
