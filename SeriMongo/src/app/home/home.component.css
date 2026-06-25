@@ -38,8 +38,10 @@
 }
 
 .brand-panel {
+  box-sizing: border-box;
   flex: 0 0 auto;
-  padding: 10px 12px;
+  height: 42px;
+  padding: 5px 10px;
 }
 
 .eyebrow {
@@ -62,7 +64,7 @@ p {
 h1 {
   margin-bottom: 0;
   color: var(--text-strong);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 650;
   line-height: 1.1;
 }
@@ -77,20 +79,20 @@ h2 {
 .subtitle {
   margin-bottom: 0;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .header-metrics {
   display: flex;
-  gap: 4px;
+  gap: 3px;
 }
 
 .metric-card {
   display: grid;
   align-content: center;
-  min-width: 66px;
-  min-height: 26px;
-  padding: 3px 7px;
+  min-width: 58px;
+  min-height: 24px;
+  padding: 2px 6px;
   background: var(--surface-alt);
   border: 1px solid var(--line);
   border-left: 2px solid var(--accent);
@@ -313,9 +315,11 @@ h2 {
 
 .query-panel {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   flex: 0 0 auto;
   gap: 6px;
-  padding: 6px 8px;
+  padding: 4px 8px;
 }
 
 .search-row {
@@ -327,13 +331,13 @@ h2 {
 
 .period-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 4px;
 }
 
 .period-toolbar button {
   height: 24px;
-  padding: 0 8px;
+  padding: 0 6px;
   font-size: 11px;
   font-weight: 650;
 }
@@ -422,9 +426,9 @@ h2 {
 .detail-tools {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   flex: 0 0 auto;
-  padding: 4px;
+  padding: 3px;
   background: var(--surface);
   border: 1px solid var(--line);
 }
@@ -835,6 +839,14 @@ table.logs > tbody > tr.active .row-marker {
   .results-shell {
     order: 1;
     grid-template-columns: 1fr;
+  }
+
+  .query-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .period-toolbar {
+    flex-wrap: wrap;
   }
 
   .level-list {
