@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { ionCheckmarkOutline, ionCopyOutline, ionOptionsOutline } from '@ng-icons/ionicons';
+import { ionBookOutline, ionCheckmarkOutline, ionCloseOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline } from '@ng-icons/ionicons';
 
 import { LogEntry } from './log-entry';
 import { SignalRService } from '../services/signalr.service';
@@ -29,10 +29,17 @@ interface LogColumnOption {
   label: string;
 }
 
+type HelpTopicId = 'filters' | 'query' | 'entries' | 'details';
+
+interface HelpTopic {
+  title: string;
+  body: string;
+}
+
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, NgIcon],
-  providers: [provideIcons({ ionCheckmarkOutline, ionCopyOutline, ionOptionsOutline })],
+  providers: [provideIcons({ ionBookOutline, ionCheckmarkOutline, ionCloseOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline })],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -52,6 +59,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedServiceNames = signal<string[]>([]);
   levelFilterOpen = signal(true);
   serviceFilterOpen = signal(true);
+  helpMode = signal(false);
+  activeHelpTopic = signal<HelpTopicId | null>(null);
+  toastMessage = signal<string | null>(null);
   columnsMenuOpen = signal(false);
   visibleLogColumns = signal<LogColumnId[]>(['traceId', 'timestamp', 'level', 'serviceName', 'message']);
   detailSidebarWidth = signal(360);
@@ -71,6 +81,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private readonly loadMoreScrollThresholdPx = 240;
   private readonly tailInjectedHighlightMs = 120;
   private readonly tailInjectedTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private toastTimer?: ReturnType<typeof setTimeout>;
   private currentSearchQuery = '*';
   private currentSearchPage = 0;
   private resizeStartX = 0;
@@ -110,6 +121,25 @@ export class HomeComponent implements OnInit, OnDestroy {
     { id: 'serviceName', label: 'Service' },
     { id: 'message', label: 'Message' }
   ];
+
+  readonly helpTopics: Record<HelpTopicId, HelpTopic> = {
+    filters: {
+      title: 'Quick filters',
+      body: 'Use level, service and time filters to narrow the stream without typing full LogQL clauses.'
+    },
+    query: {
+      title: 'LogQL search',
+      body: 'Type a LogQL expression, then Search to pause Tail and inspect a stable result set.'
+    },
+    entries: {
+      title: 'Log entries',
+      body: 'Select visible fields, scroll through virtualized rows, and click a row to inspect details.'
+    },
+    details: {
+      title: 'Selected event',
+      body: 'Copy message, exception or the full event details as Markdown from this sidebar.'
+    }
+  };
 
   readonly visibleLogColumnCount = computed(() => this.visibleLogColumns().length);
 
@@ -159,6 +189,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   async ngOnDestroy(): Promise<void> {
     window.removeEventListener('resize', this.clampSidebarToViewport);
     this.clearTailInjectedRows();
+    this.clearToastTimer();
     this.stopSidebarResize();
     await this.signalRService.stop();
   }
@@ -231,6 +262,32 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   toggleColumnsMenu(): void {
     this.columnsMenuOpen.update(open => !open);
+  }
+
+  toggleHelpMode(): void {
+    const next = !this.helpMode();
+    this.helpMode.set(next);
+    if (!next) {
+      this.activeHelpTopic.set(null);
+    }
+  }
+
+  showHelp(topic: HelpTopicId): void {
+    this.activeHelpTopic.set(topic);
+  }
+
+  closeHelp(): void {
+    this.activeHelpTopic.set(null);
+  }
+
+  activeHelpTitle(): string {
+    const topic = this.activeHelpTopic();
+    return topic ? this.helpTopics[topic].title : '';
+  }
+
+  activeHelpBody(): string {
+    const topic = this.activeHelpTopic();
+    return topic ? this.helpTopics[topic].body : '';
   }
 
   toggleLevelFilter(): void {
@@ -307,8 +364,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     try {
       await this.writeClipboardText(text);
+      this.showToast('Copied to clipboard');
     } catch (error) {
       console.error('Unable to copy text.', error);
+      this.showToast('Copy failed');
     }
   }
 
@@ -360,6 +419,19 @@ export class HomeComponent implements OnInit, OnDestroy {
       document.execCommand('copy');
     } finally {
       document.body.removeChild(textArea);
+    }
+  }
+
+  private showToast(message: string): void {
+    this.clearToastTimer();
+    this.toastMessage.set(message);
+    this.toastTimer = setTimeout(() => this.toastMessage.set(null), 2200);
+  }
+
+  private clearToastTimer(): void {
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = undefined;
     }
   }
 

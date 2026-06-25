@@ -7,20 +7,26 @@
 
     <div class="toolbar-actions">
       <button class="action-button ghost" type="button" title="Config">Config</button>
-      <button class="action-button ghost" type="button" title="Help">Help</button>
+      <button class="action-button ghost" type="button" title="Ajuda" [style.background]="helpMode() ? '#eaf1ff' : null" (click)="toggleHelpMode()">
+        <ng-icon name="ionBookOutline" size="15px"></ng-icon>
+        Ajuda
+      </button>
     </div>
   </header>
 
   <main class="content-shell">
     <aside class="filter-column" aria-label="Quick filters">
       <section class="filter-panel">
-        <div class="panel-title">
-          <div>
-            <p class="eyebrow">Filters</p>
-            <h2>Quick filters</h2>
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Filters</p>
+              <h2>Quick filters</h2>
+            </div>
+            <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:24px;height:24px" aria-label="Quick filters help" title="Quick filters help" (click)="showHelp('filters')">
+              <ng-icon name="ionHelpCircleOutline" size="16px"></ng-icon>
+            </button>
+            <button class="action-button ghost" type="button" title="Clear filters" (click)="clearQuickFilters()">Clear</button>
           </div>
-          <button class="action-button ghost" type="button" title="Clear filters" (click)="clearQuickFilters()">Clear</button>
-        </div>
 
         <div class="filter-scroll">
           <section class="filter-accordion">
@@ -93,6 +99,9 @@
             </div>
 
             <div class="actions" aria-label="Search actions">
+              <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:28px" aria-label="Search help" title="Search help" (click)="showHelp('query')">
+                <ng-icon name="ionHelpCircleOutline" size="16px"></ng-icon>
+              </button>
               <button id="search-button" class="action-button primary" type="button" style="min-width: 76px" (click)="onSearchClick()">Search</button>
               <button id="tail-button" class="action-button outline" type="button" style="min-width: 76px" [class.active]="isTailing()" (click)="toggleTail()">
                 {{isTailing() ? 'Pause' : 'Tail'}}
@@ -116,6 +125,9 @@
               <span>Log entries</span>
               <span>{{logEntries().length}} loaded</span>
             </div>
+            <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:24px;height:24px;margin-left:auto" aria-label="Log entries help" title="Log entries help" (click)="showHelp('entries')">
+              <ng-icon name="ionHelpCircleOutline" size="16px"></ng-icon>
+            </button>
             <div class="field-menu" aria-label="Visible columns">
               <button class="action-button ghost ionicon-button" type="button" aria-label="Choose visible fields" title="Choose visible fields" [attr.aria-expanded]="columnsMenuOpen()" (click)="toggleColumnsMenu()">
                 <ng-icon name="ionOptionsOutline" size="17px"></ng-icon>
@@ -201,6 +213,9 @@
                 <strong>{{selectedLog.level}}</strong>
               </div>
               <div class="detail-actions">
+                <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" aria-label="Details help" title="Details help" (click)="showHelp('details')">
+                  <ng-icon name="ionHelpCircleOutline" size="16px"></ng-icon>
+                </button>
                 <button class="action-button ghost ionicon-button" type="button" aria-label="Copy details as Markdown" title="Copy details as Markdown" (click)="copyLogDetails(selectedLog)">
                   <ng-icon name="ionCopyOutline" size="17px"></ng-icon>
                 </button>
@@ -209,13 +224,11 @@
             </div>
 
             <div class="detail-body">
-              <section class="detail-section">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-                  <h3>Message</h3>
-                  <button class="action-button ghost ionicon-button" type="button" style="width:25px;height:25px;opacity:.78" aria-label="Copy message" title="Copy message" (click)="copyText(selectedLog.renderedMessage)">
-                    <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
-                  </button>
-                </div>
+              <section class="detail-section" style="position:relative;padding-right:36px">
+                <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:0;right:0;width:25px;height:25px;opacity:.85" aria-label="Copy message" title="Copy message" (click)="copyText(selectedLog.renderedMessage)">
+                  <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
+                </button>
+                <h3>Message</h3>
                 <p>{{selectedLog.renderedMessage}}</p>
               </section>
 
@@ -234,13 +247,11 @@
                 </div>
               </dl>
 
-              <section *ngIf="selectedLog.exception != null || exceptionStacktrace(selectedLog)" class="exception-panel">
-                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-                  <span>Exception</span>
-                  <button class="action-button ghost ionicon-button" type="button" style="width:25px;height:25px;opacity:.78" aria-label="Copy exception" title="Copy exception" (click)="copyText(selectedLog.exception || exceptionStacktrace(selectedLog))">
-                    <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
-                  </button>
-                </div>
+              <section *ngIf="selectedLog.exception != null || exceptionStacktrace(selectedLog)" class="exception-panel" style="position:relative;padding-right:42px">
+                <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:7px;right:7px;width:25px;height:25px;opacity:.85" aria-label="Copy exception" title="Copy exception" (click)="copyText(selectedLog.exception || exceptionStacktrace(selectedLog))">
+                  <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
+                </button>
+                <span>Exception</span>
                 <pre>{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
               </section>
 
@@ -266,4 +277,18 @@
       </aside>
     </div>
   </main>
+
+  <section *ngIf="activeHelpTopic()" style="position:fixed;right:16px;bottom:68px;z-index:30;box-sizing:border-box;width:min(360px,calc(100vw - 32px));padding:12px 14px;background:#fff;border:1px solid #b7cdf7;border-radius:4px;box-shadow:0 12px 28px rgba(15,23,42,.16);font-size:12px;line-height:1.45">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;color:#0f172a;font-weight:750">
+      <span>{{activeHelpTitle()}}</span>
+      <button class="action-button ghost ionicon-button" type="button" style="width:24px;height:24px" aria-label="Close help" title="Close help" (click)="closeHelp()">
+        <ng-icon name="ionCloseOutline" size="15px"></ng-icon>
+      </button>
+    </div>
+    <p style="margin:0;color:#3f4a56">{{activeHelpBody()}}</p>
+  </section>
+
+  <div *ngIf="toastMessage()" style="position:fixed;right:16px;bottom:16px;z-index:40;padding:9px 12px;color:#0f172a;background:#ffffff;border:1px solid #8fd3a6;border-left:3px solid #128a42;border-radius:3px;box-shadow:0 10px 24px rgba(15,23,42,.14);font-size:12px;font-weight:650">
+    {{toastMessage()}}
+  </div>
 </div>
