@@ -20,6 +20,13 @@ interface LevelOption {
   tone: string;
 }
 
+type LogColumnId = 'traceId' | 'timestamp' | 'level' | 'serviceName' | 'message';
+
+interface LogColumnOption {
+  id: LogColumnId;
+  label: string;
+}
+
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule],
@@ -42,6 +49,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedServiceNames = signal<string[]>([]);
   levelFilterOpen = signal(true);
   serviceFilterOpen = signal(true);
+  visibleLogColumns = signal<LogColumnId[]>(['traceId', 'timestamp', 'level', 'serviceName', 'message']);
   detailSidebarWidth = signal(360);
   hasMoreSearchResults = signal(false);
   isLoadingSearchPage = signal(false);
@@ -90,6 +98,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     { name: 'Fatal', tone: 'fatal' },
     { name: 'Critical', tone: 'critical' }
   ];
+
+  readonly logColumnOptions: LogColumnOption[] = [
+    { id: 'traceId', label: 'TraceId' },
+    { id: 'timestamp', label: 'Timestamp' },
+    { id: 'level', label: 'Level' },
+    { id: 'serviceName', label: 'Service' },
+    { id: 'message', label: 'Message' }
+  ];
+
+  readonly visibleLogColumnCount = computed(() => this.visibleLogColumns().length);
 
   readonly virtualRows = computed(() => {
     const entries = this.logEntries();
@@ -184,6 +202,27 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   isServiceNameSelected(serviceName: string): boolean {
     return this.selectedServiceNames().includes(serviceName);
+  }
+
+  isLogColumnVisible(column: LogColumnId): boolean {
+    return this.visibleLogColumns().includes(column);
+  }
+
+  toggleLogColumn(column: LogColumnId): void {
+    const visibleColumns = this.visibleLogColumns();
+    if (visibleColumns.includes(column)) {
+      if (visibleColumns.length === 1) {
+        return;
+      }
+
+      this.visibleLogColumns.set(visibleColumns.filter(visibleColumn => visibleColumn !== column));
+      return;
+    }
+
+    const nextVisibleColumns = new Set([...visibleColumns, column]);
+    this.visibleLogColumns.set(this.logColumnOptions
+      .map(option => option.id)
+      .filter(option => nextVisibleColumns.has(option)));
   }
 
   toggleLevelFilter(): void {

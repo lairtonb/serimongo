@@ -411,14 +411,50 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 30px;
-  padding: 0 9px;
+  gap: 8px;
+  min-height: 30px;
+  padding: 4px 9px;
   color: var(--muted);
   background: var(--surface-alt);
   border-bottom: 1px solid var(--line);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.table-summary,
+.column-toggles {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.column-toggles {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.column-toggles button {
+  height: 20px;
+  padding: 0 6px;
+  color: var(--muted-strong);
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.column-toggles button.selected {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: #1d4ed8;
+}
+
+.column-toggles button:disabled {
+  cursor: default;
+  opacity: .7;
 }
 
 .tb-container {
