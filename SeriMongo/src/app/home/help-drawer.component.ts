@@ -23,14 +23,14 @@ export class HelpDrawerComponent {
   readonly tocCollapsed = signal(false);
   readonly activeSection = signal('help-overview');
   readonly sections: HelpSection[] = [
-    { id: 'help-overview', label: 'Visão geral' },
-    { id: 'help-search', label: 'Busca' },
+    { id: 'help-overview', label: 'Overview' },
+    { id: 'help-search', label: 'Search' },
     { id: 'help-logql', label: 'LogQL' },
-    { id: 'help-filters', label: 'Filtros rápidos' },
-    { id: 'help-table', label: 'Tabela de logs' },
-    { id: 'help-details', label: 'Detalhes do log' },
-    { id: 'help-copy', label: 'Copiar informações' },
-    { id: 'help-tail', label: 'Tail e pausa' }
+    { id: 'help-filters', label: 'Quick filters' },
+    { id: 'help-table', label: 'Log table' },
+    { id: 'help-details', label: 'Log details' },
+    { id: 'help-copy', label: 'Copy information' },
+    { id: 'help-tail', label: 'Tail and pause' }
   ];
 
   private readonly elementRef = inject(ElementRef<HTMLElement>);

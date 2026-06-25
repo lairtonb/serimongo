@@ -5,11 +5,11 @@
     <div class="help-title">
       <ng-icon name="ionHelpCircleOutline" size="18px" aria-hidden="true"></ng-icon>
       <div>
-        <h2 id="help-title">Ajuda - SeriMongo</h2>
-        <span>Manual do usuário</span>
+        <h2 id="help-title">Help - SeriMongo</h2>
+        <span>User manual</span>
       </div>
     </div>
-    <button class="help-close" type="button" aria-label="Fechar ajuda" title="Fechar ajuda" (click)="close()">
+    <button class="help-close" type="button" aria-label="Close help" title="Close help" (click)="close()">
       <ng-icon name="ionCloseSharp" size="18px"></ng-icon>
     </button>
   </header>
@@ -17,41 +17,41 @@
   <div class="help-shell" [class.toc-collapsed]="tocCollapsed()">
     <main class="help-content">
       <section id="help-overview" class="help-section">
-        <p class="help-eyebrow">Visão geral</p>
-        <h3>Inspecione logs em tempo real ou em uma busca estável.</h3>
-        <p>O SeriMongo combina Tail via SignalR, busca LogQL, filtros rápidos e detalhes estruturados para analisar eventos sem sair da tela.</p>
+        <p class="help-eyebrow">Overview</p>
+        <h3>Inspect logs in real time or from a stable search result.</h3>
+        <p>SeriMongo combines SignalR Tail, LogQL search, quick filters and structured details so you can analyze events without leaving the page.</p>
         <div class="help-callout">
-          <strong>Fluxo principal</strong>
-          <p>Use os filtros e a query para reduzir o conjunto, selecione uma linha para abrir os detalhes e copie o que precisar para incidentes, PRs ou tickets.</p>
+          <strong>Main flow</strong>
+          <p>Use filters and the query to narrow the result set, select a row to open details, then copy what you need for incidents, PRs or tickets.</p>
         </div>
       </section>
 
       <section id="help-search" class="help-section">
-        <p class="help-eyebrow">Busca</p>
-        <h3>Campo LogQL e ação Search</h3>
-        <p>Digite uma expressão LogQL no campo principal. Ao clicar em <strong>Search</strong>, o Tail é pausado e a tela carrega uma página estável de resultados.</p>
-        <p>O painel <strong>Effective query</strong> mostra a query final gerada pela união da expressão digitada com período, level e service selecionados.</p>
+        <p class="help-eyebrow">Search</p>
+        <h3>LogQL input and Search action</h3>
+        <p>Type a LogQL expression in the main field. Clicking <strong>Search</strong> pauses Tail and loads a stable page of results.</p>
+        <p>The <strong>Effective query</strong> panel shows the final query produced by combining the typed expression with the selected period, level and service filters.</p>
       </section>
 
       <section id="help-logql" class="help-section">
         <p class="help-eyebrow">LogQL</p>
-        <h3>Sintaxe suportada</h3>
+        <h3>Supported syntax</h3>
         <div class="help-grid">
           <div>
-            <h4>Campos</h4>
+            <h4>Fields</h4>
             <p><code>id</code>, <code>timestamp</code>, <code>time</code>, <code>level</code>, <code>message</code>, <code>renderedmessage</code>, <code>exception</code>, <code>service</code>, <code>servicename</code>, <code>service.name</code>.</p>
           </div>
           <div>
-            <h4>Propriedades</h4>
-            <p>Use <code>prop.&lt;name&gt;</code>, <code>property.&lt;name&gt;</code> ou <code>properties.&lt;name&gt;</code> para campos estruturados. Caminhos com ponto são suportados.</p>
+            <h4>Properties</h4>
+            <p>Use <code>prop.&lt;name&gt;</code>, <code>property.&lt;name&gt;</code> or <code>properties.&lt;name&gt;</code> for structured fields. Dotted paths are supported.</p>
           </div>
           <div>
-            <h4>Operadores</h4>
-            <p><code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>contains</code>, <code>startswith</code>, <code>endswith</code>, <code>in (...)</code> e <code>exists</code>.</p>
+            <h4>Operators</h4>
+            <p><code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>contains</code>, <code>startswith</code>, <code>endswith</code>, <code>in (...)</code> and <code>exists</code>.</p>
           </div>
           <div>
-            <h4>Booleanos</h4>
-            <p>Combine condições com <code>and</code>, <code>or</code> e parênteses.</p>
+            <h4>Boolean logic</h4>
+            <p>Combine conditions with <code>and</code>, <code>or</code> and parentheses.</p>
           </div>
         </div>
         <pre class="help-code">level = Error
@@ -68,51 +68,51 @@ prop.DurationMs &gt; 500
       </section>
 
       <section id="help-filters" class="help-section">
-        <p class="help-eyebrow">Filtros rápidos</p>
-        <h3>Período, level e service</h3>
-        <p>Os filtros rápidos montam cláusulas LogQL automaticamente. Período gera uma condição em <code>timestamp</code>; levels selecionados geram <code>level in (...)</code>; services selecionados geram <code>serviceName in (...)</code>.</p>
-        <p>O botão <strong>Clear</strong> limpa os filtros rápidos, mantendo a expressão digitada no campo LogQL.</p>
+        <p class="help-eyebrow">Quick filters</p>
+        <h3>Period, level and service</h3>
+        <p>Quick filters build LogQL clauses automatically. Period creates a <code>timestamp</code> condition; selected levels create <code>level in (...)</code>; selected services create <code>serviceName in (...)</code>.</p>
+        <p>The <strong>Clear</strong> button resets quick filters while keeping the expression typed in the LogQL field.</p>
       </section>
 
       <section id="help-table" class="help-section">
-        <p class="help-eyebrow">Tabela</p>
-        <h3>Linhas, colunas e seleção</h3>
-        <p>A tabela é virtualizada para manter a interface leve com muitos logs. Clique em uma linha para abrir o painel de detalhes.</p>
-        <p>O botão de colunas permite mostrar ou ocultar <strong>TraceId</strong>, <strong>Timestamp</strong>, <strong>Level</strong>, <strong>Service</strong> e <strong>Message</strong>. Pelo menos uma coluna permanece visível.</p>
+        <p class="help-eyebrow">Table</p>
+        <h3>Rows, columns and selection</h3>
+        <p>The table is virtualized to keep the UI responsive with many logs. Click a row to open the details panel.</p>
+        <p>The columns button lets you show or hide <strong>TraceId</strong>, <strong>Timestamp</strong>, <strong>Level</strong>, <strong>Service</strong> and <strong>Message</strong>. At least one column always remains visible.</p>
       </section>
 
       <section id="help-details" class="help-section">
-        <p class="help-eyebrow">Detalhes</p>
-        <h3>Evento selecionado</h3>
-        <p>O painel lateral mostra message, timestamp, service, id, exception e properties. A divisória entre tabela e detalhes pode ser arrastada para ajustar a largura.</p>
-        <p>Ao selecionar uma linha, o Tail é pausado para evitar que novos eventos mudem o contexto enquanto você analisa o registro.</p>
+        <p class="help-eyebrow">Details</p>
+        <h3>Selected event</h3>
+        <p>The side panel shows message, timestamp, service, id, exception and properties. The splitter between the table and details can be dragged to resize the panel.</p>
+        <p>Selecting a row pauses Tail so new events do not change the context while you inspect the record.</p>
       </section>
 
       <section id="help-copy" class="help-section">
-        <p class="help-eyebrow">Copiar</p>
-        <h3>Clipboard e Markdown</h3>
-        <p>Use o botão de copiar no header dos detalhes para exportar o evento como Markdown. Os botões em <strong>Message</strong> e <strong>Exception</strong> copiam apenas aquele bloco.</p>
-        <p>Ao copiar, um toast aparece no canto inferior direito confirmando sucesso ou falha.</p>
+        <p class="help-eyebrow">Copy</p>
+        <h3>Clipboard and Markdown</h3>
+        <p>Use the copy button in the details header to export the event as Markdown. The buttons in <strong>Message</strong> and <strong>Exception</strong> copy only that block.</p>
+        <p>After a copy action, a toast appears in the lower-right corner confirming success or failure.</p>
       </section>
 
       <section id="help-tail" class="help-section">
         <p class="help-eyebrow">Tail</p>
-        <h3>Pause e retomada</h3>
-        <p><strong>Pause</strong> não desconecta o SignalR. Ele apenas envia o estado de pausa para o hub e bloqueia novos eventos na tela.</p>
-        <p>Depois de pausado, o botão volta a mostrar <strong>Tail</strong>. Clicar nele reativa o Tail na mesma conexão SignalR e sincroniza a query atual com o hub.</p>
+        <h3>Pause and resume</h3>
+        <p><strong>Pause</strong> does not disconnect SignalR. It only sends the paused state to the hub and blocks new events from being added to the screen.</p>
+        <p>After pausing, the button label changes back to <strong>Tail</strong>. Clicking it re-enables Tail on the same SignalR connection and syncs the current query with the hub.</p>
       </section>
     </main>
 
     <aside class="help-toc" aria-label="Table of contents">
       <div class="help-toc-header">
-        <span *ngIf="!tocCollapsed()">Nesta página</span>
-        <button type="button" [attr.aria-expanded]="!tocCollapsed()" aria-label="Alternar índice" title="Alternar índice" (click)="toggleToc()">
+        <span *ngIf="!tocCollapsed()">On this page</span>
+        <button type="button" [attr.aria-expanded]="!tocCollapsed()" aria-label="Toggle table of contents" title="Toggle table of contents" (click)="toggleToc()">
           <ng-icon [name]="tocCollapsed() ? 'ionChevronBackOutline' : 'ionChevronForwardOutline'" size="16px" aria-hidden="true"></ng-icon>
         </button>
       </div>
 
       <ng-container *ngIf="!tocCollapsed(); else tocRail">
-        <strong>Manual do SeriMongo</strong>
+        <strong>SeriMongo manual</strong>
         <nav>
           <a *ngFor="let section of sections"
             href="#"
@@ -125,7 +125,7 @@ prop.DurationMs &gt; 500
       </ng-container>
 
       <ng-template #tocRail>
-        <span class="toc-rail">Nesta página</span>
+        <span class="toc-rail">On this page</span>
       </ng-template>
     </aside>
   </div>
