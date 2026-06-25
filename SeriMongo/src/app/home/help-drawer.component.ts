@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output, inject, signal } from '@angular/core';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { ionCloseOutline, ionHelpCircleOutline } from '@ng-icons/ionicons';
+import { ionChevronBackOutline, ionChevronForwardOutline, ionCloseSharp, ionHelpCircleOutline } from '@ng-icons/ionicons';
 
 interface HelpSection {
   id: string;
@@ -12,7 +12,7 @@ interface HelpSection {
   selector: 'app-help-drawer',
   standalone: true,
   imports: [CommonModule, NgIcon],
-  providers: [provideIcons({ ionCloseOutline, ionHelpCircleOutline })],
+  providers: [provideIcons({ ionChevronBackOutline, ionChevronForwardOutline, ionCloseSharp, ionHelpCircleOutline })],
   templateUrl: './help-drawer.component.html',
   styleUrls: ['./help-drawer.component.css']
 })
