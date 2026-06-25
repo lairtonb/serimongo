@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { LogEntry } from './log-entry';
@@ -45,11 +45,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   detailSidebarWidth = signal(360);
   hasMoreSearchResults = signal(false);
   isLoadingSearchPage = signal(false);
+  virtualScrollTop = signal(0);
+  virtualViewportHeight = signal(0);
 
   readonly minDetailSidebarWidth = 280;
   readonly maxDetailSidebarWidth = 640;
 
   private readonly searchPageSize = 100;
+  private readonly virtualRowHeightPx = 32;
+  private readonly virtualOverscanRows = 8;
+  private readonly defaultVirtualViewportHeightPx = 720;
   private readonly minLogAreaWidth = 380;
   private readonly loadMoreScrollThresholdPx = 240;
   private readonly tailInjectedHighlightMs = 120;
@@ -85,6 +90,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     { name: 'Fatal', tone: 'fatal' },
     { name: 'Critical', tone: 'critical' }
   ];
+
+  readonly virtualRows = computed(() => {
+    const entries = this.logEntries();
+    const viewportHeight = this.virtualViewportHeight() || this.defaultVirtualViewportHeightPx;
+    const visibleCount = Math.ceil(viewportHeight / this.virtualRowHeightPx) + (this.virtualOverscanRows * 2);
+    const startIndex = Math.max(0, Math.floor(this.virtualScrollTop() / this.virtualRowHeightPx) - this.virtualOverscanRows);
+    const endIndex = Math.min(entries.length, startIndex + visibleCount);
+
+    return {
+      entries: entries.slice(startIndex, endIndex),
+      topPaddingPx: startIndex * this.virtualRowHeightPx,
+      bottomPaddingPx: Math.max(0, entries.length - endIndex) * this.virtualRowHeightPx
+    };
+  });
 
   constructor(private signalRService: SignalRService,
     private searchService: SearchService) {
@@ -196,11 +215,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   async onLogScroll(event: Event): Promise<void> {
+    const target = event.target as HTMLElement;
+    this.virtualScrollTop.set(target.scrollTop);
+    this.virtualViewportHeight.set(target.clientHeight);
+
     if (this.isTailing() || this.isLoadingSearchPage() || !this.hasMoreSearchResults()) {
       return;
     }
 
-    const target = event.target as HTMLElement;
     const remainingScroll = target.scrollHeight - target.scrollTop - target.clientHeight;
     if (remainingScroll <= this.loadMoreScrollThresholdPx) {
       await this.loadNextSearchPage();
@@ -322,6 +344,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('resultsShell')
   resultsShellElement?: ElementRef<HTMLElement>;
 
+  @ViewChild('logTableBody')
+  logTableBodyElement?: ElementRef<HTMLElement>;
+
   startSidebarResize(event: PointerEvent): void {
     if (event.button !== 0) {
       return;
@@ -412,8 +437,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.currentSearchQuery = query;
     this.currentSearchPage = 1;
     const page = await this.searchService.search(this.currentSearchQuery, this.currentSearchPage, this.searchPageSize);
+    this.resetLogScrollPosition();
     this.logEntries.set(page);
     this.hasMoreSearchResults.set(page.length === this.searchPageSize);
+  }
+
+  private resetLogScrollPosition(): void {
+    const logTableBody = this.logTableBodyElement?.nativeElement;
+    if (logTableBody) {
+      logTableBody.scrollTop = 0;
+      this.virtualViewportHeight.set(logTableBody.clientHeight);
+    }
+
+    this.virtualScrollTop.set(0);
   }
 
   private async loadNextSearchPage(): Promise<void> {

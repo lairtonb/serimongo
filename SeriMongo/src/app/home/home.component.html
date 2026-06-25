@@ -126,25 +126,33 @@
                   <th>Message</th>
                 </tr>
               </thead>
-              <tbody (scroll)="onLogScroll($event)">
-                <ng-container *ngFor="let log of logEntries(); trackBy: trackByLogId">
-                  <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)">
-                    <td class="idcol"><span class="row-marker" aria-hidden="true"></span>{{log.id}}</td>
-                    <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
-                    <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
-                    <td class="service-name">{{serviceName(log)}}</td>
-                    <td [class]="{
-                      'msgcol': true,
-                      'msg': true,
-                      'Verbose': log.level === 'Verbose',
-                      'Trace': log.level === 'Trace',
-                      'Debug': log.level === 'Debug',
-                      'Information': log.level === 'Information',
-                      'Warning': log.level === 'Warning',
-                      'Error': log.level === 'Error',
-                      'Fatal': log.level === 'Fatal',
-                      'Critical': log.level === 'Critical'
-                    }">{{log.renderedMessage}}</td>
+              <tbody #logTableBody (scroll)="onLogScroll($event)">
+                <ng-container *ngIf="virtualRows() as rows">
+                  <tr *ngIf="rows.topPaddingPx > 0" class="virtual-spacer details" [style.height.px]="rows.topPaddingPx">
+                    <td colspan="5"></td>
+                  </tr>
+                  <ng-container *ngFor="let log of rows.entries; trackBy: trackByLogId">
+                    <tr class="log-row" (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)">
+                      <td class="idcol"><span class="row-marker" aria-hidden="true"></span>{{log.id}}</td>
+                      <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
+                      <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
+                      <td class="service-name">{{serviceName(log)}}</td>
+                      <td [class]="{
+                        'msgcol': true,
+                        'msg': true,
+                        'Verbose': log.level === 'Verbose',
+                        'Trace': log.level === 'Trace',
+                        'Debug': log.level === 'Debug',
+                        'Information': log.level === 'Information',
+                        'Warning': log.level === 'Warning',
+                        'Error': log.level === 'Error',
+                        'Fatal': log.level === 'Fatal',
+                        'Critical': log.level === 'Critical'
+                      }">{{log.renderedMessage}}</td>
+                    </tr>
+                  </ng-container>
+                  <tr *ngIf="rows.bottomPaddingPx > 0" class="virtual-spacer details" [style.height.px]="rows.bottomPaddingPx">
+                    <td colspan="5"></td>
                   </tr>
                 </ng-container>
               </tbody>
