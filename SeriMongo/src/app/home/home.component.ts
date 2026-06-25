@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { ionBookOutline, ionCheckmarkOutline, ionCloseOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline } from '@ng-icons/ionicons';
+import { ionCheckmarkOutline, ionCloseOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline } from '@ng-icons/ionicons';
 
 import { LogEntry } from './log-entry';
 import { SignalRService } from '../services/signalr.service';
@@ -29,7 +29,7 @@ interface LogColumnOption {
   label: string;
 }
 
-type HelpTopicId = 'filters' | 'query' | 'entries' | 'details';
+type HelpTopicId = 'logql' | 'filters' | 'query' | 'entries' | 'details';
 
 interface HelpTopic {
   title: string;
@@ -39,7 +39,7 @@ interface HelpTopic {
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, NgIcon],
-  providers: [provideIcons({ ionBookOutline, ionCheckmarkOutline, ionCloseOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline })],
+  providers: [provideIcons({ ionCheckmarkOutline, ionCloseOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline })],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -123,6 +123,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   readonly helpTopics: Record<HelpTopicId, HelpTopic> = {
+    logql: {
+      title: 'LogQL reference',
+      body: 'Search logs with field comparisons, text matching, lists and boolean groups.'
+    },
     filters: {
       title: 'Quick filters',
       body: 'Use level, service and time filters to narrow the stream without typing full LogQL clauses.'
@@ -269,14 +273,18 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.helpMode.set(next);
     if (!next) {
       this.activeHelpTopic.set(null);
+    } else {
+      this.activeHelpTopic.set('logql');
     }
   }
 
   showHelp(topic: HelpTopicId): void {
+    this.helpMode.set(true);
     this.activeHelpTopic.set(topic);
   }
 
   closeHelp(): void {
+    this.helpMode.set(false);
     this.activeHelpTopic.set(null);
   }
 
