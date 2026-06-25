@@ -116,16 +116,23 @@
               <span>Log entries</span>
               <span>{{logEntries().length}} loaded</span>
             </div>
-            <div class="column-toggles" aria-label="Visible columns">
-              <span>Columns</span>
-              <button type="button"
-                *ngFor="let column of logColumnOptions"
-                [class.selected]="isLogColumnVisible(column.id)"
-                [disabled]="visibleLogColumnCount() === 1 && isLogColumnVisible(column.id)"
-                [attr.aria-pressed]="isLogColumnVisible(column.id)"
-                (click)="toggleLogColumn(column.id)">
-                {{column.label}}
+            <div class="field-menu" aria-label="Visible columns">
+              <button class="action-button ghost field-menu-trigger" type="button" style="gap:6px" [attr.aria-expanded]="columnsMenuOpen()" (click)="toggleColumnsMenu()">
+                <span>Fields</span>
+                <span class="field-count">{{visibleLogColumnCount()}}</span>
               </button>
+              <div class="field-menu-panel" *ngIf="columnsMenuOpen()">
+                <button type="button"
+                  *ngFor="let column of logColumnOptions"
+                  class="field-menu-row"
+                  [class.selected]="isLogColumnVisible(column.id)"
+                  [disabled]="visibleLogColumnCount() === 1 && isLogColumnVisible(column.id)"
+                  [attr.aria-pressed]="isLogColumnVisible(column.id)"
+                  (click)="toggleLogColumn(column.id)">
+                  <span class="checkmark" aria-hidden="true">&#10003;</span>
+                  <span>{{column.label}}</span>
+                </button>
+              </div>
             </div>
           </div>
           <div class="tb-container">
@@ -195,18 +202,22 @@
                 <strong>{{selectedLog.level}}</strong>
               </div>
               <div class="detail-actions">
-                <button class="action-button ghost" type="button" (click)="copyLogDetails(selectedLog)">Copy details</button>
+                <button class="action-button ghost ionicon-button" type="button" aria-label="Copy details as Markdown" title="Copy details as Markdown" (click)="copyLogDetails(selectedLog)">
+                  <svg width="17" height="17" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" aria-hidden="true" focusable="false"><rect x="128" y="128" width="336" height="336" rx="24"></rect><path d="M96 384H72a24 24 0 0 1-24-24V72a24 24 0 0 1 24-24h288a24 24 0 0 1 24 24v24"></path></svg>
+                </button>
                 <button class="action-button ghost" type="button" (click)="clearSelectedRow()">Close</button>
               </div>
             </div>
 
             <div class="detail-body">
               <section class="detail-section">
-                <div class="section-heading">
-                  <h3>Message</h3>
-                  <button class="action-button ghost" type="button" (click)="copyText(selectedLog.renderedMessage)">Copy</button>
+                <h3>Message</h3>
+                <div class="copy-field">
+                  <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:5px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy message" title="Copy message" (click)="copyText(selectedLog.renderedMessage)">
+                    <svg width="15" height="15" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" aria-hidden="true" focusable="false"><rect x="128" y="128" width="336" height="336" rx="24"></rect><path d="M96 384H72a24 24 0 0 1-24-24V72a24 24 0 0 1 24-24h288a24 24 0 0 1 24 24v24"></path></svg>
+                  </button>
+                  <p style="padding-right:34px">{{selectedLog.renderedMessage}}</p>
                 </div>
-                <p>{{selectedLog.renderedMessage}}</p>
               </section>
 
               <dl class="detail-meta">
@@ -225,14 +236,16 @@
               </dl>
 
               <section *ngIf="selectedLog.exception != null || exceptionStacktrace(selectedLog)" class="exception-panel">
-                <div class="exception-heading">
-                  <span>Exception</span>
-                  <div class="copy-actions">
-                    <button *ngIf="selectedLog.exception != null" class="action-button ghost" type="button" (click)="copyText(selectedLog.exception)">Copy exception</button>
-                    <button *ngIf="exceptionStacktrace(selectedLog)" class="action-button ghost" type="button" (click)="copyText(exceptionStacktrace(selectedLog))">Copy stacktrace</button>
-                  </div>
+                <span>Exception</span>
+                <div class="copy-field">
+                  <button *ngIf="selectedLog.exception != null" class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:5px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy exception" title="Copy exception" (click)="copyText(selectedLog.exception)">
+                    <svg width="15" height="15" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" aria-hidden="true" focusable="false"><rect x="128" y="128" width="336" height="336" rx="24"></rect><path d="M96 384H72a24 24 0 0 1-24-24V72a24 24 0 0 1 24-24h288a24 24 0 0 1 24 24v24"></path></svg>
+                  </button>
+                  <button *ngIf="exceptionStacktrace(selectedLog)" class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:34px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy stacktrace" title="Copy stacktrace" (click)="copyText(exceptionStacktrace(selectedLog))">
+                    <svg width="15" height="15" viewBox="0 0 512 512" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" aria-hidden="true" focusable="false"><path d="m160 368-96-112 96-112"></path><path d="m352 368 96-112-96-112"></path><path d="m304 96-96 320"></path></svg>
+                  </button>
+                  <pre style="padding-right:64px">{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
                 </div>
-                <pre>{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
               </section>
 
               <section class="detail-section">

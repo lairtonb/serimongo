@@ -49,6 +49,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedServiceNames = signal<string[]>([]);
   levelFilterOpen = signal(true);
   serviceFilterOpen = signal(true);
+  columnsMenuOpen = signal(false);
   visibleLogColumns = signal<LogColumnId[]>(['traceId', 'timestamp', 'level', 'serviceName', 'message']);
   detailSidebarWidth = signal(360);
   hasMoreSearchResults = signal(false);
@@ -225,6 +226,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       .filter(option => nextVisibleColumns.has(option)));
   }
 
+  toggleColumnsMenu(): void {
+    this.columnsMenuOpen.update(open => !open);
+  }
+
   toggleLevelFilter(): void {
     this.levelFilterOpen.update(open => !open);
   }
@@ -385,12 +390,22 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (properties.length === 0) {
       lines.push('_No properties._');
     } else {
-      for (const [key, value] of properties) {
-        lines.push(`### ${key}`, '', this.markdownCodeBlock(this.formatValue(value)), '');
-      }
+      lines.push('| Property | Value |', '| --- | --- |');
+      lines.push(...properties.map(([key, value]) =>
+        `| ${this.escapeMarkdownTableCell(key)} | ${this.escapeMarkdownTableCell(this.formatValue(value))} |`));
     }
 
     return `${lines.join('\n').trimEnd()}\n`;
+  }
+
+  private escapeMarkdownTableCell(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\\/g, '\\\\')
+      .replace(/\|/g, '\\|')
+      .replace(/\r\n|\r|\n/g, '<br>');
   }
 
   private formatTimestamp(timestamp: Date | string): string {
