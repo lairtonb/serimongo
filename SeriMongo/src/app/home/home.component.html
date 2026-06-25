@@ -6,10 +6,10 @@
     </div>
 
     <div class="toolbar-actions">
-      <button class="action-button ghost ionicon-button" type="button" style="width:36px;height:36px;border-radius:999px" aria-label="Config" title="Config">
+      <button class="action-button ghost ionicon-button" type="button" style="width:32px;height:32px;border-radius:999px;background:#fff" aria-label="Config" title="Config">
         <ng-icon name="ionSettingsOutline" size="18px"></ng-icon>
       </button>
-      <button class="action-button ghost ionicon-button" type="button" style="width:36px;height:36px;border-radius:999px" aria-label="Ajuda" title="Ajuda" [style.background]="helpMode() ? '#eaf1ff' : null" [style.border-color]="helpMode() ? '#8cb4ff' : null" (click)="toggleHelpMode()">
+      <button class="action-button ghost ionicon-button" type="button" style="width:32px;height:32px;border-radius:999px;background:#fff" aria-label="Ajuda" title="Ajuda" [style.background]="helpMode() ? '#eaf1ff' : '#fff'" [style.border-color]="helpMode() ? '#8cb4ff' : null" (click)="toggleHelpMode()">
         <ng-icon name="ionHelpCircleOutline" size="20px"></ng-icon>
       </button>
     </div>
@@ -23,7 +23,7 @@
               <p class="eyebrow">Filters</p>
               <h2>Quick filters</h2>
             </div>
-            <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:24px;height:24px" aria-label="Quick filters help" title="Quick filters help" (click)="showHelp('filters')">
+            <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:24px;height:24px;border-radius:999px" aria-label="Quick filters help" title="Quick filters help" (click)="showHelp('filters')">
               <ng-icon name="ionHelpCircleOutline" size="16px"></ng-icon>
             </button>
             <button class="action-button ghost" type="button" title="Clear filters" (click)="clearQuickFilters()">Clear</button>
@@ -100,7 +100,7 @@
             </div>
 
             <div class="actions" aria-label="Search actions">
-              <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:28px" aria-label="Search help" title="Search help" (click)="showHelp('query')">
+              <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:28px;border-radius:999px" aria-label="LogQL help" title="LogQL help" (click)="showHelp('logql')">
                 <ng-icon name="ionHelpCircleOutline" size="16px"></ng-icon>
               </button>
               <button id="search-button" class="action-button primary" type="button" style="min-width: 76px" (click)="onSearchClick()">Search</button>
@@ -126,7 +126,7 @@
               <span>Log entries</span>
               <span>{{logEntries().length}} loaded</span>
             </div>
-            <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:24px;height:24px;margin-left:auto" aria-label="Log entries help" title="Log entries help" (click)="showHelp('entries')">
+            <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="width:24px;height:24px;margin-left:auto;border-radius:999px" aria-label="Log entries help" title="Log entries help" (click)="showHelp('entries')">
               <ng-icon name="ionHelpCircleOutline" size="16px"></ng-icon>
             </button>
             <div class="field-menu" aria-label="Visible columns">
@@ -214,7 +214,7 @@
                 <strong>{{selectedLog.level}}</strong>
               </div>
               <div class="detail-actions">
-                <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" aria-label="Details help" title="Details help" (click)="showHelp('details')">
+                <button *ngIf="helpMode()" class="action-button ghost ionicon-button" type="button" style="border-radius:999px" aria-label="Details help" title="Details help" (click)="showHelp('details')">
                   <ng-icon name="ionHelpCircleOutline" size="16px"></ng-icon>
                 </button>
                 <button class="action-button ghost ionicon-button" type="button" aria-label="Copy details as Markdown" title="Copy details as Markdown" (click)="copyLogDetails(selectedLog)">
@@ -295,7 +295,7 @@
         </div>
         <div>
           <strong>Operators</strong>
-          <p style="margin:4px 0 0;color:#3f4a56"><code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>contains</code>, and <code>in (...)</code>.</p>
+          <p style="margin:4px 0 0;color:#3f4a56"><code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>contains</code>, <code>startswith</code>, <code>endswith</code>, <code>in (...)</code>, and <code>exists</code>.</p>
         </div>
         <div>
           <strong>Boolean logic</strong>
@@ -306,14 +306,20 @@
           <p style="margin:4px 0 0;color:#3f4a56">Quote strings with spaces. Use ISO timestamps like <code>2026-06-25T12:00:00Z</code>.</p>
         </div>
         <div>
+          <strong>Property fields</strong>
+          <p style="margin:4px 0 0;color:#3f4a56">Use <code>prop.</code>, <code>property.</code>, or <code>properties.</code>. Path segments may use letters, numbers, <code>_</code> and <code>-</code>; dotted paths are supported.</p>
+        </div>
+        <div>
           <strong>Examples</strong>
           <pre style="margin:6px 0 0;padding:8px;background:#f7f8fa;border:1px solid #d0d7de;white-space:pre-wrap;font:500 11px/1.45 Consolas, SFMono-Regular, Menlo, monospace">level = Error
 level in (Warning, Error, Fatal)
 message contains "timeout"
+message startswith "checkout"
 exception contains "OutOfMemoryException"
 serviceName = "checkout-api"
 timestamp &gt;= "2026-06-25T12:00:00Z"
 prop.TraceId = "abc123"
+prop.exception.type exists
 prop.DurationMs &gt; 500
 (level = Error or level = Fatal) and serviceName = "worker"</pre>
         </div>
