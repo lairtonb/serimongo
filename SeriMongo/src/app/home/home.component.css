@@ -422,40 +422,33 @@ h2 {
   text-transform: uppercase;
 }
 
-.table-summary,
-.column-toggles {
+.table-summary {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.column-toggles {
-  justify-content: flex-end;
+.field-menu {
+  position: relative;
   margin-left: auto;
 }
 
-.column-toggles button {
-  height: 20px;
-  padding: 0 6px;
-  color: var(--muted-strong);
+.field-count { color: var(--accent); }
+
+.field-menu-panel {
+  position: absolute;
+  top: 26px;
+  right: 0;
+  z-index: 4;
+  min-width: 150px;
+  padding: 4px;
   background: #ffffff;
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  font: inherit;
-  font-size: 10px;
-  cursor: pointer;
+  border: 1px solid var(--line-strong);
 }
 
-.column-toggles button.selected {
-  color: #ffffff;
-  background: var(--accent);
-  border-color: #1d4ed8;
-}
-
-.column-toggles button:disabled {
-  cursor: default;
-  opacity: .7;
-}
+.field-menu-row { display: flex; align-items: center; gap: 6px; width: 100%; height: 26px; padding: 0 7px; color: var(--muted-strong); background: #ffffff; border: 0; font: inherit; text-align: left; cursor: pointer; }
+.field-menu-row.selected { color: var(--text-strong); background: var(--accent-soft); }
+.field-menu-row:not(.selected) .checkmark { visibility: hidden; }
 
 .tb-container {
   display: flex;
@@ -701,23 +694,20 @@ table.logs > tbody > tr.active .row-marker {
   border-bottom: 1px solid var(--line);
 }
 
-.detail-actions,
-.section-heading,
-.exception-heading,
-.copy-actions {
+.detail-actions {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.detail-actions,
-.copy-actions {
   justify-content: flex-end;
 }
 
-.section-heading,
-.exception-heading {
-  justify-content: space-between;
+.ionicon-button {
+  width: 28px;
+  padding: 0;
+}
+
+.copy-field {
+  position: relative;
 }
 
 .detail-titlebar span,
