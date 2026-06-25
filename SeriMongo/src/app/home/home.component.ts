@@ -245,6 +245,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.formatValue(log.properties['resource.service.name']) || '-';
   }
 
+  traceId(log: LogEntry): string {
+    return this.firstPropertyText(log, 'traceId', 'TraceId', 'trace.id', 'TraceID') || '-';
+  }
+
+  private firstPropertyText(log: LogEntry, ...keys: string[]): string {
+    for (const key of keys) {
+      const value = log.properties[key];
+      if (value !== null && value !== undefined) {
+        return this.formatValue(value);
+      }
+    }
+
+    return '';
+  }
+
   private buildLogQuery(): string {
     const clauses: string[] = [];
     const manualQuery = this.searchExpression.trim();
