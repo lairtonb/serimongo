@@ -174,19 +174,6 @@
       </button>
 
       <aside class="detail-column">
-        <div class="detail-tools">
-          <div class="header-metrics" aria-label="Stream status">
-            <div class="metric-card">
-              <span>Stream</span>
-              <strong [class.paused]="!isTailing()">{{isTailing() ? 'Live' : 'Paused'}}</strong>
-            </div>
-            <div class="metric-card">
-              <span>Rows</span>
-              <strong>{{logEntries().length}}</strong>
-            </div>
-          </div>
-        </div>
-
         <section class="detail-sidebar" aria-label="Log details">
           <ng-container *ngIf="selectedRow() as selectedLog; else noSelectedLog">
             <div class="detail-titlebar">

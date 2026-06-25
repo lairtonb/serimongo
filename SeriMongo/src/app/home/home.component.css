@@ -95,39 +95,6 @@ h2 {
   font-size: 10px;
 }
 
-.header-metrics {
-  display: flex;
-  gap: 3px;
-}
-
-.metric-card {
-  display: grid;
-  align-content: center;
-  min-width: 58px;
-  min-height: 24px;
-  padding: 2px 6px;
-  background: var(--surface-alt);
-  border: 1px solid var(--line);
-  border-left: 2px solid var(--accent);
-}
-
-.metric-card span {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.metric-card strong {
-  color: var(--ok);
-  font-size: 12px;
-  line-height: 1.1;
-}
-
-.metric-card strong.paused {
-  color: var(--warning);
-}
-
 .content-shell {
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr);
@@ -428,25 +395,8 @@ h2 {
 .detail-column {
   display: flex;
   flex-direction: column;
-  gap: 4px;
   min-width: 0;
   min-height: 0;
-}
-
-.detail-tools {
-  display: flex;
-  align-items: flex-start;
-  gap: 3px;
-  flex: 0 0 auto;
-  box-sizing: border-box;
-  min-height: 66px;
-  padding: 3px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-}
-
-.detail-tools .header-metrics {
-  flex: 1;
 }
 
 .log-area {
@@ -884,19 +834,10 @@ table.logs > tbody > tr.active .row-marker {
     grid-template-columns: 1fr;
   }
 
-  .header-metrics,
   .actions,
   .period-toolbar {
     width: 100%;
     justify-content: flex-start;
-  }
-
-  .metric-card {
-    flex: 1;
-  }
-
-  .detail-tools {
-    flex-wrap: wrap;
   }
 
   .content-shell {
