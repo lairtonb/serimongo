@@ -194,12 +194,18 @@
                 <span>Selected event</span>
                 <strong>{{selectedLog.level}}</strong>
               </div>
-              <button class="action-button ghost" type="button" (click)="clearSelectedRow()">Close</button>
+              <div class="detail-actions">
+                <button class="action-button ghost" type="button" (click)="copyLogDetails(selectedLog)">Copy details</button>
+                <button class="action-button ghost" type="button" (click)="clearSelectedRow()">Close</button>
+              </div>
             </div>
 
             <div class="detail-body">
               <section class="detail-section">
-                <h3>Message</h3>
+                <div class="section-heading">
+                  <h3>Message</h3>
+                  <button class="action-button ghost" type="button" (click)="copyText(selectedLog.renderedMessage)">Copy</button>
+                </div>
                 <p>{{selectedLog.renderedMessage}}</p>
               </section>
 
@@ -218,9 +224,15 @@
                 </div>
               </dl>
 
-              <section *ngIf="selectedLog.exception != null" class="exception-panel">
-                <span>Exception</span>
-                <pre>{{selectedLog.exception}}</pre>
+              <section *ngIf="selectedLog.exception != null || exceptionStacktrace(selectedLog)" class="exception-panel">
+                <div class="exception-heading">
+                  <span>Exception</span>
+                  <div class="copy-actions">
+                    <button *ngIf="selectedLog.exception != null" class="action-button ghost" type="button" (click)="copyText(selectedLog.exception)">Copy exception</button>
+                    <button *ngIf="exceptionStacktrace(selectedLog)" class="action-button ghost" type="button" (click)="copyText(exceptionStacktrace(selectedLog))">Copy stacktrace</button>
+                  </div>
+                </div>
+                <pre>{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
               </section>
 
               <section class="detail-section">

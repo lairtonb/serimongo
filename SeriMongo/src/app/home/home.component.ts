@@ -288,15 +288,120 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.firstPropertyText(log, 'traceId', 'TraceId', 'trace.id', 'TraceID') || '-';
   }
 
+  exceptionStacktrace(log: LogEntry): string {
+    return this.firstPropertyText(log, 'exception.stacktrace', 'exception.stackTrace', 'Exception.StackTrace', 'stacktrace', 'StackTrace');
+  }
+
+  async copyText(text: string | null | undefined): Promise<void> {
+    if (text === null || text === undefined) {
+      return;
+    }
+
+    try {
+      await this.writeClipboardText(text);
+    } catch (error) {
+      console.error('Unable to copy text.', error);
+    }
+  }
+
+  async copyLogDetails(log: LogEntry): Promise<void> {
+    await this.copyText(this.buildLogDetailsMarkdown(log));
+  }
+
   private firstPropertyText(log: LogEntry, ...keys: string[]): string {
     for (const key of keys) {
-      const value = log.properties[key];
+      const value = this.propertyValue(log.properties, key);
       if (value !== null && value !== undefined) {
         return this.formatValue(value);
       }
     }
 
     return '';
+  }
+
+  private propertyValue(properties: Record<string, unknown>, key: string): unknown {
+    if (Object.prototype.hasOwnProperty.call(properties, key)) {
+      return properties[key];
+    }
+
+    return key.split('.').reduce<unknown>((current, segment) => {
+      if (current === null || typeof current !== 'object') {
+        return undefined;
+      }
+
+      const record = current as Record<string, unknown>;
+      return Object.prototype.hasOwnProperty.call(record, segment) ? record[segment] : undefined;
+    }, properties);
+  }
+
+  private async writeClipboardText(text: string): Promise<void> {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.setAttribute('readonly', '');
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+
+    try {
+      document.execCommand('copy');
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  }
+
+  private buildLogDetailsMarkdown(log: LogEntry): string {
+    const exception = log.exception || '';
+    const stacktrace = this.exceptionStacktrace(log);
+    const lines = [
+      '# Log event',
+      '',
+      `- TraceId: ${this.traceId(log)}`,
+      `- Timestamp: ${this.formatTimestamp(log.timestamp)}`,
+      `- Level: ${log.level}`,
+      `- Service: ${this.serviceName(log)}`,
+      `- Id: ${log.id}`,
+      '',
+      '## Message',
+      '',
+      this.markdownCodeBlock(log.renderedMessage || '')
+    ];
+
+    if (exception) {
+      lines.push('', '## Exception', '', this.markdownCodeBlock(exception));
+    }
+
+    if (stacktrace && stacktrace !== exception) {
+      lines.push('', '## Exception Stacktrace', '', this.markdownCodeBlock(stacktrace));
+    }
+
+    const properties = Object.entries(log.properties);
+    lines.push('', '## Properties', '');
+    if (properties.length === 0) {
+      lines.push('_No properties._');
+    } else {
+      for (const [key, value] of properties) {
+        lines.push(`### ${key}`, '', this.markdownCodeBlock(this.formatValue(value)), '');
+      }
+    }
+
+    return `${lines.join('\n').trimEnd()}\n`;
+  }
+
+  private formatTimestamp(timestamp: Date | string): string {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    return Number.isNaN(date.getTime()) ? String(timestamp) : date.toISOString();
+  }
+
+  private markdownCodeBlock(value: string): string {
+    const backtickRuns = value.match(/`{3,}/g) ?? [];
+    const fence = '`'.repeat(Math.max(3, ...backtickRuns.map(run => run.length + 1)));
+    return `${fence}text\n${value}\n${fence}`;
   }
 
   private buildLogQuery(): string {
