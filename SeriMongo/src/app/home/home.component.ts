@@ -43,15 +43,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   levelFilterOpen = signal(true);
   serviceFilterOpen = signal(true);
   detailSidebarWidth = signal(360);
+  hasMoreSearchResults = signal(false);
+  isLoadingSearchPage = signal(false);
 
   readonly minDetailSidebarWidth = 280;
   readonly maxDetailSidebarWidth = 640;
 
   private readonly searchPageSize = 100;
   private readonly minLogAreaWidth = 380;
+  private readonly loadMoreScrollThresholdPx = 240;
   private readonly tailInjectedHighlightMs = 120;
   private readonly tailInjectedTimers = new Map<string, ReturnType<typeof setTimeout>>();
   private currentSearchQuery = '*';
+  private currentSearchPage = 0;
   private resizeStartX = 0;
   private resizeStartWidth = 0;
 
@@ -189,6 +193,18 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   isTailInjected(log: LogEntry): boolean {
     return !!log.id && this.tailInjectedLogIds().has(log.id);
+  }
+
+  async onLogScroll(event: Event): Promise<void> {
+    if (this.isTailing() || this.isLoadingSearchPage() || !this.hasMoreSearchResults()) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    const remainingScroll = target.scrollHeight - target.scrollTop - target.clientHeight;
+    if (remainingScroll <= this.loadMoreScrollThresholdPx) {
+      await this.loadNextSearchPage();
+    }
   }
 
   formatValue(value: unknown): string {
@@ -394,7 +410,23 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private async loadFirstSearchPage(query: string): Promise<void> {
     this.currentSearchQuery = query;
-    this.logEntries.set(await this.searchService.search(this.currentSearchQuery, 1, this.searchPageSize));
+    this.currentSearchPage = 1;
+    const page = await this.searchService.search(this.currentSearchQuery, this.currentSearchPage, this.searchPageSize);
+    this.logEntries.set(page);
+    this.hasMoreSearchResults.set(page.length === this.searchPageSize);
+  }
+
+  private async loadNextSearchPage(): Promise<void> {
+    this.isLoadingSearchPage.set(true);
+    try {
+      const nextPageNumber = this.currentSearchPage + 1;
+      const page = await this.searchService.search(this.currentSearchQuery, nextPageNumber, this.searchPageSize);
+      this.currentSearchPage = nextPageNumber;
+      this.logEntries.update(entries => [...entries, ...page]);
+      this.hasMoreSearchResults.set(page.length === this.searchPageSize);
+    } finally {
+      this.isLoadingSearchPage.set(false);
+    }
   }
 
   private async pauseTail(): Promise<void> {

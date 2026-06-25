@@ -126,7 +126,7 @@
                   <th>Message</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody (scroll)="onLogScroll($event)">
                 <ng-container *ngFor="let log of logEntries(); trackBy: trackByLogId">
                   <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)">
                     <td class="idcol"><span class="row-marker" aria-hidden="true"></span>{{log.id}}</td>
