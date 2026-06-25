@@ -701,6 +701,25 @@ table.logs > tbody > tr.active .row-marker {
   border-bottom: 1px solid var(--line);
 }
 
+.detail-actions,
+.section-heading,
+.exception-heading,
+.copy-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-actions,
+.copy-actions {
+  justify-content: flex-end;
+}
+
+.section-heading,
+.exception-heading {
+  justify-content: space-between;
+}
+
 .detail-titlebar span,
 .detail-section h3,
 .detail-meta dt,
