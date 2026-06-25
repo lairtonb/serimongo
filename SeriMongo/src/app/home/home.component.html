@@ -112,32 +112,45 @@
 
         <section class="log-area" aria-label="Log entries">
           <div class="table-titlebar">
-            <span>Log entries</span>
-            <span>{{logEntries().length}} loaded</span>
+            <div class="table-summary">
+              <span>Log entries</span>
+              <span>{{logEntries().length}} loaded</span>
+            </div>
+            <div class="column-toggles" aria-label="Visible columns">
+              <span>Columns</span>
+              <button type="button"
+                *ngFor="let column of logColumnOptions"
+                [class.selected]="isLogColumnVisible(column.id)"
+                [disabled]="visibleLogColumnCount() === 1 && isLogColumnVisible(column.id)"
+                [attr.aria-pressed]="isLogColumnVisible(column.id)"
+                (click)="toggleLogColumn(column.id)">
+                {{column.label}}
+              </button>
+            </div>
           </div>
           <div class="tb-container">
             <table class="logs table-scroll">
               <thead>
                 <tr>
-                  <th class="trace-id">TraceId</th>
-                  <th class="tstamp">Timestamp</th>
-                  <th class="lvl">Level</th>
-                  <th class="service-name">Service Name</th>
-                  <th>Message</th>
+                  <th *ngIf="isLogColumnVisible('traceId')" class="trace-id">TraceId</th>
+                  <th *ngIf="isLogColumnVisible('timestamp')" class="tstamp">Timestamp</th>
+                  <th *ngIf="isLogColumnVisible('level')" class="lvl">Level</th>
+                  <th *ngIf="isLogColumnVisible('serviceName')" class="service-name">Service Name</th>
+                  <th *ngIf="isLogColumnVisible('message')">Message</th>
                 </tr>
               </thead>
               <tbody #logTableBody (scroll)="onLogScroll($event)">
                 <ng-container *ngIf="virtualRows() as rows">
                   <tr *ngIf="rows.topPaddingPx > 0" class="virtual-spacer details" [style.height.px]="rows.topPaddingPx">
-                    <td colspan="5"></td>
+                    <td [attr.colspan]="visibleLogColumnCount()"></td>
                   </tr>
                   <ng-container *ngFor="let log of rows.entries; trackBy: trackByLogId">
                     <tr class="log-row" (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)">
-                      <td class="trace-id" [title]="traceId(log)"><span class="row-marker" aria-hidden="true"></span>{{traceId(log)}}</td>
-                      <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
-                      <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
-                      <td class="service-name" [title]="serviceName(log)">{{serviceName(log)}}</td>
-                      <td [class]="{
+                      <td *ngIf="isLogColumnVisible('traceId')" class="trace-id" [title]="traceId(log)"><span class="row-marker" aria-hidden="true"></span>{{traceId(log)}}</td>
+                      <td *ngIf="isLogColumnVisible('timestamp')" class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
+                      <td *ngIf="isLogColumnVisible('level')" [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
+                      <td *ngIf="isLogColumnVisible('serviceName')" class="service-name" [title]="serviceName(log)">{{serviceName(log)}}</td>
+                      <td *ngIf="isLogColumnVisible('message')" [class]="{
                         'msgcol': true,
                         'msg': true,
                         'Verbose': log.level === 'Verbose',
@@ -152,7 +165,7 @@
                     </tr>
                   </ng-container>
                   <tr *ngIf="rows.bottomPaddingPx > 0" class="virtual-spacer details" [style.height.px]="rows.bottomPaddingPx">
-                    <td colspan="5"></td>
+                    <td [attr.colspan]="visibleLogColumnCount()"></td>
                   </tr>
                 </ng-container>
               </tbody>
