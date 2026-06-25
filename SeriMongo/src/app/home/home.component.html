@@ -1,11 +1,18 @@
 <div class="main">
+  <header class="app-toolbar">
+    <div class="brand-panel">
+      <h1>{{title}}</h1>
+      <p class="subtitle">log inspection</p>
+    </div>
+
+    <div class="toolbar-actions">
+      <button class="action-button ghost" type="button" title="Config">Config</button>
+      <button class="action-button ghost" type="button" title="Help">Help</button>
+    </div>
+  </header>
+
   <main class="content-shell">
     <aside class="filter-column" aria-label="Quick filters">
-      <header class="brand-panel">
-        <h1>{{title}}</h1>
-        <p class="subtitle">log inspection</p>
-      </header>
-
       <section class="filter-panel">
         <div class="panel-title">
           <div>
@@ -170,9 +177,6 @@
               <strong>{{logEntries().length}}</strong>
             </div>
           </div>
-
-          <button class="action-button ghost" type="button" title="Config">Config</button>
-          <button class="action-button ghost" type="button" title="Help">Help</button>
         </div>
 
         <section class="detail-sidebar" aria-label="Log details">
