@@ -27,7 +27,7 @@
   font-family: Inter, "Segoe UI", system-ui, sans-serif;
 }
 
-.brand-panel,
+.app-toolbar,
 .filter-panel,
 .query-panel,
 .log-area,
@@ -37,11 +37,24 @@
   border-radius: 2px;
 }
 
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 0 0 auto;
+  margin: 4px 4px 0;
+  padding: 5px 8px;
+}
+
 .brand-panel {
   box-sizing: border-box;
-  flex: 0 0 auto;
-  height: 42px;
-  padding: 5px 10px;
+  min-width: 220px;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 4px;
 }
 
 .eyebrow {
@@ -128,7 +141,6 @@ h2 {
 .filter-column {
   display: flex;
   flex-direction: column;
-  gap: 4px;
   min-height: 0;
 }
 
@@ -315,8 +327,6 @@ h2 {
 
 .query-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
   flex: 0 0 auto;
   gap: 6px;
   padding: 4px 8px;
@@ -331,7 +341,7 @@ h2 {
 
 .period-toolbar {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 4px;
 }
 
@@ -425,9 +435,11 @@ h2 {
 
 .detail-tools {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 3px;
   flex: 0 0 auto;
+  box-sizing: border-box;
+  min-height: 66px;
   padding: 3px;
   background: var(--surface);
   border: 1px solid var(--line);
@@ -839,14 +851,6 @@ table.logs > tbody > tr.active .row-marker {
   .results-shell {
     order: 1;
     grid-template-columns: 1fr;
-  }
-
-  .query-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .period-toolbar {
-    flex-wrap: wrap;
   }
 
   .level-list {
