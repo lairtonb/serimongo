@@ -27,8 +27,9 @@
   font-family: Inter, "Segoe UI", system-ui, sans-serif;
 }
 
-.app-header,
+.brand-panel,
 .filter-panel,
+.query-panel,
 .log-area,
 .detail-sidebar {
   background: var(--surface);
@@ -36,19 +37,9 @@
   border-radius: 2px;
 }
 
-.app-header {
-  display: grid;
-  grid-template-columns: 220px auto minmax(240px, 1fr) auto auto;
-  align-items: center;
-  gap: 8px;
-  margin: 4px 4px 0;
-  padding: 5px 8px;
-}
-
-.title-stack {
-  display: grid;
-  align-content: center;
-  min-width: 0;
+.brand-panel {
+  flex: 0 0 auto;
+  padding: 10px 12px;
 }
 
 .eyebrow {
@@ -132,9 +123,17 @@ h2 {
   padding: 4px;
 }
 
+.filter-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+
 .filter-panel {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   gap: 8px;
   min-height: 0;
   overflow: hidden;
@@ -309,7 +308,21 @@ h2 {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  gap: 8px;
+  gap: 4px;
+}
+
+.query-panel {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 6px;
+  padding: 6px 8px;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
 }
 
 .period-toolbar {
@@ -393,8 +406,31 @@ h2 {
   grid-template-columns: minmax(0, 1fr) 8px var(--detail-sidebar-width, 360px);
   gap: 0;
   flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
   overflow: hidden;
+}
+
+.detail-column {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.detail-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.detail-tools .header-metrics {
+  flex: 1;
 }
 
 .log-area {
@@ -632,6 +668,7 @@ table.logs > tbody > tr.active .row-marker {
 .detail-sidebar {
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
   height: 100%;
   min-width: 0;
   min-height: 0;
@@ -791,38 +828,31 @@ table.logs > tbody > tr.active .row-marker {
     grid-template-columns: 1fr;
   }
 
-  .filter-panel {
+  .filter-column {
     order: 2;
   }
 
-  .workspace {
+  .results-shell {
     order: 1;
+    grid-template-columns: 1fr;
   }
 
   .level-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .results-shell {
-    grid-template-columns: 1fr;
-  }
-
   .splitter {
     display: none;
   }
 
-  .detail-sidebar {
+  .detail-column {
     min-height: 320px;
   }
 }
 
 @media (max-width: 720px) {
-  .app-header {
+  .search-row {
     grid-template-columns: 1fr;
-  }
-
-  .app-header {
-    align-items: flex-start;
   }
 
   .header-metrics,
@@ -834,6 +864,10 @@ table.logs > tbody > tr.active .row-marker {
 
   .metric-card {
     flex: 1;
+  }
+
+  .detail-tools {
+    flex-wrap: wrap;
   }
 
   .content-shell {
