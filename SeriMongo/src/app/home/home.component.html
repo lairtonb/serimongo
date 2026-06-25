@@ -93,8 +93,8 @@
             </div>
 
             <div class="actions" aria-label="Search actions">
-              <button id="search-button" class="action-button primary" type="button" (click)="onSearchClick()">Search</button>
-              <button id="tail-button" class="action-button outline" type="button" [class.active]="isTailing()" (click)="toggleTail()">
+              <button id="search-button" class="action-button primary" type="button" style="min-width: 76px" (click)="onSearchClick()">Search</button>
+              <button id="tail-button" class="action-button outline" type="button" style="min-width: 76px" [class.active]="isTailing()" (click)="toggleTail()">
                 {{isTailing() ? 'Pause' : 'Tail'}}
               </button>
             </div>

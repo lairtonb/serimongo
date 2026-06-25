@@ -414,9 +414,9 @@ h2 {
   gap: 8px;
   min-height: 30px;
   padding: 4px 9px;
-  color: var(--muted);
-  background: var(--surface-alt);
-  border-bottom: 1px solid var(--line);
+  color: #174ea6;
+  background: #eaf1ff;
+  border-bottom: 1px solid #b7cdf7;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -478,8 +478,8 @@ table.logs {
 
 table.logs thead {
   width: calc(100% - 14px);
-  background: var(--surface-alt);
-  border-bottom: 1px solid var(--line);
+  background: #eaf1ff;
+  border-bottom: 1px solid #b7cdf7;
 }
 
 table.logs thead tr,
@@ -500,9 +500,9 @@ table.logs tbody {
 
 table.logs thead th {
   padding: 6px 8px;
-  color: var(--muted-strong);
-  background: var(--surface-alt);
-  border-bottom: 1px solid var(--line);
+  color: #174ea6;
+  background: #eaf1ff;
+  border-bottom: 1px solid #b7cdf7;
   text-align: left;
   font-size: 10px;
   font-weight: 750;
