@@ -47,9 +47,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly minDetailSidebarWidth = 280;
   readonly maxDetailSidebarWidth = 640;
 
+  private readonly searchPageSize = 100;
   private readonly minLogAreaWidth = 380;
   private readonly tailInjectedHighlightMs = 120;
   private readonly tailInjectedTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  private currentSearchQuery = '*';
   private resizeStartX = 0;
   private resizeStartWidth = 0;
 
@@ -121,7 +123,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     const query = this.buildLogQuery();
     await this.pauseTail();
     this.clearTailInjectedRows();
-    this.logEntries.set(await this.searchService.search(query));
+    await this.loadFirstSearchPage(query);
   }
 
   async selectPeriod(periodId: string): Promise<void> {
@@ -387,7 +389,12 @@ export class HomeComponent implements OnInit, OnDestroy {
       await this.signalRService.setTailQuery(query);
     }
 
-    this.logEntries.set(await this.searchService.search(query));
+    await this.loadFirstSearchPage(query);
+  }
+
+  private async loadFirstSearchPage(query: string): Promise<void> {
+    this.currentSearchQuery = query;
+    this.logEntries.set(await this.searchService.search(this.currentSearchQuery, 1, this.searchPageSize));
   }
 
   private async pauseTail(): Promise<void> {

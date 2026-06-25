@@ -13,8 +13,8 @@ export class SearchService {
 
   constructor(private http: HttpClient) {}
 
-  async search(searchExpression: string): Promise<LogEntry[]> {
-    const url = this.baseApiUrl + '/api/search/?currentPage=1&pageSize=100';
+  async search(searchExpression: string, currentPage = 1, pageSize = 100): Promise<LogEntry[]> {
+    const url = this.baseApiUrl + `/api/search/?currentPage=${currentPage}&pageSize=${pageSize}`;
     const body = { query: searchExpression?.trim() || '*' };
     return await firstValueFrom(this.http.post<LogEntry[]>(url, body));
   }
