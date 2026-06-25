@@ -2,9 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { ionCheckmarkOutline, ionCloseOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline } from '@ng-icons/ionicons';
+import { ionCheckmarkOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline } from '@ng-icons/ionicons';
 
 import { LogEntry } from './log-entry';
+import { HelpDrawerComponent } from './help-drawer.component';
 import { SignalRService } from '../services/signalr.service';
 import { SearchService } from '../services/search.service';
 
@@ -29,17 +30,10 @@ interface LogColumnOption {
   label: string;
 }
 
-type HelpTopicId = 'logql' | 'filters' | 'query' | 'entries' | 'details';
-
-interface HelpTopic {
-  title: string;
-  body: string;
-}
-
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon],
-  providers: [provideIcons({ ionCheckmarkOutline, ionCloseOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline })],
+  imports: [CommonModule, FormsModule, NgIcon, HelpDrawerComponent],
+  providers: [provideIcons({ ionCheckmarkOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline })],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -59,8 +53,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedServiceNames = signal<string[]>([]);
   levelFilterOpen = signal(true);
   serviceFilterOpen = signal(true);
-  helpMode = signal(false);
-  activeHelpTopic = signal<HelpTopicId | null>(null);
+  helpOpen = signal(false);
   toastMessage = signal<string | null>(null);
   columnsMenuOpen = signal(false);
   visibleLogColumns = signal<LogColumnId[]>(['traceId', 'timestamp', 'level', 'serviceName', 'message']);
@@ -121,29 +114,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     { id: 'serviceName', label: 'Service' },
     { id: 'message', label: 'Message' }
   ];
-
-  readonly helpTopics: Record<HelpTopicId, HelpTopic> = {
-    logql: {
-      title: 'LogQL reference',
-      body: 'Search logs with field comparisons, text matching, lists and boolean groups.'
-    },
-    filters: {
-      title: 'Quick filters',
-      body: 'Use level, service and time filters to narrow the stream without typing full LogQL clauses.'
-    },
-    query: {
-      title: 'LogQL search',
-      body: 'Type a LogQL expression, then Search to pause Tail and inspect a stable result set.'
-    },
-    entries: {
-      title: 'Log entries',
-      body: 'Select visible fields, scroll through virtualized rows, and click a row to inspect details.'
-    },
-    details: {
-      title: 'Selected event',
-      body: 'Copy message, exception or the full event details as Markdown from this sidebar.'
-    }
-  };
 
   readonly visibleLogColumnCount = computed(() => this.visibleLogColumns().length);
 
@@ -268,30 +238,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.columnsMenuOpen.update(open => !open);
   }
 
-  toggleHelpMode(): void {
-    const next = !this.helpMode();
-    this.helpMode.set(next);
-    this.activeHelpTopic.set(null);
-  }
-
-  showHelp(topic: HelpTopicId): void {
-    this.helpMode.set(true);
-    this.activeHelpTopic.set(topic);
-  }
-
   closeHelp(): void {
-    this.helpMode.set(false);
-    this.activeHelpTopic.set(null);
+    this.helpOpen.set(false);
   }
 
-  activeHelpTitle(): string {
-    const topic = this.activeHelpTopic();
-    return topic ? this.helpTopics[topic].title : '';
-  }
-
-  activeHelpBody(): string {
-    const topic = this.activeHelpTopic();
-    return topic ? this.helpTopics[topic].body : '';
+  toggleHelp(): void {
+    this.helpOpen.update(open => !open);
   }
 
   toggleLevelFilter(): void {

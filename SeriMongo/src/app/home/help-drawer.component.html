@@ -1,0 +1,132 @@
+<div class="help-overlay" [class.open]="open" (click)="close()" aria-hidden="true"></div>
+
+<aside class="help-drawer" [class.open]="open" [attr.aria-hidden]="!open" role="dialog" aria-modal="true" aria-labelledby="help-title">
+  <header class="help-header">
+    <div class="help-title">
+      <ng-icon name="ionHelpCircleOutline" size="18px" aria-hidden="true"></ng-icon>
+      <div>
+        <h2 id="help-title">Ajuda - SeriMongo</h2>
+        <span>Manual do usuário</span>
+      </div>
+    </div>
+    <button class="help-close" type="button" aria-label="Fechar ajuda" title="Fechar ajuda" (click)="close()">
+      <ng-icon name="ionCloseOutline" size="18px"></ng-icon>
+    </button>
+  </header>
+
+  <div class="help-shell" [class.toc-collapsed]="tocCollapsed()">
+    <main class="help-content">
+      <section id="help-overview" class="help-section">
+        <p class="help-eyebrow">Visão geral</p>
+        <h3>Inspecione logs em tempo real ou em uma busca estável.</h3>
+        <p>O SeriMongo combina Tail via SignalR, busca LogQL, filtros rápidos e detalhes estruturados para analisar eventos sem sair da tela.</p>
+        <div class="help-callout">
+          <strong>Fluxo principal</strong>
+          <p>Use os filtros e a query para reduzir o conjunto, selecione uma linha para abrir os detalhes e copie o que precisar para incidentes, PRs ou tickets.</p>
+        </div>
+      </section>
+
+      <section id="help-search" class="help-section">
+        <p class="help-eyebrow">Busca</p>
+        <h3>Campo LogQL e ação Search</h3>
+        <p>Digite uma expressão LogQL no campo principal. Ao clicar em <strong>Search</strong>, o Tail é pausado e a tela carrega uma página estável de resultados.</p>
+        <p>O painel <strong>Effective query</strong> mostra a query final gerada pela união da expressão digitada com período, level e service selecionados.</p>
+      </section>
+
+      <section id="help-logql" class="help-section">
+        <p class="help-eyebrow">LogQL</p>
+        <h3>Sintaxe suportada</h3>
+        <div class="help-grid">
+          <div>
+            <h4>Campos</h4>
+            <p><code>id</code>, <code>timestamp</code>, <code>time</code>, <code>level</code>, <code>message</code>, <code>renderedmessage</code>, <code>exception</code>, <code>service</code>, <code>servicename</code>, <code>service.name</code>.</p>
+          </div>
+          <div>
+            <h4>Propriedades</h4>
+            <p>Use <code>prop.&lt;name&gt;</code>, <code>property.&lt;name&gt;</code> ou <code>properties.&lt;name&gt;</code> para campos estruturados. Caminhos com ponto são suportados.</p>
+          </div>
+          <div>
+            <h4>Operadores</h4>
+            <p><code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>contains</code>, <code>startswith</code>, <code>endswith</code>, <code>in (...)</code> e <code>exists</code>.</p>
+          </div>
+          <div>
+            <h4>Booleanos</h4>
+            <p>Combine condições com <code>and</code>, <code>or</code> e parênteses.</p>
+          </div>
+        </div>
+        <pre class="help-code">level = Error
+level in (Warning, Error, Fatal)
+message contains "timeout"
+message startswith "checkout"
+exception contains "OutOfMemoryException"
+serviceName = "checkout-api"
+timestamp &gt;= "2026-06-25T12:00:00Z"
+prop.TraceId = "abc123"
+prop.exception.type exists
+prop.DurationMs &gt; 500
+(level = Error or level = Fatal) and serviceName = "worker"</pre>
+      </section>
+
+      <section id="help-filters" class="help-section">
+        <p class="help-eyebrow">Filtros rápidos</p>
+        <h3>Período, level e service</h3>
+        <p>Os filtros rápidos montam cláusulas LogQL automaticamente. Período gera uma condição em <code>timestamp</code>; levels selecionados geram <code>level in (...)</code>; services selecionados geram <code>serviceName in (...)</code>.</p>
+        <p>O botão <strong>Clear</strong> limpa os filtros rápidos, mantendo a expressão digitada no campo LogQL.</p>
+      </section>
+
+      <section id="help-table" class="help-section">
+        <p class="help-eyebrow">Tabela</p>
+        <h3>Linhas, colunas e seleção</h3>
+        <p>A tabela é virtualizada para manter a interface leve com muitos logs. Clique em uma linha para abrir o painel de detalhes.</p>
+        <p>O botão de colunas permite mostrar ou ocultar <strong>TraceId</strong>, <strong>Timestamp</strong>, <strong>Level</strong>, <strong>Service</strong> e <strong>Message</strong>. Pelo menos uma coluna permanece visível.</p>
+      </section>
+
+      <section id="help-details" class="help-section">
+        <p class="help-eyebrow">Detalhes</p>
+        <h3>Evento selecionado</h3>
+        <p>O painel lateral mostra message, timestamp, service, id, exception e properties. A divisória entre tabela e detalhes pode ser arrastada para ajustar a largura.</p>
+        <p>Ao selecionar uma linha, o Tail é pausado para evitar que novos eventos mudem o contexto enquanto você analisa o registro.</p>
+      </section>
+
+      <section id="help-copy" class="help-section">
+        <p class="help-eyebrow">Copiar</p>
+        <h3>Clipboard e Markdown</h3>
+        <p>Use o botão de copiar no header dos detalhes para exportar o evento como Markdown. Os botões em <strong>Message</strong> e <strong>Exception</strong> copiam apenas aquele bloco.</p>
+        <p>Ao copiar, um toast aparece no canto inferior direito confirmando sucesso ou falha.</p>
+      </section>
+
+      <section id="help-tail" class="help-section">
+        <p class="help-eyebrow">Tail</p>
+        <h3>Pause e retomada</h3>
+        <p><strong>Pause</strong> não desconecta o SignalR. Ele apenas envia o estado de pausa para o hub e bloqueia novos eventos na tela.</p>
+        <p>Depois de pausado, o botão volta a mostrar <strong>Tail</strong>. Clicar nele reativa o Tail na mesma conexão SignalR e sincroniza a query atual com o hub.</p>
+      </section>
+    </main>
+
+    <aside class="help-toc" aria-label="Table of contents">
+      <div class="help-toc-header">
+        <span *ngIf="!tocCollapsed()">Nesta página</span>
+        <button type="button" [attr.aria-expanded]="!tocCollapsed()" aria-label="Alternar índice" title="Alternar índice" (click)="toggleToc()">
+          <span aria-hidden="true">{{tocCollapsed() ? '<' : '>'}}</span>
+        </button>
+      </div>
+
+      <ng-container *ngIf="!tocCollapsed(); else tocRail">
+        <strong>Manual do SeriMongo</strong>
+        <nav>
+          <a *ngFor="let section of sections"
+            href="#"
+            [class.active]="activeSection() === section.id"
+            [attr.aria-current]="activeSection() === section.id ? 'true' : null"
+            (click)="scrollToSection($event, section.id)">
+            {{section.label}}
+          </a>
+        </nav>
+      </ng-container>
+
+      <ng-template #tocRail>
+        <span class="toc-rail">Nesta página</span>
+      </ng-template>
+    </aside>
+  </div>
+</aside>
