@@ -433,8 +433,6 @@ h2 {
   margin-left: auto;
 }
 
-.field-count { color: var(--accent); }
-
 .field-menu-panel {
   position: absolute;
   top: 26px;
