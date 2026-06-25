@@ -704,10 +704,6 @@ table.logs > tbody > tr.active .row-marker {
   padding: 0;
 }
 
-.copy-field {
-  position: relative;
-}
-
 .detail-titlebar span,
 .detail-section h3,
 .detail-meta dt,
