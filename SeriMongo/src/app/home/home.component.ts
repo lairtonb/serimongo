@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { ionCheckmarkOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline } from '@ng-icons/ionicons';
+import { ionCheckmarkOutline, ionCloseCircleOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline } from '@ng-icons/ionicons';
 
 import { LogEntry } from './log-entry';
 import { HelpDrawerComponent } from './help-drawer.component';
@@ -33,7 +33,7 @@ interface LogColumnOption {
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, NgIcon, HelpDrawerComponent],
-  providers: [provideIcons({ ionCheckmarkOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline })],
+  providers: [provideIcons({ ionCheckmarkOutline, ionCloseCircleOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline })],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -256,6 +256,13 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   effectiveQueryPreview(): string {
     return this.buildLogQuery();
+  }
+
+  clearLogQuery(search: HTMLTextAreaElement): void {
+    this.searchExpression = '*';
+    search.value = '*';
+    search.focus();
+    search.setSelectionRange(0, search.value.length);
   }
 
   async toggleTail(): Promise<void> {
