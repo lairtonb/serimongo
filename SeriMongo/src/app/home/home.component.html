@@ -210,13 +210,13 @@
 
             <div class="detail-body">
               <section class="detail-section">
-                <h3>Message</h3>
-                <div class="copy-field">
-                  <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:5px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy message" title="Copy message" (click)="copyText(selectedLog.renderedMessage)">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                  <h3>Message</h3>
+                  <button class="action-button ghost ionicon-button" type="button" style="width:25px;height:25px;opacity:.78" aria-label="Copy message" title="Copy message" (click)="copyText(selectedLog.renderedMessage)">
                     <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
                   </button>
-                  <p style="padding-right:34px">{{selectedLog.renderedMessage}}</p>
                 </div>
+                <p>{{selectedLog.renderedMessage}}</p>
               </section>
 
               <dl class="detail-meta">
@@ -235,13 +235,13 @@
               </dl>
 
               <section *ngIf="selectedLog.exception != null || exceptionStacktrace(selectedLog)" class="exception-panel">
-                <span>Exception</span>
-                <div class="copy-field">
-                  <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:5px;right:5px;z-index:1;width:25px;height:25px;opacity:.78" aria-label="Copy exception" title="Copy exception" (click)="copyText(selectedLog.exception || exceptionStacktrace(selectedLog))">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                  <span>Exception</span>
+                  <button class="action-button ghost ionicon-button" type="button" style="width:25px;height:25px;opacity:.78" aria-label="Copy exception" title="Copy exception" (click)="copyText(selectedLog.exception || exceptionStacktrace(selectedLog))">
                     <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
                   </button>
-                  <pre style="padding-right:34px">{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
                 </div>
+                <pre>{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
               </section>
 
               <section class="detail-section">
