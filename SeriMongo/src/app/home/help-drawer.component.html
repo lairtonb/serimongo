@@ -10,7 +10,7 @@
       </div>
     </div>
     <button class="help-close" type="button" aria-label="Fechar ajuda" title="Fechar ajuda" (click)="close()">
-      <ng-icon name="ionCloseOutline" size="18px"></ng-icon>
+      <ng-icon name="ionCloseSharp" size="18px"></ng-icon>
     </button>
   </header>
 
@@ -107,7 +107,7 @@ prop.DurationMs &gt; 500
       <div class="help-toc-header">
         <span *ngIf="!tocCollapsed()">Nesta página</span>
         <button type="button" [attr.aria-expanded]="!tocCollapsed()" aria-label="Alternar índice" title="Alternar índice" (click)="toggleToc()">
-          <span aria-hidden="true">{{tocCollapsed() ? '<' : '>'}}</span>
+          <ng-icon [name]="tocCollapsed() ? 'ionChevronBackOutline' : 'ionChevronForwardOutline'" size="16px" aria-hidden="true"></ng-icon>
         </button>
       </div>
 
