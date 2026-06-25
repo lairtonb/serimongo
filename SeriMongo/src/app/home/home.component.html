@@ -119,7 +119,7 @@
             <table class="logs table-scroll">
               <thead>
                 <tr>
-                  <th class="idcol">Id</th>
+                  <th class="trace-id">TraceId</th>
                   <th class="tstamp">Timestamp</th>
                   <th class="lvl">Level</th>
                   <th class="service-name">Service Name</th>
@@ -133,10 +133,10 @@
                   </tr>
                   <ng-container *ngFor="let log of rows.entries; trackBy: trackByLogId">
                     <tr class="log-row" (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)">
-                      <td class="idcol"><span class="row-marker" aria-hidden="true"></span>{{log.id}}</td>
+                      <td class="trace-id" [title]="traceId(log)"><span class="row-marker" aria-hidden="true"></span>{{traceId(log)}}</td>
                       <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
                       <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
-                      <td class="service-name">{{serviceName(log)}}</td>
+                      <td class="service-name" [title]="serviceName(log)">{{serviceName(log)}}</td>
                       <td [class]="{
                         'msgcol': true,
                         'msg': true,

@@ -512,8 +512,8 @@ table.logs > tbody > tr.tail-injected:nth-child(4n + 3) {
   background: #d9f99d;
 }
 
-.idcol {
-  width: 210px;
+.trace-id {
+  width: 190px;
   color: var(--muted);
   font-family: Consolas, "SFMono-Regular", Menlo, monospace;
   font-size: 11px;
@@ -536,7 +536,7 @@ table.logs > tbody > tr.active .row-marker {
 }
 
 .tstamp {
-  width: 205px;
+  width: 190px;
   color: #374151;
   white-space: nowrap;
 }
@@ -546,7 +546,7 @@ table.logs > tbody > tr.active .row-marker {
 }
 
 .service-name {
-  width: 165px;
+  width: 145px;
   color: var(--muted-strong);
   font-family: Consolas, "SFMono-Regular", Menlo, monospace;
   font-size: 11px;
@@ -848,7 +848,7 @@ table.logs > tbody > tr.active .row-marker {
     padding-bottom: 0;
   }
 
-  .idcol {
+  .trace-id {
     width: 92px;
   }
 
