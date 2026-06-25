@@ -88,12 +88,16 @@
       <section class="workspace">
         <section class="query-panel" aria-label="Search logs">
           <div class="search-row">
-            <div class="query-box">
+            <div class="query-box" style="position:relative">
               <textarea id="search-logs" #search rows="1"
+                style="padding-right:34px"
                 aria-label="LogQL"
                 (keydown)="handleTab($event, search)"
                 [(ngModel)]="searchExpression"
                 placeholder='level = Error or message contains "timeout"'></textarea>
+              <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:50%;right:5px;width:22px;height:22px;padding:0;color:#57606a;background:transparent;border:0;transform:translateY(-50%)" aria-label="Reset LogQL query" title="Reset LogQL query" (mousedown)="$event.preventDefault()" (click)="clearLogQuery(search)">
+                <ng-icon name="ionCloseCircleOutline" size="18px"></ng-icon>
+              </button>
             </div>
 
             <div class="actions" aria-label="Search actions">
