@@ -271,11 +271,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleHelpMode(): void {
     const next = !this.helpMode();
     this.helpMode.set(next);
-    if (!next) {
-      this.activeHelpTopic.set(null);
-    } else {
-      this.activeHelpTopic.set('logql');
-    }
+    this.activeHelpTopic.set(null);
   }
 
   showHelp(topic: HelpTopicId): void {
