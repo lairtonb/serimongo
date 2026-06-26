@@ -78,15 +78,15 @@
 
           <section class="filter-accordion" *ngIf="propertyFilters().length > 0">
             <div class="accordion-trigger" style="cursor:default">
-              <span>Property filters</span>
+              <span>Properties</span>
               <span>{{propertyFilters().length}} selected</span>
             </div>
             <div class="accordion-panel">
               <div class="level-list">
-                <div *ngFor="let filter of propertyFilters()" class="filter-chip" style="padding:4px 6px 4px 7px;cursor:default;background:#eaf1ff;border-color:#8cb4ff;border-left:2px solid #2563eb">
+                <div *ngFor="let filter of propertyFilters()" class="filter-chip" style="padding:4px 6px 4px 7px;cursor:default">
                   <span class="level-dot information"></span>
                   <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" [title]="propertyFilterLabel(filter)">{{propertyFilterLabel(filter)}}</span>
-                  <button class="action-button ghost ionicon-button" type="button" style="width:20px;height:20px;background:#fff" [attr.aria-label]="'Remove ' + propertyFilterLabel(filter)" [title]="'Remove ' + propertyFilterLabel(filter)" (click)="removePropertyFilter(filter)">
+                  <button class="action-button ghost ionicon-button" type="button" style="width:20px;height:20px;padding:0;background:transparent;border:0;border-radius:999px;color:#57606a" [attr.aria-label]="'Remove ' + propertyFilterLabel(filter)" [title]="'Remove ' + propertyFilterLabel(filter)" (click)="removePropertyFilter(filter)">
                     <ng-icon name="ionRemoveCircleOutline" size="14px"></ng-icon>
                   </button>
                 </div>
