@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
-import { ionCheckmarkOutline, ionCloseCircleOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline } from '@ng-icons/ionicons';
+import { ionCheckmarkOutline, ionCloseCircleOutline, ionCopyOutline, ionFunnelOutline, ionHelpCircleOutline, ionOptionsOutline, ionRemoveCircleOutline, ionSettingsOutline } from '@ng-icons/ionicons';
 
 import { LogEntry } from './log-entry';
 import { HelpDrawerComponent } from './help-drawer.component';
@@ -30,10 +30,15 @@ interface LogColumnOption {
   label: string;
 }
 
+interface PropertyFilter {
+  key: string;
+  value: string | number;
+}
+
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, NgIcon, HelpDrawerComponent],
-  providers: [provideIcons({ ionCheckmarkOutline, ionCloseCircleOutline, ionCopyOutline, ionHelpCircleOutline, ionOptionsOutline, ionSettingsOutline })],
+  providers: [provideIcons({ ionCheckmarkOutline, ionCloseCircleOutline, ionCopyOutline, ionFunnelOutline, ionHelpCircleOutline, ionOptionsOutline, ionRemoveCircleOutline, ionSettingsOutline })],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
@@ -51,6 +56,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedLevels = signal<string[]>([]);
   serviceNames = signal<string[]>([]);
   selectedServiceNames = signal<string[]>([]);
+  propertyFilters = signal<PropertyFilter[]>([]);
   levelFilterOpen = signal(true);
   serviceFilterOpen = signal(true);
   helpOpen = signal(false);
@@ -202,7 +208,57 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.selectedPeriodSince.set(null);
     this.selectedLevels.set([]);
     this.selectedServiceNames.set([]);
+    this.propertyFilters.set([]);
     await this.onFilterChange();
+  }
+
+  async addPropertyFilter(key: string, value: unknown): Promise<void> {
+    if (!this.canAddPropertyFilter(key, value)) {
+      this.showToast('Only string and number properties can be added as quick filters');
+      return;
+    }
+
+    const filter: PropertyFilter = { key, value: value as string | number };
+    const filters = this.propertyFilters();
+    if (filters.some(existing => existing.key === filter.key && existing.value === filter.value)) {
+      this.showToast('Filter already added');
+      return;
+    }
+
+    this.propertyFilters.set([...filters, filter]);
+    this.showToast('Filter added');
+    await this.onFilterChange();
+  }
+
+  async removePropertyFilter(filter: PropertyFilter): Promise<void> {
+    const nextFilters = this.propertyFilters().filter(existing => existing.key !== filter.key || existing.value !== filter.value);
+    if (nextFilters.length === this.propertyFilters().length) {
+      return;
+    }
+
+    this.propertyFilters.set(nextFilters);
+    await this.onFilterChange();
+  }
+
+  canAddPropertyFilter(key: string, value: unknown): boolean {
+    return this.isSafePropertyFilterKey(key)
+      && (typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value)));
+  }
+
+  propertyFilterTitle(key: string, value: unknown): string {
+    if (!this.isSafePropertyFilterKey(key)) {
+      return 'Property keys with dots are not supported by quick filters yet';
+    }
+
+    if (!this.canAddPropertyFilter(key, value)) {
+      return 'Only string and number properties can be added as quick filters';
+    }
+
+    return 'Add to filter';
+  }
+
+  propertyFilterLabel(filter: PropertyFilter): string {
+    return `${filter.key} = ${this.formatLogQueryLiteral(filter.value)}`;
   }
 
   isLevelSelected(level: string): boolean {
@@ -480,11 +536,23 @@ export class HomeComponent implements OnInit, OnDestroy {
       clauses.push(`serviceName in (${serviceNames.map(serviceName => this.quoteLogQueryValue(serviceName)).join(', ')})`);
     }
 
+    for (const filter of this.propertyFilters()) {
+      clauses.push(`prop.${filter.key} = ${this.formatLogQueryLiteral(filter.value)}`);
+    }
+
     return clauses.length > 0 ? clauses.join(' and ') : '*';
+  }
+
+  private formatLogQueryLiteral(value: string | number): string {
+    return typeof value === 'number' ? String(value) : this.quoteLogQueryValue(value);
   }
 
   private quoteLogQueryValue(value: string): string {
     return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  }
+
+  private isSafePropertyFilterKey(key: string): boolean {
+    return key.length > 0 && [...key].every(char => /[A-Za-z0-9_-]/.test(char));
   }
 
   private markTailInjected(logEntry: LogEntry): void {
