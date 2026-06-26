@@ -49,9 +49,9 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly continuousJitterEnabled = signal(true);
   readonly activity = signal<ActivityItem[]>([]);
 
-  continuousCount = 25;
-  continuousIntervalMs = 2000;
-  continuousJitterMs = 500;
+  continuousCount = 2;
+  continuousIntervalMs = 150;
+  continuousJitterMs = 50;
 
   readonly levels: LevelAction[] = [
     { level: 'Trace', description: 'High-volume probes and spans.', tone: 'trace' },
@@ -138,9 +138,9 @@ export class AppComponent implements OnInit, OnDestroy {
       return null;
     }
 
-    const count = this.clampInteger(this.continuousCount, 1, 200, 25);
-    const intervalMs = this.clampInteger(this.continuousIntervalMs, 1, 60_000, 2000);
-    const jitterMs = this.clampInteger(this.continuousJitterMs, 0, 60_000, 500);
+    const count = this.clampInteger(this.continuousCount, 1, 200, 2);
+    const intervalMs = this.clampInteger(this.continuousIntervalMs, 1, 60_000, 150);
+    const jitterMs = this.clampInteger(this.continuousJitterMs, 0, 60_000, 50);
 
     if (jitterMs === 0) {
       return 'Jitter is on but set to 0ms; same as Off.';
@@ -211,9 +211,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private normalizeContinuousSettings(): void {
-    this.continuousCount = this.clampInteger(this.continuousCount, 1, 200, 25);
-    this.continuousIntervalMs = this.clampInteger(this.continuousIntervalMs, 1, 60_000, 2000);
-    this.continuousJitterMs = this.clampInteger(this.continuousJitterMs, 0, 60_000, 500);
+    this.continuousCount = this.clampInteger(this.continuousCount, 1, 200, 2);
+    this.continuousIntervalMs = this.clampInteger(this.continuousIntervalMs, 1, 60_000, 150);
+    this.continuousJitterMs = this.clampInteger(this.continuousJitterMs, 0, 60_000, 50);
   }
 
   private getNextContinuousDelayMs(): number {
