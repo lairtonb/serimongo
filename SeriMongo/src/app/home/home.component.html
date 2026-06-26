@@ -75,6 +75,24 @@
               </ng-template>
             </div>
           </section>
+
+          <section class="filter-accordion" *ngIf="propertyFilters().length > 0">
+            <div class="accordion-trigger" style="cursor:default">
+              <span>Property filters</span>
+              <span>{{propertyFilters().length}} selected</span>
+            </div>
+            <div class="accordion-panel">
+              <div class="level-list">
+                <div *ngFor="let filter of propertyFilters()" class="filter-chip" style="padding:4px 6px 4px 7px;cursor:default;background:#eaf1ff;border-color:#8cb4ff;border-left:2px solid #2563eb">
+                  <span class="level-dot information"></span>
+                  <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" [title]="propertyFilterLabel(filter)">{{propertyFilterLabel(filter)}}</span>
+                  <button class="action-button ghost ionicon-button" type="button" style="width:20px;height:20px;background:#fff" [attr.aria-label]="'Remove ' + propertyFilterLabel(filter)" [title]="'Remove ' + propertyFilterLabel(filter)" (click)="removePropertyFilter(filter)">
+                    <ng-icon name="ionRemoveCircleOutline" size="14px"></ng-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
         <section class="effective-query">
@@ -254,7 +272,12 @@
                 <h3>Properties</h3>
                 <dl class="properties sidebar-properties">
                   <div *ngFor="let p of (selectedLog.properties | keyvalue)">
-                    <dt>{{p.key}}</dt>
+                    <dt style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                      <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" [title]="p.key">{{p.key}}</span>
+                      <button class="action-button ghost ionicon-button" type="button" style="width:22px;height:22px;background:#fff" [disabled]="!canAddPropertyFilter(p.key, p.value)" [style.opacity]="canAddPropertyFilter(p.key, p.value) ? '1' : '.38'" [style.cursor]="canAddPropertyFilter(p.key, p.value) ? 'pointer' : 'not-allowed'" [attr.aria-label]="'Add ' + p.key + ' to filter'" [title]="propertyFilterTitle(p.key, p.value)" (click)="addPropertyFilter(p.key, p.value)">
+                        <ng-icon name="ionFunnelOutline" size="14px"></ng-icon>
+                      </button>
+                    </dt>
                     <dd><pre>{{formatValue(p.value)}}</pre></dd>
                   </div>
                 </dl>

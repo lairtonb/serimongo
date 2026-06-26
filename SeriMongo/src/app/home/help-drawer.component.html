@@ -43,7 +43,7 @@
           </div>
           <div>
             <h4>Properties</h4>
-            <p>Use <code>prop.&lt;name&gt;</code>, <code>property.&lt;name&gt;</code> or <code>properties.&lt;name&gt;</code> for structured fields. Dotted paths are supported.</p>
+            <p>Use <code>prop.&lt;name&gt;</code>, <code>property.&lt;name&gt;</code> or <code>properties.&lt;name&gt;</code> for structured fields. Dotted paths are supported. Use <code>exists</code> to check whether a property is present.</p>
           </div>
           <div>
             <h4>Operators</h4>
@@ -65,12 +65,14 @@ prop.TraceId = "abc123"
 prop.exception.type exists
 prop.DurationMs &gt; 500
 (level = Error or level = Fatal) and serviceName = "worker"</pre>
+        <p>There is no <code>isNull</code>, <code>isTrue</code> or <code>isFalse</code> operator today. For boolean or null checks, write manual LogQL only after the query syntax supports the exact predicate you need.</p>
       </section>
 
       <section id="help-filters" class="help-section">
         <p class="help-eyebrow">Quick filters</p>
         <h3>Period, level and service</h3>
         <p>Quick filters build LogQL clauses automatically. Period creates a <code>timestamp</code> condition; selected levels create <code>level in (...)</code>; selected services create <code>serviceName in (...)</code>.</p>
+        <p>Property quick filters can be added from the selected event details. They use <code>=</code> and currently support only string and number values with simple property keys.</p>
         <p>The <strong>Clear</strong> button resets quick filters while keeping the expression typed in the LogQL field.</p>
       </section>
 
@@ -85,6 +87,7 @@ prop.DurationMs &gt; 500
         <p class="help-eyebrow">Details</p>
         <h3>Selected event</h3>
         <p>The side panel shows message, timestamp, service, id, exception and properties. The splitter between the table and details can be dragged to resize the panel.</p>
+        <p>Use the funnel button on a property card to add that string or number property as a quick filter without pausing Tail.</p>
         <p>Selecting a row pauses Tail so new events do not change the context while you inspect the record.</p>
       </section>
 
