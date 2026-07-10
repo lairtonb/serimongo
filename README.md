@@ -2,9 +2,23 @@
 
 SeriMongo is a real-time log viewer backed by SQLite. It receives logs through HTTP APIs, broadcasts new entries to the UI with SignalR, and supports OTLP/HTTP JSON log ingestion.
 
+## Screenshots
+
+### Log viewer
+
+Search, filter, tail, and inspect structured log events from the same workspace.
+
+![SeriMongo log viewer with quick filters, results, and structured event details](Docs/serimongo-dashboard.png)
+
+### Realtime simulator
+
+Generate individual events, mixed bursts, or continuous traffic from the bundled simulator.
+
+![SeriMongo simulator generating a mixed burst of logs](Docs/serimongo-simulator.png)
+
 ## Features
 
-* SQLite storage, no MongoDB dependency.
+* SQLite storage.
 * Real-time UI updates through SignalR.
 * LogQL search dialect compiled to parameterized SQLite queries.
 * OTLP logs receiver at `/v1/logs` and `/otlp/v1/logs` for `http/json` exporters.
