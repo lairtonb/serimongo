@@ -1,0 +1,124 @@
+<main class="page-shell">
+  <section class="hero-card z-card">
+    <div>
+      <p class="eyebrow">SeriMongo simulator</p>
+      <h1>Emit realtime logs on demand</h1>
+      <p class="subtitle">Each emitted log randomly picks one fictitious service.</p>
+    </div>
+
+    <div class="target-card">
+      <span>Target</span>
+      <strong>{{targetBaseUrl()}}</strong>
+    </div>
+  </section>
+
+  <section class="content-grid">
+    <section class="z-card controls-card">
+      <div class="section-title">
+        <p class="eyebrow">Single events</p>
+        <h2>Choose severity</h2>
+      </div>
+
+      <div class="level-grid">
+        <button type="button"
+          *ngFor="let item of levels"
+          [class]="['level-button', item.tone]"
+          [disabled]="pendingAction() !== null"
+          (click)="emit(item.level)">
+          <span>{{item.level}}</span>
+          <small>{{item.description}}</small>
+        </button>
+      </div>
+
+      <div class="service-panel">
+        <p class="eyebrow">Service pool</p>
+        <div class="service-grid">
+          <span *ngFor="let serviceName of serviceNames()">{{serviceName}}</span>
+        </div>
+      </div>
+
+      <div class="burst-panel">
+        <div>
+          <p class="eyebrow">Traffic burst</p>
+          <h2>Generate mixed logs</h2>
+        </div>
+        <div class="burst-actions">
+          <button type="button" class="z-button outline" [disabled]="pendingAction() !== null" (click)="emitBurst(10)">10 logs</button>
+          <button type="button" class="z-button outline" [disabled]="pendingAction() !== null" (click)="emitBurst(50)">50 logs</button>
+          <button type="button" class="z-button primary" [disabled]="pendingAction() !== null" (click)="emitBurst(150)">150 logs</button>
+        </div>
+      </div>
+
+      <div class="continuous-panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Continuous traffic</p>
+            <h2>Run a repeating stream</h2>
+          </div>
+          <strong [class.running]="continuousRunning()">{{continuousRunning() ? 'Running' : 'Stopped'}}</strong>
+        </div>
+
+        <div class="continuous-form">
+          <label class="form-field">
+            <span>Logs per interval</span>
+            <input type="number" min="1" max="200" step="1" [value]="continuousCount" (input)="updateContinuousCount($event)">
+          </label>
+          <label class="form-field">
+            <span>Interval ms</span>
+            <input type="number" min="1" max="60000" step="1" [value]="continuousIntervalMs" (input)="updateContinuousIntervalMs($event)">
+          </label>
+          <div class="form-field jitter-field" [class.disabled]="!continuousJitterEnabled()" [class.has-warning]="continuousJitterWarning() !== null">
+            <div class="field-heading">
+              <span>Jitter ms</span>
+              <button type="button" class="jitter-toggle" [class.active]="continuousJitterEnabled()" (click)="toggleContinuousJitter()">
+                {{continuousJitterEnabled() ? 'On' : 'Off'}}
+              </button>
+            </div>
+            <input type="number" min="0" max="60000" step="1" [disabled]="!continuousJitterEnabled()" [value]="continuousJitterMs" (input)="updateContinuousJitterMs($event)">
+            <ng-container *ngIf="continuousJitterWarning() as warning">
+              <button type="button" class="jitter-warning-trigger" [attr.aria-label]="warning" [title]="warning">!</button>
+              <p class="jitter-popover" role="tooltip">{{warning}}</p>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="burst-actions">
+          <button type="button" class="z-button primary" [disabled]="continuousRunning()" (click)="startContinuous()">Start continuous</button>
+          <button type="button" class="z-button outline" [disabled]="!continuousRunning()" (click)="stopContinuous()">Stop</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="z-card status-card">
+      <div class="stat">
+        <span>Total emitted</span>
+        <strong>{{totalEmitted()}}</strong>
+      </div>
+
+      <div class="stat">
+        <span>Current action</span>
+        <strong>{{pendingAction() || 'Idle'}}</strong>
+      </div>
+
+      <div class="stat">
+        <span>Continuous</span>
+        <strong>{{continuousRunning() ? 'Running' : 'Stopped'}}</strong>
+        <small *ngIf="nextContinuousDelayMs() !== null">Next tick in {{nextContinuousDelayMs()}}ms</small>
+      </div>
+
+      <div class="stat">
+        <span>Continuous emitted</span>
+        <strong>{{continuousEmitted()}}</strong>
+      </div>
+
+      <div class="activity-list">
+        <p class="eyebrow">Recent activity</p>
+        <p *ngIf="activity().length === 0" class="empty">No logs emitted yet.</p>
+        <article *ngFor="let item of activity()" [class]="['activity-item', item.tone]">
+          <time>{{item.timestamp | date:'HH:mm:ss'}}</time>
+          <span>{{item.text}}</span>
+        </article>
+      </div>
+    </aside>
+  </section>
+</main>

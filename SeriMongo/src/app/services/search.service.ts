@@ -1,26 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 import { LogEntry } from '../home/log-entry';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SearchService {
-
-  // todo implement config service to get the server url
-  private baseApiUrl = "http://localhost:51983";
+  private readonly baseApiUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
-  async search(searchExpression: string): Promise<LogEntry[]> {
-    try {
-      const url = this.baseApiUrl + '/api/search/?currentPage=1&pageSize=100';
-      const body = JSON.parse(searchExpression);
-      return await this.http.post<LogEntry[]>(url, body).toPromise();
-    } catch (err) {
-      console.error(err);
-    }
+  async search(searchExpression: string, currentPage = 1, pageSize = 100): Promise<LogEntry[]> {
+    const url = this.baseApiUrl + `/api/search/?currentPage=${currentPage}&pageSize=${pageSize}`;
+    const body = { query: searchExpression?.trim() || '*' };
+    return await firstValueFrom(this.http.post<LogEntry[]>(url, body));
   }
-
 }

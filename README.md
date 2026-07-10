@@ -1,200 +1,214 @@
 # SeriMongo
 
-A real-time log viewer for [serilog-sinks-mongodb](https://github.com/serilog/serilog-sinks-mongodb).
+SeriMongo is a real-time log viewer backed by SQLite. It receives logs through HTTP APIs, broadcasts new entries to the UI with SignalR, and supports OTLP/HTTP JSON log ingestion.
+
+## Screenshots
+
+### Log viewer
+
+Search, filter, tail, and inspect structured log events from the same workspace.
+
+![SeriMongo log viewer with quick filters, results, and structured event details](Docs/serimongo-dashboard.png)
+
+### Realtime simulator
+
+Generate individual events, mixed bursts, or continuous traffic from the bundled simulator.
+
+![SeriMongo simulator generating a mixed burst of logs](Docs/serimongo-simulator.png)
 
 ## Features
 
-* See your logs in real-time with [SignalR](https://docs.microsoft.com/pt-br/aspnet/core/signalr/introduction?view=aspnetcore-5.0) and [MongoDB Change Streams](https://docs.mongodb.com/manual/changeStreams/).
-* You can type MongoDB filter documents into the search bar to display only log entries which match the specified criteria. 
+* SQLite storage.
+* Real-time UI updates through SignalR.
+* LogQL search dialect compiled to parameterized SQLite queries.
+* OTLP logs receiver at `/v1/logs` and `/otlp/v1/logs` for `http/json` exporters.
+* Docker image with Angular UI and ASP.NET Core backend.
+* Docker Compose simulator UI for emitting realtime sample logs.
 
-## Screenshot
+## Run With Docker
 
-![SeriMongo UI](Docs/screenshot.png)
+Build the image:
 
-## Instructions
-
-### Install and Configure MongoDB
-
-To test this easily in docker desktop.
-
-#### First, create a volume
-
-```
-docker volume create --name=mongodata
+```bash
+docker build -t serimongo:local .
 ```
 
-#### Create an image, configuring it to use a replica set:
+Run it:
 
-```
-docker run --name mongodb2 -v mongodata2:/data/db -d -p 27017:27017 mongo --replSet rs0 --oplogSize 50
-```
-
-> SeriMongo works with a single MongoDB instance because all we are interested is in the oplog.
-
-#### Initiate the replica set:
-
-You can use a GUI tool like RoboMongo or the Mongo shell.
-
-**Mongo Shell**
-
-Connect to the console of the running docker image:
-
-```
-docker exec -it mongodb bash
-root@61ea9d5e1425:/# mongo
-> rs.initiate()
+```bash
+docker run --rm -p 51983:8080 -v serimongo-data:/data serimongo:local
 ```
 
-The above command result will be:
+Run it with the bundled `seed.sql` enabled:
 
+```bash
+docker run --rm -p 51983:8080 \
+  -e ApplicationOptions__Seed__Enabled=true \
+  -e ApplicationOptions__Seed__ScriptPath=/app/seed.sql \
+  -v serimongo-data:/data \
+  serimongo:local
 ```
-> rs.initiate()
-{
-        "info2" : "no configuration specified. Using a default configuration for the set",
-        "me" : "fe153506a3b2:27017",
-        "ok" : 1,
-        "$clusterTime" : {
-                "clusterTime" : Timestamp(1605713394, 1),
-                "signature" : {
-                        "hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
-                        "keyId" : NumberLong(0)
-                }
+
+Or use Docker Compose, which enables the seed by default:
+
+```bash
+docker compose up --build
+```
+
+Open the UI:
+
+```text
+http://localhost:51983
+```
+
+Open the simulator UI and click a severity button to send logs to SeriMongo:
+
+```text
+http://localhost:51984
+```
+
+The container stores SQLite data at `/data/serimongo.db`. Override it with:
+
+```bash
+docker run --rm -p 51983:8080 \
+  -e ApplicationOptions__Database__ConnectionString="Data Source=/data/custom.db" \
+  -v serimongo-data:/data \
+  serimongo:local
+```
+
+## Seed Data
+
+The Docker image includes `seed.sql`, a compact SQLite script that generates 3000 varied log entries. Startup seeding runs only when both conditions are met:
+
+* `ApplicationOptions__Seed__Enabled=true`
+* the configured `ApplicationOptions__Seed__ScriptPath` file exists
+
+The bundled script is idempotent: it inserts only when `LogEntries` is empty, so restarts do not duplicate seed data.
+
+## Simulator
+
+The simulator is a separate ASP.NET Core + Angular app in `Simulator/SeriMongo.Simulator`. Docker Compose runs it on port `51984` and configures it to post OTLP/HTTP JSON logs to the main `serimongo` service.
+
+Configure a different target with:
+
+```text
+SimulatorOptions__TargetBaseUrl=http://localhost:51983
+```
+
+The UI can emit one log for each supported level or generate mixed bursts of sample traffic.
+
+## LogQL
+
+The search box accepts LogQL expressions. Values are always passed to SQLite as parameters; only known log fields and sanitized `prop.<name>` paths are converted to SQL.
+
+Fields:
+
+* `id`
+* `timestamp`
+* `level`
+* `message`
+* `exception`
+* `prop.<name>` for structured properties
+
+Operators:
+
+* `=`, `!=`, `>`, `>=`, `<`, `<=`
+* `contains`, `startswith`, `endswith`
+* `in (...)`
+* `exists`
+* `and`, `or`, parentheses
+
+Examples:
+
+```text
+*
+level = Error
+level in (Error, Warning) and timestamp >= "2026-01-01T00:00:00Z"
+message contains "checkout failed"
+exception exists
+prop.CustomerId = 42 or prop.Country = "Brazil"
+```
+
+The dialect metadata is also available at:
+
+```text
+GET /api/search/dialect
+```
+
+## HTTP Log Ingestion
+
+Insert a log directly:
+
+```bash
+curl -X POST http://localhost:51983/api/applogs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "level": "Error",
+    "renderedMessage": "checkout failed",
+    "properties": { "CustomerId": 42, "Country": "Brazil" }
+  }'
+```
+
+Search logs:
+
+```bash
+curl -X POST "http://localhost:51983/api/search?currentPage=1&pageSize=100" \
+  -H "Content-Type: application/json" \
+  -d '{ "query": "level = Error and prop.CustomerId = 42" }'
+```
+
+## OTLP Logs
+
+The receiver supports OTLP/HTTP JSON. Configure OpenTelemetry exporters with:
+
+```text
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:51983
+OTEL_EXPORTER_OTLP_PROTOCOL=http/json
+```
+
+Send a minimal OTLP JSON payload:
+
+```bash
+curl -X POST http://localhost:51983/v1/logs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "resourceLogs": [
+      {
+        "resource": {
+          "attributes": [
+            { "key": "service.name", "value": { "stringValue": "checkout-api" } }
+          ]
         },
-        "operationTime" : Timestamp(1605713394, 1)
-}
-rs0:SECONDARY>
+        "scopeLogs": [
+          {
+            "scope": { "name": "sample" },
+            "logRecords": [
+              {
+                "severityText": "ERROR",
+                "body": { "stringValue": "checkout failed" },
+                "attributes": [
+                  { "key": "CustomerId", "value": { "intValue": "42" } }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }'
 ```
 
-**GUI (Robo3T)**
+## Local Development
 
-Connect to MongoDB instance running in docker:
+Backend:
 
-![Robot3t_Connection.png](Docs/Robot3t_Connection.png)
-
-Then run:
-
-![Robot3t_rs_initiate.png](Docs/Robot3t_rs_initiate.png)
-
-### Configure and Run the Sample Application
-
-Configure the connection in appsettings.json:
-
-```json
-{
-  "AllowedHosts": "*",
-  "ConnectionStrings": {
-    "BaseLog": "mongodb://localhost:27017/applogs"
-  },
+```bash
+dotnet build SeriMongo/SeriMongo.csproj
+dotnet run --project SeriMongo/SeriMongo.csproj --urls http://localhost:51983
 ```
 
-Run the application, it will create the database and hte collection.
+Frontend with Angular 22 requires Node 22.22.3+, Node 24.15.0+, or newer. If your local Node is older, use Docker/Node 24 for frontend commands:
 
-You can now see your logs in Robot3T for example:
-
-![ApplicationLogs.png](Docs/ApplicationLogs.png)
-
-
-### Configure adnd Run SeriMongo 
-
-Configure the connection in appsettings.json:
-
-```json
-  "ApplicationOptions": {
-    "ConnectionInfo": {
-      "ConnectionString": "mongodb://localhost:27017",
-      "DatabaseName": "applogs",
-      "CollectionName": "ApplicationLogs"
-    }
-  }
-}
+```bash
+docker run --rm --mount "type=bind,source=%CD%/SeriMongo,target=/app" -w /app node:24-alpine npm run build
 ```
-
-## Sample Queries
-
-Here you can see some sample queries and how SeriMongo displays its results.
-
-### Filter by Timestamp
-
-You can enter dates in ISO format:
-
-```json
-{
-  "Timestamp": {
-    "$gte": "2020-11-16T07:58:29.924-03:00",
-    "$lte": "2020-11-17T07:58:30.221-03:00"
-  }
-}
-```
-
-Note that the backend will convert the timestamp to `ISODate("date-value")` syntax. The above query, in Robo 3T or Mongo shell, would be written like this:
-
-```json
-{
-  "Timestamp": {
-    "$gte": ISODate("2020-11-17T07:58:29.924-03:00"),
-    "$lte": ISODate("2020-11-17T07:58:30.221-03:00")
-  }
-}
-```
-
-### Filter by Multiple Criteria (AND)
-
-To filter for example by log level and tiestamp, use the comma `,`, like in:
-
-```json
-{
-  "Level": "Error",
-  "Timestamp": {
-    "$gte": "2020-11-16T07:58:29.924-03:00",
-    "$lte": "2020-11-17T07:58:30.221-03:00"
-  }
-}
-```
-
-### Filter by Multiple Criteria (IN)
-
-To filter for example by more than one log level at the same time, use the `"$in"` syntax:
-
-```json
-{ "Level": { "$in": [ "Error", "Warning" ] } }
-```
-
-### Filter by Multiple Criteria (OR)
-
-To filter by one set of criteria or another, use the `"$or"` syntax:
-
-```json
-{
-  "$or":
-  [
-    {
-      "Level": "Information"
-    }, 
-    {
-      "Level" : "Debug"
-    }
-  ]
-}
-```
-
-### Filter by Sub Documents
-
-This allows you to filter by properties created dynamically by .NET Core logging scopes and message templates.
-
-Returns log entries that have a property with any value:
-
-```json
-{
-  "Properties.CustomerName": { "$exists": true }
-}
-```
-
-Returns log entries that have properties with a specific value:
-
-```json
-{
-  "Properties.Country": "Austria"
-} 
-```
-
----

@@ -1,14 +1,10 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MongoDB.Bson;
-using MongoDB.Driver;
 using SeriMongo.Data;
-using SeriMongo.Extensions;
 using SeriMongo.Models;
-using System;
+using SeriMongo.Querying;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -18,32 +14,68 @@ namespace SeriMongo.Controllers
     [ApiController]
     public class SearchController : ControllerBase
     {
-        private readonly AppLogsContext _logsContext;
+        private readonly ILogRepository _logRepository;
+        private readonly LogQueryCompiler _logQueryCompiler;
         private readonly ILogger<SearchController> _logger;
 
         public SearchController(ILogger<SearchController> logger,
-            AppLogsContext logsContext)
+            ILogRepository logRepository,
+            LogQueryCompiler logQueryCompiler)
         {
-            _logsContext = logsContext;
+            _logRepository = logRepository;
+            _logQueryCompiler = logQueryCompiler;
             _logger = logger;
         }
 
-        [HttpPost]
-        public async Task<IEnumerable<LogEntry>> Search([FromBody] JsonElement queryText, int currentPage = 1, int pageSize = 100)
+        [HttpGet("dialect")]
+        public IActionResult Dialect()
         {
-            var options = new FindOptions<LogEntry>
+            return Ok(new
             {
-                BatchSize = 5,
-                Limit = pageSize,
-                Skip = currentPage - 1,
-                Sort = Builders<LogEntry>.Sort.Descending(field => field.Timestamp),
-                NoCursorTimeout = false
-            };
+                Name = "LogQL",
+                Operators = new[] { "=", "!=", ">", ">=", "<", "<=", "contains", "startswith", "endswith", "in", "exists", "and", "or" },
+                Fields = new[] { "id", "timestamp", "level", "message", "exception", "serviceName", "prop.<name>" },
+                LogQueryCompiler.Examples
+            });
+        }
 
-            // Bson Query
-            var bsonDoc = BsonDocument.Parse(queryText.ToString()).ConvertToIsoDates();
-            var cursor = await _logsContext.LogEtries.FindAsync<LogEntry>(bsonDoc, options);
-            return await cursor.ToListAsync();
+        [HttpPost]
+        public async Task<ActionResult<IEnumerable<LogEntry>>> Search([FromBody] JsonElement queryText, int currentPage = 1, int pageSize = 100, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var compiledQuery = _logQueryCompiler.Compile(ExtractQuery(queryText));
+                var result = await _logRepository.SearchAsync(compiledQuery, currentPage, pageSize, cancellationToken);
+                return Ok(result);
+            }
+            catch (LogQueryException ex)
+            {
+                _logger.LogWarning(ex, "Invalid log query");
+                return BadRequest(new { Error = ex.Message, LogQueryCompiler.Examples });
+            }
+        }
+
+        private static string ExtractQuery(JsonElement queryText)
+        {
+            if (queryText.ValueKind == JsonValueKind.String)
+            {
+                return queryText.GetString();
+            }
+
+            if (queryText.ValueKind == JsonValueKind.Object)
+            {
+                if (!queryText.EnumerateObject().MoveNext())
+                {
+                    return "*";
+                }
+
+                if (queryText.TryGetProperty("query", out var queryProperty) && queryProperty.ValueKind == JsonValueKind.String)
+                {
+                    return queryProperty.GetString();
+                }
+            }
+
+            return queryText.ToString();
         }
     }
 }

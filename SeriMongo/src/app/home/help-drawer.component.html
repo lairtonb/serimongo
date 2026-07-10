@@ -1,0 +1,135 @@
+<div class="help-overlay" [class.open]="open" (click)="close()" aria-hidden="true"></div>
+
+<aside class="help-drawer" [class.open]="open" [attr.aria-hidden]="!open" role="dialog" aria-modal="true" aria-labelledby="help-title">
+  <header class="help-header">
+    <div class="help-title">
+      <ng-icon name="ionHelpCircleOutline" size="18px" aria-hidden="true"></ng-icon>
+      <div>
+        <h2 id="help-title">Help - SeriMongo</h2>
+        <span>User manual</span>
+      </div>
+    </div>
+    <button class="help-close" type="button" aria-label="Close help" title="Close help" (click)="close()">
+      <ng-icon name="ionCloseSharp" size="18px"></ng-icon>
+    </button>
+  </header>
+
+  <div class="help-shell" [class.toc-collapsed]="tocCollapsed()">
+    <main class="help-content">
+      <section id="help-overview" class="help-section">
+        <p class="help-eyebrow">Overview</p>
+        <h3>Inspect logs in real time or from a stable search result.</h3>
+        <p>SeriMongo combines SignalR Tail, LogQL search, quick filters and structured details so you can analyze events without leaving the page.</p>
+        <div class="help-callout">
+          <strong>Main flow</strong>
+          <p>Use filters and the query to narrow the result set, select a row to open details, then copy what you need for incidents, PRs or tickets.</p>
+        </div>
+      </section>
+
+      <section id="help-search" class="help-section">
+        <p class="help-eyebrow">Search</p>
+        <h3>LogQL input and Search action</h3>
+        <p>Type a LogQL expression in the main field. Clicking <strong>Search</strong> pauses Tail and loads a stable page of results.</p>
+        <p>The <strong>Effective query</strong> panel shows the final query produced by combining the typed expression with the selected period, level and service filters.</p>
+      </section>
+
+      <section id="help-logql" class="help-section">
+        <p class="help-eyebrow">LogQL</p>
+        <h3>Supported syntax</h3>
+        <div class="help-grid">
+          <div>
+            <h4>Fields</h4>
+            <p><code>id</code>, <code>timestamp</code>, <code>time</code>, <code>level</code>, <code>message</code>, <code>renderedmessage</code>, <code>exception</code>, <code>service</code>, <code>servicename</code>, <code>service.name</code>.</p>
+          </div>
+          <div>
+            <h4>Properties</h4>
+            <p>Use <code>prop.&lt;name&gt;</code>, <code>property.&lt;name&gt;</code> or <code>properties.&lt;name&gt;</code> for structured fields. Dotted paths are supported. Use <code>exists</code> to check whether a property is present.</p>
+          </div>
+          <div>
+            <h4>Operators</h4>
+            <p><code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>contains</code>, <code>startswith</code>, <code>endswith</code>, <code>in (...)</code> and <code>exists</code>.</p>
+          </div>
+          <div>
+            <h4>Boolean logic</h4>
+            <p>Combine conditions with <code>and</code>, <code>or</code> and parentheses.</p>
+          </div>
+        </div>
+        <pre class="help-code">level = Error
+level in (Warning, Error, Fatal)
+message contains "timeout"
+message startswith "checkout"
+exception contains "OutOfMemoryException"
+serviceName = "checkout-api"
+timestamp &gt;= "2026-06-25T12:00:00Z"
+prop.TraceId = "abc123"
+prop.exception.type exists
+prop.DurationMs &gt; 500
+(level = Error or level = Fatal) and serviceName = "worker"</pre>
+        <p>There is no <code>isNull</code>, <code>isTrue</code> or <code>isFalse</code> operator today. For boolean or null checks, write manual LogQL only after the query syntax supports the exact predicate you need.</p>
+      </section>
+
+      <section id="help-filters" class="help-section">
+        <p class="help-eyebrow">Quick filters</p>
+        <h3>Period, level and service</h3>
+        <p>Quick filters build LogQL clauses automatically. Period creates a <code>timestamp</code> condition; selected levels create <code>level in (...)</code>; selected services create <code>serviceName in (...)</code>.</p>
+        <p>Property quick filters can be added from the selected event details. They use <code>=</code> and currently support only string and number values with simple property keys.</p>
+        <p>The <strong>Clear</strong> button resets quick filters while keeping the expression typed in the LogQL field.</p>
+      </section>
+
+      <section id="help-table" class="help-section">
+        <p class="help-eyebrow">Table</p>
+        <h3>Rows, columns and selection</h3>
+        <p>The table is virtualized to keep the UI responsive with many logs. Click a row to open the details panel.</p>
+        <p>The columns button lets you show or hide <strong>TraceId</strong>, <strong>Timestamp</strong>, <strong>Level</strong>, <strong>Service</strong> and <strong>Message</strong>. At least one column always remains visible.</p>
+      </section>
+
+      <section id="help-details" class="help-section">
+        <p class="help-eyebrow">Details</p>
+        <h3>Selected event</h3>
+        <p>The side panel shows message, timestamp, service, id, exception and properties. The splitter between the table and details can be dragged to resize the panel.</p>
+        <p>Use the funnel button on a property card to add that string or number property as a quick filter without pausing Tail.</p>
+        <p>Selecting a row pauses Tail so new events do not change the context while you inspect the record.</p>
+      </section>
+
+      <section id="help-copy" class="help-section">
+        <p class="help-eyebrow">Copy</p>
+        <h3>Clipboard and Markdown</h3>
+        <p>Use the copy button in the details header to export the event as Markdown. The buttons in <strong>Message</strong> and <strong>Exception</strong> copy only that block.</p>
+        <p>After a copy action, a toast appears in the lower-right corner confirming success or failure.</p>
+      </section>
+
+      <section id="help-tail" class="help-section">
+        <p class="help-eyebrow">Tail</p>
+        <h3>Pause and resume</h3>
+        <p><strong>Pause</strong> does not disconnect SignalR. It only sends the paused state to the hub and blocks new events from being added to the screen.</p>
+        <p>After pausing, the button label changes back to <strong>Tail</strong>. Clicking it re-enables Tail on the same SignalR connection and syncs the current query with the hub.</p>
+      </section>
+    </main>
+
+    <aside class="help-toc" aria-label="Table of contents">
+      <div class="help-toc-header">
+        <span *ngIf="!tocCollapsed()">On this page</span>
+        <button type="button" [attr.aria-expanded]="!tocCollapsed()" aria-label="Toggle table of contents" title="Toggle table of contents" (click)="toggleToc()">
+          <ng-icon [name]="tocCollapsed() ? 'ionChevronBackOutline' : 'ionChevronForwardOutline'" size="16px" aria-hidden="true"></ng-icon>
+        </button>
+      </div>
+
+      <ng-container *ngIf="!tocCollapsed(); else tocRail">
+        <strong>SeriMongo manual</strong>
+        <nav>
+          <a *ngFor="let section of sections"
+            href="#"
+            [class.active]="activeSection() === section.id"
+            [attr.aria-current]="activeSection() === section.id ? 'true' : null"
+            (click)="scrollToSection($event, section.id)">
+            {{section.label}}
+          </a>
+        </nav>
+      </ng-container>
+
+      <ng-template #tocRail>
+        <span class="toc-rail">On this page</span>
+      </ng-template>
+    </aside>
+  </div>
+</aside>

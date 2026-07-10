@@ -1,11 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.OData.Builder;
-using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Formatter;
-using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
-using Microsoft.OData;
-using Microsoft.OData.Edm;
-using Microsoft.OpenApi.Models;
-using MongoDB.Bson.Serialization;
+using Microsoft.OpenApi;
 using SeriMongo.Data;
 using SeriMongo.Hubs;
 using SeriMongo.Models;
+using SeriMongo.Querying;
 using SeriMongo.Services;
 
 namespace SeriMongo
@@ -59,39 +51,34 @@ namespace SeriMongo
                 );
             });
 
-            // Register the class that uses MongoDB ChangeStreams to listen to logs
-            services.AddHostedService<LogMonitorService>();
-
-            // MongoDB Data Access
+            // SQLite Data Access
             services.AddSingleton<AppLogsContext>();
+            services.AddSingleton<ILogRepository, SqliteLogRepository>();
+            services.AddTransient<LogQueryCompiler>();
+            services.AddSingleton<ILogEntryNotifier, SignalRLogEntryNotifier>();
+            services.AddSingleton<ILogServiceNameCatalog, LogServiceNameCatalog>();
+            services.AddSingleton<ITailSubscriptionStore, TailSubscriptionStore>();
+            services.AddSingleton<ILogIngestService, LogIngestService>();
+            services.AddSingleton<OtlpLogMapper>();
+            services.AddSingleton<StartupSeedService>();
 
-            // MongoDB Search using JSON
-            if (!BsonClassMap.IsClassMapRegistered(typeof(LogEntry)))
-            {
-                BsonClassMap.RegisterClassMap<LogEntry>();
-            }
-
-            // This is used by the LogMonitorService to propagate logs to clients
+            // SignalR remains the client push channel for new log entries.
             services.AddSignalR(configure => { 
                 // Can fine-tune settings
                 // configure.
             });
 
-            // services.AddOData();
-
-            // https://github.com/hassanhabib/OData3.1WithSwagger/blob/master/WeatherAPI2/Startup.cs
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SeriMongo", Version = "v1" });
             });
-
-            // Required by OData
-            SetOutputFormatters(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.ApplicationServices.GetRequiredService<StartupSeedService>().SeedAsync().GetAwaiter().GetResult();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -111,23 +98,6 @@ namespace SeriMongo
                 /* Api */
                 endpoints.MapControllers();
 
-                /* Odata */
-
-                /*
-                var odataBuilder = new ODataConventionModelBuilder();
-                EntitySetConfiguration<LogEntry> logEntry = odataBuilder.EntitySet<LogEntry>("AppLogs");
-
-                ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
-                var customSave = builder.EntityType<LogEntry>().Collection.Action("Properties");
-                customSave.ReturnsCollection<Dictionary<string, object>>();
-
-                endpoints.Filter().OrderBy().MaxTop(10).Count();
-                endpoints.MapODataRoute("odata", "odata", odataBuilder.GetEdmModel());
-
-                // Uncomment the following line to Work-around for #1175 in beta1
-                endpoints.EnableDependencyInjection();
-                */
-
                 /* SignalR */
                 endpoints.MapHub<LoggingHub>("/logs");
             });
@@ -137,21 +107,6 @@ namespace SeriMongo
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "SeriMongo API V1");
-            });
-        }
-
-        private static void SetOutputFormatters(IServiceCollection services)
-        {
-            services.AddMvcCore(options =>
-            {
-                IEnumerable<ODataOutputFormatter> outputFormatters =
-                    options.OutputFormatters.OfType<ODataOutputFormatter>()
-                        .Where(foramtter => foramtter.SupportedMediaTypes.Count == 0);
-
-                foreach (var outputFormatter in outputFormatters)
-                {
-                    outputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/odata"));
-                }
             });
         }
 

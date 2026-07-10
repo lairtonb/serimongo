@@ -1,115 +1,304 @@
 <div class="main">
+  <header class="app-toolbar">
+    <div class="brand-panel">
+      <h1>{{title}}</h1>
+      <p class="subtitle">log inspection</p>
+    </div>
 
-  <div class="debugInfoBox">
-    <pre>{{debugInfo | json}}</pre>
-  </div>
+    <div class="toolbar-actions">
+      <button class="action-button ghost ionicon-button" type="button" style="width:32px;height:32px;border-radius:999px;background:#fff" aria-label="Settings" title="Settings">
+        <ng-icon name="ionSettingsOutline" size="18px"></ng-icon>
+      </button>
+      <button class="action-button ghost ionicon-button" type="button" style="width:32px;height:32px;border-radius:999px;background:#fff" aria-label="Help" title="Help" [style.background]="helpOpen() ? '#eaf1ff' : '#fff'" [style.border-color]="helpOpen() ? '#8cb4ff' : null" (click)="toggleHelp()">
+        <ng-icon name="ionHelpCircleOutline" size="20px"></ng-icon>
+      </button>
+    </div>
+  </header>
 
-  <div class="header">
-    <h1>{{title}}</h1>
-  </div>
+  <main class="content-shell">
+    <aside class="filter-column" aria-label="Quick filters">
+      <section class="filter-panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Filters</p>
+              <h2>Quick filters</h2>
+            </div>
+            <button class="action-button ghost" type="button" title="Clear filters" (click)="clearQuickFilters()">Clear</button>
+          </div>
 
-  <div class="search-area">
-    <textarea id="search-logs" #search type="text" rows="3"
-      (keydown)="handleTab($event, search)"
-      (input)="controlHeight(search)"
-      [(ngModel)]="searchExpression"
-      placeholder='{}'></textarea>
-    <button id="search-button" (click)="onSearchClick()">Search</button>
-    <button id="tail-button">Tail</button>
-  </div>
+        <div class="filter-scroll">
+          <section class="filter-accordion">
+            <button class="accordion-trigger" type="button" [attr.aria-expanded]="levelFilterOpen()" (click)="toggleLevelFilter()">
+              <span>Log Level</span>
+              <span>{{selectedLevels().length > 0 ? selectedLevels().length + ' selected' : 'All'}}</span>
+              <svg class="accordion-state" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true" focusable="false">
+                <path d="m6 9 6 6 6-6"></path>
+              </svg>
+            </button>
 
-  <div class="log-area">
-    <div #tableContainer class="tb-container">
-    <table class="logs table-scroll">
-      <thead>
-        <tr>
-          <!--
-            Adjust widths:
-            it is also possible to use a table head (which can be empty)
-            and apply relative widths for each table head cell. The widths
-            of all cells in the table body will conform to the width of their
-            column head. Example:
-            https://stackoverflow.com/a/53120855/1236495
-          -->
-          <th class="idcol">Id</th>
-          <th class="tstamp">Timestamp</th>
-          <th class="lvl">Level</th>
-          <th>Message</th>
-          <!--
-          <td>Has Details</td>
-          <td>Show Details</td>
-          -->
-        </tr>
-      </thead>
-      <tbody #tableLogsBody [style.height.px]="tableLogsBodyHeight">
-        <ng-container *ngFor="let log of logEntries">
+            <div class="accordion-panel" *ngIf="levelFilterOpen()">
+              <div class="level-list">
+                <button type="button"
+                  *ngFor="let level of levelOptions"
+                  class="filter-chip"
+                  [class.selected]="isLevelSelected(level.name)"
+                  (click)="toggleLevel(level.name)">
+                  <span [class]="['level-dot', level.tone]"></span>
+                  <span>{{level.name}}</span>
+                </button>
+              </div>
+            </div>
+          </section>
 
-        <!-- log entry -->
-        <tr (click)="setClickedRow(log)" [class.active]="log === selectedRow">
-          <td class="idcol">{{log.id}}</td>
-          <td class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
-          <td [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
-          <td [class]="{
-            'msgcol': true,
-            'msg': true,
-            'Error': log.level === 'Error',
-            'Warning': log.level === 'Warning',
-            'Information': log.level === 'Information',
-            'Debug': log.level === 'Debug'
-          }">{{log.renderedMessage}}</td>
+          <section class="filter-accordion">
+            <button class="accordion-trigger" type="button" [attr.aria-expanded]="serviceFilterOpen()" (click)="toggleServiceFilter()">
+              <span>Service Name</span>
+              <span>{{selectedServiceNames().length > 0 ? selectedServiceNames().length + ' selected' : 'All'}}</span>
+              <svg class="accordion-state" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.25" aria-hidden="true" focusable="false">
+                <path d="m6 9 6 6 6-6"></path>
+              </svg>
+            </button>
 
+            <div class="accordion-panel" *ngIf="serviceFilterOpen()">
+              <div class="level-list" *ngIf="serviceNames().length > 0; else noServiceNames">
+                <button type="button"
+                  *ngFor="let serviceName of serviceNames()"
+                  class="filter-chip"
+                  [class.selected]="isServiceNameSelected(serviceName)"
+                  (click)="toggleServiceName(serviceName)">
+                  <span class="level-dot information"></span>
+                  <span>{{serviceName}}</span>
+                </button>
+              </div>
+              <ng-template #noServiceNames>
+                <p class="filter-empty">Waiting for service names.</p>
+              </ng-template>
+            </div>
+          </section>
 
-          <!--
-          <td>{{log.showDetails}}</td>
-          <td><a href="#">Details</a></td>
-          -->
-        </tr>
+          <section class="filter-accordion" *ngIf="propertyFilters().length > 0">
+            <div class="accordion-trigger" style="cursor:default">
+              <span>Properties</span>
+              <span>{{propertyFilters().length}} selected</span>
+            </div>
+            <div class="accordion-panel">
+              <div class="level-list">
+                <div *ngFor="let filter of propertyFilters()" class="filter-chip" style="padding:4px 6px 4px 7px;cursor:default">
+                  <span class="level-dot information"></span>
+                  <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" [title]="propertyFilterLabel(filter)">{{propertyFilterLabel(filter)}}</span>
+                  <button class="action-button ghost ionicon-button" type="button" style="width:20px;height:20px;padding:0;background:transparent;border:0;border-radius:999px;color:#57606a" [attr.aria-label]="'Remove ' + propertyFilterLabel(filter)" [title]="'Remove ' + propertyFilterLabel(filter)" (click)="removePropertyFilter(filter)">
+                    <ng-icon name="ionRemoveCircleOutline" size="14px"></ng-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
 
-        <!--
-          Para alinhar certo, em vez de colocar uma tabela,
-          qu tal simplesmente tornar parte da mesma tabela usando
-          as celulas existentes com col-span?
-        -->
+        <section class="effective-query">
+          <h3 class="eyebrow">Effective query</h3>
+          <pre>{{effectiveQueryPreview()}}</pre>
+        </section>
+      </section>
+    </aside>
 
+    <div #resultsShell class="results-shell" [style.--detail-sidebar-width]="detailSidebarWidth() + 'px'">
+      <section class="workspace">
+        <section class="query-panel" aria-label="Search logs">
+          <div class="search-row">
+            <div class="query-box" style="position:relative">
+              <textarea id="search-logs" #search rows="1"
+                style="padding-right:34px"
+                aria-label="LogQL"
+                (keydown)="handleTab($event, search)"
+                [(ngModel)]="searchExpression"
+                placeholder='level = Error or message contains "timeout"'></textarea>
+              <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:50%;right:5px;width:22px;height:22px;padding:0;color:#57606a;background:transparent;border:0;transform:translateY(-50%)" aria-label="Reset LogQL query" title="Reset LogQL query" (mousedown)="$event.preventDefault()" (click)="clearLogQuery(search)">
+                <ng-icon name="ionCloseCircleOutline" size="18px"></ng-icon>
+              </button>
+            </div>
 
-        <!-- log entry properties log.showDetails -->
-        <!--
-        <ng-container *ngIf="1===1">
-          <tr style="background-color: white">
-            <td colspan="4">
-              <table class="details">
-                <ng-container *ngFor="let p of (log.properties | keyvalue)">
-                  <tr><td>{{p.key}}</td><td>{{p.value}}</td></tr>
+            <div class="actions" aria-label="Search actions">
+              <button id="search-button" class="action-button primary" type="button" style="min-width: 76px" (click)="onSearchClick()">Search</button>
+              <button id="tail-button" class="action-button outline" type="button" style="min-width: 76px" [class.active]="isTailing()" (click)="toggleTail()">
+                {{isTailing() ? 'Pause' : 'Tail'}}
+              </button>
+            </div>
+          </div>
+
+          <div class="period-toolbar" aria-label="Period quick filters">
+            <button type="button"
+              *ngFor="let period of periodOptions"
+              [class.selected]="selectedPeriod() === period.id"
+              (click)="selectPeriod(period.id)">
+              {{period.label}}
+            </button>
+          </div>
+        </section>
+
+        <section class="log-area" aria-label="Log entries">
+          <div class="table-titlebar">
+            <div class="table-summary">
+              <span>Log entries</span>
+              <span>{{logEntries().length}} loaded</span>
+            </div>
+            <div class="field-menu" aria-label="Visible columns">
+              <button class="action-button ghost ionicon-button" type="button" aria-label="Choose visible fields" title="Choose visible fields" [attr.aria-expanded]="columnsMenuOpen()" (click)="toggleColumnsMenu()">
+                <ng-icon name="ionOptionsOutline" size="17px"></ng-icon>
+              </button>
+              <div class="field-menu-panel" *ngIf="columnsMenuOpen()">
+                <button type="button"
+                  *ngFor="let column of logColumnOptions"
+                  class="field-menu-row"
+                  [class.selected]="isLogColumnVisible(column.id)"
+                  [disabled]="visibleLogColumnCount() === 1 && isLogColumnVisible(column.id)"
+                  [attr.aria-pressed]="isLogColumnVisible(column.id)"
+                  (click)="toggleLogColumn(column.id)">
+                  <ng-icon class="checkmark" name="ionCheckmarkOutline" size="14px"></ng-icon>
+                  <span>{{column.label}}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="tb-container">
+            <table class="logs table-scroll">
+              <thead>
+                <tr>
+                  <th *ngIf="isLogColumnVisible('traceId')" class="trace-id">TraceId</th>
+                  <th *ngIf="isLogColumnVisible('timestamp')" class="tstamp">Timestamp</th>
+                  <th *ngIf="isLogColumnVisible('level')" class="lvl">Level</th>
+                  <th *ngIf="isLogColumnVisible('serviceName')" class="service-name">Service Name</th>
+                  <th *ngIf="isLogColumnVisible('message')">Message</th>
+                </tr>
+              </thead>
+              <tbody #logTableBody (scroll)="onLogScroll($event)">
+                <ng-container *ngIf="virtualRows() as rows">
+                  <tr *ngIf="rows.topPaddingPx > 0" class="virtual-spacer details" [style.height.px]="rows.topPaddingPx">
+                    <td [attr.colspan]="visibleLogColumnCount()"></td>
+                  </tr>
+                  <ng-container *ngFor="let log of rows.entries; trackBy: trackByLogId">
+                    <tr class="log-row" (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)">
+                      <td *ngIf="isLogColumnVisible('traceId')" class="trace-id" [title]="traceId(log)"><span class="row-marker" aria-hidden="true"></span>{{traceId(log)}}</td>
+                      <td *ngIf="isLogColumnVisible('timestamp')" class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
+                      <td *ngIf="isLogColumnVisible('level')" [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
+                      <td *ngIf="isLogColumnVisible('serviceName')" class="service-name" [title]="serviceName(log)">{{serviceName(log)}}</td>
+                      <td *ngIf="isLogColumnVisible('message')" [class]="{
+                        'msgcol': true,
+                        'msg': true,
+                        'Verbose': log.level === 'Verbose',
+                        'Trace': log.level === 'Trace',
+                        'Debug': log.level === 'Debug',
+                        'Information': log.level === 'Information',
+                        'Warning': log.level === 'Warning',
+                        'Error': log.level === 'Error',
+                        'Fatal': log.level === 'Fatal',
+                        'Critical': log.level === 'Critical'
+                      }">{{log.renderedMessage}}</td>
+                    </tr>
+                  </ng-container>
+                  <tr *ngIf="rows.bottomPaddingPx > 0" class="virtual-spacer details" [style.height.px]="rows.bottomPaddingPx">
+                    <td [attr.colspan]="visibleLogColumnCount()"></td>
+                  </tr>
                 </ng-container>
-              </table>
-            </td>
-          </tr>
-        </ng-container>
-        -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
 
-        <!-- Log Entry Properties -->
-        <ng-container *ngIf="log.showDetails">
-          <tr class="details" style="background-color: white;">
-            <td colspan="2" class="label" style="text-align: right">Message</td>
-            <td colspan="2">{{log.renderedMessage}}</td>
-          </tr>
-          <ng-container *ngFor="let p of (log.properties | keyvalue)">
-            <tr class="details" style="background-color: white;">
-              <td class="label" style="text-align: right" colspan="2">{{p.key}}</td>
-              <td colspan="2"><span>{{p.value}}</span></td>
-            </tr>
+      <button class="splitter" type="button"
+        role="separator"
+        aria-label="Resize details panel"
+        aria-orientation="vertical"
+        [attr.aria-valuemin]="minDetailSidebarWidth"
+        [attr.aria-valuemax]="maxDetailSidebarWidth"
+        [attr.aria-valuenow]="detailSidebarWidth()"
+        (pointerdown)="startSidebarResize($event)"
+        (keydown)="resizeSidebarWithKeyboard($event)">
+        <span class="splitter-grip" aria-hidden="true"></span>
+      </button>
+
+      <aside class="detail-column">
+        <section class="detail-sidebar" aria-label="Log details">
+          <ng-container *ngIf="selectedRow() as selectedLog; else noSelectedLog">
+            <div class="detail-titlebar">
+              <div>
+                <span>Selected event</span>
+                <strong>{{selectedLog.level}}</strong>
+              </div>
+              <div class="detail-actions">
+                <button class="action-button ghost ionicon-button" type="button" aria-label="Copy details as Markdown" title="Copy details as Markdown" (click)="copyLogDetails(selectedLog)">
+                  <ng-icon name="ionCopyOutline" size="17px"></ng-icon>
+                </button>
+                <button class="action-button ghost" type="button" (click)="clearSelectedRow()">Close</button>
+              </div>
+            </div>
+
+            <div class="detail-body">
+              <section class="detail-section" style="overflow:hidden;background:#fff;border:1px solid #d0d7de;border-radius:2px">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 7px;background:#eef2f6;border-bottom:1px solid #d0d7de">
+                  <h3>Message</h3>
+                  <button class="action-button ghost ionicon-button" type="button" style="width:23px;height:23px;background:#fff" aria-label="Copy message" title="Copy message" (click)="copyText(selectedLog.renderedMessage)">
+                    <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
+                  </button>
+                </div>
+                <p style="padding:8px 9px;font-size:13px;line-height:1.5">{{selectedLog.renderedMessage}}</p>
+              </section>
+
+              <dl class="detail-meta">
+                <div>
+                  <dt>Timestamp</dt>
+                  <dd>{{selectedLog.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</dd>
+                </div>
+                <div>
+                  <dt>Service</dt>
+                  <dd>{{serviceName(selectedLog)}}</dd>
+                </div>
+                <div>
+                  <dt>Id</dt>
+                  <dd>{{selectedLog.id}}</dd>
+                </div>
+              </dl>
+
+              <section *ngIf="selectedLog.exception != null || exceptionStacktrace(selectedLog)" class="exception-panel" style="position:relative;padding-right:42px">
+                <button class="action-button ghost ionicon-button" type="button" style="position:absolute;top:7px;right:7px;width:25px;height:25px;opacity:.85" aria-label="Copy exception" title="Copy exception" (click)="copyText(selectedLog.exception || exceptionStacktrace(selectedLog))">
+                  <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
+                </button>
+                <span>Exception</span>
+                <pre>{{selectedLog.exception || exceptionStacktrace(selectedLog)}}</pre>
+              </section>
+
+              <section class="detail-section">
+                <h3>Properties</h3>
+                <dl class="properties sidebar-properties">
+                  <div *ngFor="let p of (selectedLog.properties | keyvalue)">
+                    <dt style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                      <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" [title]="p.key">{{p.key}}</span>
+                      <button class="action-button ghost ionicon-button" type="button" style="width:22px;height:22px;background:#fff" [disabled]="!canAddPropertyFilter(p.key, p.value)" [style.opacity]="canAddPropertyFilter(p.key, p.value) ? '1' : '.38'" [style.cursor]="canAddPropertyFilter(p.key, p.value) ? 'pointer' : 'not-allowed'" [attr.aria-label]="'Add ' + p.key + ' to filter'" [title]="propertyFilterTitle(p.key, p.value)" (click)="addPropertyFilter(p.key, p.value)">
+                        <ng-icon name="ionFunnelOutline" size="14px"></ng-icon>
+                      </button>
+                    </dt>
+                    <dd><pre>{{formatValue(p.value)}}</pre></dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
           </ng-container>
-          <tr *ngIf="log.exception != null" class="details" style="background-color: white;">
-            <td colspan="2" class="label" style="text-align: right">Exception</td>
-            <td colspan="2"><span class="Exception">{{log.exception}}</span></td>
-          </tr>
-        </ng-container>
 
-        </ng-container>
-      </tbody>
-    </table>
+          <ng-template #noSelectedLog>
+            <div class="detail-empty">
+              <span>No event selected</span>
+              <p>Select a row to inspect message, exception and structured properties.</p>
+            </div>
+          </ng-template>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <app-help-drawer [open]="helpOpen()" (closed)="closeHelp()"></app-help-drawer>
+
+  <div *ngIf="toastMessage()" style="position:fixed;right:16px;bottom:16px;z-index:40;padding:9px 12px;color:#0f172a;background:#ffffff;border:1px solid #8fd3a6;border-left:3px solid #128a42;border-radius:3px;box-shadow:0 10px 24px rgba(15,23,42,.14);font-size:12px;font-weight:650">
+    {{toastMessage()}}
   </div>
-  </div>
-
-
 </div>
