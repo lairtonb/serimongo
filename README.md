@@ -1,6 +1,6 @@
 # SeriMongo
 
-SeriMongo is a real-time log viewer backed by SQLite. It receives logs through HTTP APIs, broadcasts new entries to the UI with SignalR, and supports OTLP/HTTP JSON log ingestion.
+SeriMongo is a real-time log viewer backed by SQLite. It receives logs through HTTP APIs, broadcasts new entries to the UI with SignalR, and supports OTLP/HTTP Protobuf and JSON log ingestion.
 
 ## Screenshots
 
@@ -21,7 +21,7 @@ Generate individual events, mixed bursts, or continuous traffic from the bundled
 * SQLite storage.
 * Real-time UI updates through SignalR.
 * LogQL search dialect compiled to parameterized SQLite queries.
-* OTLP logs receiver at `/v1/logs` and `/otlp/v1/logs` for `http/json` exporters.
+* OTLP logs receiver at `/v1/logs` and `/otlp/v1/logs` for `http/protobuf` and `http/json` exporters.
 * Docker image with Angular UI and ASP.NET Core backend.
 * Docker Compose simulator UI for emitting realtime sample logs.
 
@@ -31,6 +31,19 @@ Build the image:
 
 ```bash
 docker build -t serimongo:local .
+```
+
+Rebuilding an image does not update an existing container. Recreate the local
+development container with the new image while retaining its network, host
+port, and data volume:
+
+```bash
+docker rm -f serimongo
+docker run -d --name serimongo \
+  --network serimongo-network \
+  -p 51983:8080 \
+  -v serimongo-data:/data \
+  serimongo:local
 ```
 
 Run it:
@@ -159,14 +172,18 @@ curl -X POST "http://localhost:51983/api/search?currentPage=1&pageSize=100" \
 
 ## OTLP Logs
 
-The receiver supports OTLP/HTTP JSON. Configure OpenTelemetry exporters with:
+The receiver supports OTLP/HTTP Protobuf and JSON. The .NET OpenTelemetry
+exporter uses `http/protobuf`:
 
 ```text
 OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:51983
-OTEL_EXPORTER_OTLP_PROTOCOL=http/json
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 ```
 
-Send a minimal OTLP JSON payload:
+Exporters that support OTLP/HTTP JSON can use
+`OTEL_EXPORTER_OTLP_PROTOCOL=http/json` instead.
+
+Send a minimal OTLP/HTTP JSON payload:
 
 ```bash
 curl -X POST http://localhost:51983/v1/logs \

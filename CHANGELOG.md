@@ -12,7 +12,8 @@ Versioning when numbered releases begin.
 - SQLite-backed log storage with optional idempotent seed data.
 - Parameterized LogQL search with field, property, comparison, text, and
   boolean operators.
-- OTLP/HTTP JSON ingestion through `/v1/logs` and `/otlp/v1/logs`.
+- OTLP/HTTP Protobuf and JSON ingestion through `/v1/logs` and
+  `/otlp/v1/logs`.
 - SignalR-based realtime tailing with server-side query synchronization.
 - Paged and virtualized log results with configurable columns.
 - Quick filters for periods, levels, services, and structured properties.
