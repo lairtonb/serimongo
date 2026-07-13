@@ -14,6 +14,9 @@ Versioning when numbered releases begin.
   boolean operators.
 - OTLP/HTTP Protobuf and JSON ingestion through `/v1/logs` and
   `/otlp/v1/logs`.
+- OTLP/HTTP trace and metric compatibility endpoints under `/v1` and
+  `/otlp/v1`; these signals are acknowledged and discarded until native
+  storage and UI support are implemented.
 - SignalR-based realtime tailing with server-side query synchronization.
 - Paged and virtualized log results with configurable columns.
 - Quick filters for periods, levels, services, and structured properties.
@@ -27,6 +30,9 @@ Versioning when numbered releases begin.
 - Upgraded the backend to .NET 10 and the frontend to Angular 22.
 - Redesigned the viewer as a dense log-inspection workspace with search,
   filters, results, and event details on one screen.
+- Mapped Protobuf log records directly from their generated OTLP types so
+  severity numbers and hexadecimal trace/span identifiers retain their wire
+  semantics, and returned an empty Protobuf export response on success.
 - Updated the README for the current architecture, development workflow, and
   user interface.
 

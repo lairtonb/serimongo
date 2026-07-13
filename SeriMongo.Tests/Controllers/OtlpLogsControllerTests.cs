@@ -27,7 +27,9 @@ namespace SeriMongo.Tests.Controllers
 
             var result = await controller.Receive(CancellationToken.None);
 
-            Assert.IsType<OkObjectResult>(result);
+            var fileResult = Assert.IsType<FileContentResult>(result);
+            Assert.Equal("application/x-protobuf", fileResult.ContentType);
+            Assert.Empty(fileResult.FileContents);
             var logEntry = Assert.Single(ingestService.LogEntries);
             Assert.Equal("Error", logEntry.Level);
             Assert.Equal("OTLP protobuf test", logEntry.RenderedMessage);
@@ -55,6 +57,7 @@ namespace SeriMongo.Tests.Controllers
             var controller = new OtlpLogsController(
                 ingestService,
                 new OtlpLogMapper(),
+                new OtlpProtobufLogMapper(),
                 NullLogger<OtlpLogsController>.Instance)
             {
                 ControllerContext = new ControllerContext

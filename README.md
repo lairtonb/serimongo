@@ -22,6 +22,8 @@ Generate individual events, mixed bursts, or continuous traffic from the bundled
 * Real-time UI updates through SignalR.
 * LogQL search dialect compiled to parameterized SQLite queries.
 * OTLP logs receiver at `/v1/logs` and `/otlp/v1/logs` for `http/protobuf` and `http/json` exporters.
+* Compatibility endpoints that accept and discard OTLP traces and metrics until
+  those signals receive native storage and UI support.
 * Docker image with Angular UI and ASP.NET Core backend.
 * Docker Compose simulator UI for emitting realtime sample logs.
 
@@ -182,6 +184,15 @@ OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 
 Exporters that support OTLP/HTTP JSON can use
 `OTEL_EXPORTER_OTLP_PROTOCOL=http/json` instead.
+
+Successful Protobuf requests receive an empty
+`ExportLogsServiceResponse` with `Content-Type: application/x-protobuf`, as
+defined by OTLP/HTTP. JSON requests continue to receive an empty JSON object.
+
+The receiver also exposes `/v1/traces`, `/otlp/v1/traces`, `/v1/metrics`, and
+`/otlp/v1/metrics`. These compatibility endpoints currently acknowledge
+Protobuf and JSON exports with an empty successful OTLP response but discard
+their contents: only logs are persisted and visible in the UI today.
 
 Send a minimal OTLP/HTTP JSON payload:
 

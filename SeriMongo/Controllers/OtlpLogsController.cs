@@ -16,17 +16,22 @@ namespace SeriMongo.Controllers
     [ApiController]
     public class OtlpLogsController : ControllerBase
     {
+        private const string ProtobufContentType = "application/x-protobuf";
+
         private readonly ILogIngestService _logIngestService;
         private readonly OtlpLogMapper _otlpLogMapper;
+        private readonly OtlpProtobufLogMapper _otlpProtobufLogMapper;
         private readonly ILogger<OtlpLogsController> _logger;
 
         public OtlpLogsController(
             ILogIngestService logIngestService,
             OtlpLogMapper otlpLogMapper,
+            OtlpProtobufLogMapper otlpProtobufLogMapper,
             ILogger<OtlpLogsController> logger)
         {
             _logIngestService = logIngestService;
             _otlpLogMapper = otlpLogMapper;
+            _otlpProtobufLogMapper = otlpProtobufLogMapper;
             _logger = logger;
         }
 
@@ -67,16 +72,38 @@ namespace SeriMongo.Controllers
             }
         }
 
+        [HttpPost("/v1/traces")]
+        [HttpPost("/otlp/v1/traces")]
+        [HttpPost("/v1/metrics")]
+        [HttpPost("/otlp/v1/metrics")]
+        public IActionResult AcceptAndDrop()
+        {
+            if (IsProtobufRequest(Request.ContentType))
+            {
+                return File(Array.Empty<byte>(), ProtobufContentType);
+            }
+
+            if (IsJsonRequest(Request.ContentType))
+            {
+                return Ok(new { });
+            }
+
+            return StatusCode(StatusCodes.Status415UnsupportedMediaType, new
+            {
+                Error = "This receiver supports OTLP/HTTP Protobuf and JSON payloads."
+            });
+        }
+
         private async Task<IActionResult> ReceiveProtobuf(CancellationToken cancellationToken)
         {
             try
             {
                 using var payload = new MemoryStream();
                 await Request.Body.CopyToAsync(payload, cancellationToken);
+                payload.Position = 0;
 
-                var request = ExportLogsServiceRequest.Parser.ParseFrom(payload.ToArray());
-                using var document = JsonDocument.Parse(JsonFormatter.Default.Format(request));
-                var logEntries = _otlpLogMapper.Map(document);
+                var request = ExportLogsServiceRequest.Parser.ParseFrom(payload);
+                var logEntries = _otlpProtobufLogMapper.Map(request);
 
                 foreach (var logEntry in logEntries)
                 {
@@ -84,11 +111,11 @@ namespace SeriMongo.Controllers
                 }
 
                 _logger.LogInformation("Received {Count} OTLP log records", logEntries.Count);
-                return Ok(new { });
+                return File(new ExportLogsServiceResponse().ToByteArray(), ProtobufContentType);
             }
-            catch (Exception ex) when (ex is InvalidProtocolBufferException || ex is JsonException || ex is InvalidOperationException)
+            catch (InvalidProtocolBufferException ex)
             {
-                _logger.LogWarning(ex, "Invalid OTLP log payload");
+                _logger.LogWarning(ex, "Invalid OTLP protobuf log payload");
                 return BadRequest(new { Error = ex.Message });
             }
         }
@@ -97,8 +124,8 @@ namespace SeriMongo.Controllers
         {
             return !string.IsNullOrWhiteSpace(contentType)
                 && string.Equals(
-                    contentType.Split(';').First(),
-                    "application/x-protobuf",
+                    contentType.Split(';').First().Trim(),
+                    ProtobufContentType,
                     StringComparison.OrdinalIgnoreCase);
         }
 
