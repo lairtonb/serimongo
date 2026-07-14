@@ -72,8 +72,6 @@ namespace SeriMongo.Controllers
             }
         }
 
-        [HttpPost("/v1/traces")]
-        [HttpPost("/otlp/v1/traces")]
         [HttpPost("/v1/metrics")]
         [HttpPost("/otlp/v1/metrics")]
         public IActionResult AcceptAndDrop()

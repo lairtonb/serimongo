@@ -15,6 +15,11 @@ builder.Services.AddHttpClient<LogEmitterClient>((serviceProvider, client) =>
     var options = serviceProvider.GetRequiredService<IOptions<SimulatorOptions>>().Value;
     client.BaseAddress = options.GetTargetBaseUri();
 });
+builder.Services.AddHttpClient<TraceEmitterClient>((serviceProvider, client) =>
+{
+    var options = serviceProvider.GetRequiredService<IOptions<SimulatorOptions>>().Value;
+    client.BaseAddress = options.GetTargetBaseUri();
+});
 
 var app = builder.Build();
 
@@ -31,9 +36,10 @@ app.MapPost("/api/logs/{level}", async (
     string level,
     LogScenarioFactory scenarioFactory,
     LogEmitterClient emitter,
+    TraceEmitterClient traceEmitter,
     CancellationToken cancellationToken) =>
 {
-    if (!scenarioFactory.TryCreate(level, out var log))
+    if (!scenarioFactory.TryCreateOperation(level, out var operation))
     {
         return Results.BadRequest(new
         {
@@ -41,14 +47,16 @@ app.MapPost("/api/logs/{level}", async (
         });
     }
 
-    await emitter.EmitAsync([log], cancellationToken);
+    await traceEmitter.EmitAsync(operation.Spans, cancellationToken);
+    await emitter.EmitAsync(operation.Logs, cancellationToken);
 
     return Results.Ok(new
     {
-        level = log.Level,
-        serviceName = log.ServiceName,
-        count = 1,
-        message = $"Emitted {log.Level} from {log.ServiceName}."
+        level,
+        serviceName = operation.Logs[0].ServiceName,
+        count = operation.Logs.Count,
+        spanCount = operation.Spans.Count,
+        message = $"Emitted {operation.Logs.Count} correlated {level} log and {operation.Spans.Count} spans."
     });
 });
 
@@ -56,17 +64,22 @@ app.MapPost("/api/logs/burst", async (
     BurstRequest request,
     LogScenarioFactory scenarioFactory,
     LogEmitterClient emitter,
+    TraceEmitterClient traceEmitter,
     CancellationToken cancellationToken) =>
 {
     var count = Math.Clamp(request.Count <= 0 ? 25 : request.Count, 1, 200);
-    var logs = scenarioFactory.CreateBurst(count);
+    var operations = scenarioFactory.CreateBurst(count);
+    var logs = operations.SelectMany(operation => operation.Logs).ToArray();
+    var spans = operations.SelectMany(operation => operation.Spans).ToArray();
 
+    await traceEmitter.EmitAsync(spans, cancellationToken);
     await emitter.EmitAsync(logs, cancellationToken);
 
     return Results.Ok(new
     {
-        count,
-        message = $"Emitted {count} simulated logs across {LogScenarioFactory.ServiceNames.Length} services."
+        count = logs.Length,
+        spanCount = spans.Length,
+        message = $"Emitted {logs.Length} correlated logs and {spans.Length} spans across {LogScenarioFactory.ServiceNames.Length} services."
     });
 });
 

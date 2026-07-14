@@ -71,8 +71,8 @@ public sealed class LogEmitterClient(HttpClient httpClient)
             observedTimeUnixNano = ToUnixNano(now),
             severityText = log.Level,
             severityNumber = log.SeverityNumber,
-            traceId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture),
-            spanId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..16],
+            traceId = log.TraceId,
+            spanId = log.SpanId,
             body = ToAnyValue(log.Message),
             attributes = BuildAttributes(log.Properties)
         };

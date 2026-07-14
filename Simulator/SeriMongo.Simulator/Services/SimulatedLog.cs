@@ -6,4 +6,6 @@ public sealed record SimulatedLog(
     int SeverityNumber,
     string Message,
     IReadOnlyDictionary<string, object?> Properties,
+    string TraceId,
+    string SpanId,
     string? Exception = null);

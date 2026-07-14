@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 
 namespace SeriMongo.Simulator.Services;
 
@@ -38,24 +39,24 @@ public sealed class LogScenarioFactory
     private static readonly string[] Regions = ["us-east", "us-west", "eu-north", "br-south"];
     private static readonly string[] Tenants = ["contoso", "fabrikam", "northwind", "adatum"];
 
-    public bool TryCreate(string level, out SimulatedLog log)
+    public bool TryCreateOperation(string level, out SimulatedOperation operation)
     {
         var canonicalLevel = GetCanonicalLevel(level);
         if (canonicalLevel is null)
         {
-            log = default!;
+            operation = default!;
             return false;
         }
 
-        log = Create(canonicalLevel);
+        operation = CreateOperation(canonicalLevel);
         return true;
     }
 
-    public IReadOnlyList<SimulatedLog> CreateBurst(int count)
+    public IReadOnlyList<SimulatedOperation> CreateBurst(int count)
     {
         var levels = SeverityNumbers.Keys.ToArray();
         var initialServices = ServiceNames.OrderBy(_ => Random.Shared.Next()).ToArray();
-        var logs = new List<SimulatedLog>(count);
+        var operations = new List<SimulatedOperation>(count);
 
         for (var index = 0; index < count; index++)
         {
@@ -63,13 +64,13 @@ public sealed class LogScenarioFactory
                 ? initialServices[index]
                 : ServiceNames[Random.Shared.Next(ServiceNames.Length)];
 
-            logs.Add(Create(levels[Random.Shared.Next(levels.Length)], serviceName));
+            operations.Add(CreateOperation(levels[Random.Shared.Next(levels.Length)], serviceName));
         }
 
-        return logs;
+        return operations;
     }
 
-    private static SimulatedLog Create(string level, string? serviceName = null)
+    private static SimulatedOperation CreateOperation(string level, string? serviceName = null)
     {
         var route = Routes[Random.Shared.Next(Routes.Length)];
         serviceName ??= ServiceNames[Random.Shared.Next(ServiceNames.Length)];
@@ -79,11 +80,25 @@ public sealed class LogScenarioFactory
         var orderId = Random.Shared.Next(10_000, 99_999);
         var customerId = Random.Shared.Next(1_000, 9_999);
         var scenarioId = Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture)[..12];
-        var message = CreateMessage(level, serviceName, route, tenant, duration, orderId);
+        var traceId = CreateIdentifier(byteCount: 16);
+        var rootSpanId = CreateIdentifier(byteCount: 8);
+        var validationSpanId = CreateIdentifier(byteCount: 8);
+        var dependencySpanId = CreateIdentifier(byteCount: 8);
+        var processingSpanId = CreateIdentifier(byteCount: 8);
+        var startTimestamp = DateTimeOffset.UtcNow.AddMilliseconds(-duration);
+        var endTimestamp = DateTimeOffset.UtcNow;
+        var validationEnd = startTimestamp.AddMilliseconds(Math.Max(1, duration * 0.15));
+        var dependencyStart = validationEnd;
+        var dependencyEnd = startTimestamp.AddMilliseconds(Math.Max(2, duration * 0.65));
+        var processingStart = dependencyStart.AddMilliseconds(1);
+        var processingEnd = dependencyEnd.AddMilliseconds(-1);
+        var dependencyServiceName = serviceName == "payment-api" ? "order-api" : "payment-api";
+        var hasError = level is "Error" or "Fatal";
+        var message = CreateMessage(level, dependencyServiceName, route, tenant, duration, orderId);
         var properties = new Dictionary<string, object?>
         {
             ["ScenarioId"] = scenarioId,
-            ["ServiceName"] = serviceName,
+            ["ServiceName"] = dependencyServiceName,
             ["CustomerId"] = customerId,
             ["OrderId"] = orderId,
             ["Tenant"] = tenant,
@@ -102,7 +117,49 @@ public sealed class LogScenarioFactory
             properties["exception.stacktrace"] = exception;
         }
 
-        return new SimulatedLog(serviceName, level, SeverityNumbers[level], message, properties, exception);
+        var rootAttributes = new Dictionary<string, object?>
+        {
+            ["http.request.method"] = "POST",
+            ["url.path"] = route,
+            ["tenant.id"] = tenant,
+            ["order.id"] = orderId
+        };
+        var spans = new[]
+        {
+            new SimulatedSpan(traceId, rootSpanId, null, serviceName, $"POST {route}", 2, startTimestamp, endTimestamp, hasError ? 2 : 1, hasError ? message : null, rootAttributes),
+            new SimulatedSpan(traceId, validationSpanId, rootSpanId, serviceName, "Validate request", 1, startTimestamp, validationEnd, 1, null, new Dictionary<string, object?>
+            {
+                ["serimongo.operation.phase"] = "validation",
+                ["tenant.id"] = tenant
+            }),
+            new SimulatedSpan(traceId, dependencySpanId, rootSpanId, serviceName, $"Call {dependencyServiceName}", 3, dependencyStart, dependencyEnd, hasError ? 2 : 1, hasError ? message : null, new Dictionary<string, object?>
+            {
+                ["peer.service"] = dependencyServiceName,
+                ["server.address"] = dependencyServiceName
+            }),
+            new SimulatedSpan(traceId, processingSpanId, dependencySpanId, dependencyServiceName, $"Process {route}", 2, processingStart, processingEnd, hasError ? 2 : 1, hasError ? message : null, new Dictionary<string, object?>
+            {
+                ["serimongo.operation.phase"] = "processing",
+                ["order.id"] = orderId,
+                ["customer.id"] = customerId
+            })
+        };
+        var log = new SimulatedLog(
+            dependencyServiceName,
+            level,
+            SeverityNumbers[level],
+            message,
+            properties,
+            traceId,
+            processingSpanId,
+            exception);
+
+        return new SimulatedOperation([log], spans);
+    }
+
+    private static string CreateIdentifier(int byteCount)
+    {
+        return Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(byteCount));
     }
 
     private static string? GetCanonicalLevel(string level)

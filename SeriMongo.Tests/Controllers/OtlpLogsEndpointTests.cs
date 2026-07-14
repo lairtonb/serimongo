@@ -196,7 +196,7 @@ namespace SeriMongo.Tests.Controllers
         [InlineData("/otlp/v1/traces")]
         [InlineData("/v1/metrics")]
         [InlineData("/otlp/v1/metrics")]
-        public async Task TraceAndMetricProtobufSignals_AreAcceptedAndDropped(string path)
+        public async Task TraceAndMetricProtobufSignals_AreAccepted(string path)
         {
             using var client = _fixture.Factory.CreateClient();
             using var content = CreateProtobufContent(new byte[] { 0x0A, 0x00 });
@@ -210,9 +210,9 @@ namespace SeriMongo.Tests.Controllers
         }
 
         [Theory]
-        [InlineData("/v1/traces")]
         [InlineData("/v1/metrics")]
-        public async Task TraceAndMetricJsonSignals_AreAcceptedAndDropped(string path)
+        [InlineData("/otlp/v1/metrics")]
+        public async Task MetricJsonSignals_AreAcceptedAndDropped(string path)
         {
             using var client = _fixture.Factory.CreateClient();
             using var content = new StringContent("{}", Encoding.UTF8, "application/json");
@@ -220,6 +220,20 @@ namespace SeriMongo.Tests.Controllers
             var response = await client.PostAsync(path, content, TestContext.Current.CancellationToken);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Empty(_fixture.Capture.Entries);
+        }
+
+        [Theory]
+        [InlineData("/v1/traces")]
+        [InlineData("/otlp/v1/traces")]
+        public async Task TraceJsonPayload_WithoutResourceSpans_ReturnsBadRequest(string path)
+        {
+            using var client = _fixture.Factory.CreateClient();
+            using var content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+            var response = await client.PostAsync(path, content, TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Empty(_fixture.Capture.Entries);
         }
 

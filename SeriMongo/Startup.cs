@@ -61,8 +61,11 @@ namespace SeriMongo
             services.AddSingleton<ILogServiceNameCatalog, LogServiceNameCatalog>();
             services.AddSingleton<ITailSubscriptionStore, TailSubscriptionStore>();
             services.AddSingleton<ILogIngestService, LogIngestService>();
+            services.AddSingleton<ITraceIngestService, TraceIngestService>();
             services.AddSingleton<OtlpLogMapper>();
             services.AddSingleton<OtlpProtobufLogMapper>();
+            services.AddSingleton<OtlpTraceMapper>();
+            services.AddSingleton<OtlpProtobufTraceMapper>();
             services.AddSingleton<StartupSeedService>();
 
             // SignalR remains the client push channel for new log entries.
