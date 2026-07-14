@@ -123,6 +123,7 @@
               <button id="tail-button" class="action-button outline" type="button" style="min-width: 76px" [class.active]="isTailing()" (click)="toggleTail()">
                 {{isTailing() ? 'Pause' : 'Tail'}}
               </button>
+              <button id="traces-button" class="action-button outline" type="button" style="min-width: 76px" [class.active]="tracePanelOpen()" (click)="toggleTracePanel()">Traces</button>
             </div>
           </div>
 
@@ -135,6 +136,8 @@
             </button>
           </div>
         </section>
+
+        <app-trace-panel *ngIf="tracePanelOpen()" (closed)="closeTracePanel()" (spanSelected)="setSelectedSpan($event)"></app-trace-panel>
 
         <section class="log-area" aria-label="Log entries">
           <div class="table-titlebar">
@@ -220,6 +223,58 @@
 
       <aside class="detail-column">
         <section class="detail-sidebar" aria-label="Log details">
+          <ng-container *ngIf="selectedSpan() as selectedTraceSpan; else selectedLogDetails">
+            <div class="detail-titlebar">
+              <div>
+                <span>Selected span</span>
+                <strong>{{traceSpanStatus(selectedTraceSpan)}}</strong>
+              </div>
+              <div class="detail-actions">
+                <button class="action-button ghost ionicon-button" type="button" aria-label="Copy span details as Markdown" title="Copy span details as Markdown" (click)="copySpanDetails(selectedTraceSpan)">
+                  <ng-icon name="ionCopyOutline" size="17px"></ng-icon>
+                </button>
+                <button class="action-button ghost" type="button" (click)="clearSelectedSpan()">Close</button>
+              </div>
+            </div>
+
+            <div class="detail-body">
+              <section class="detail-section" style="overflow:hidden;background:#fff;border:1px solid #d0d7de;border-radius:2px">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 7px;background:#eef2f6;border-bottom:1px solid #d0d7de">
+                  <h3>Operation</h3>
+                  <button class="action-button ghost ionicon-button" type="button" style="width:23px;height:23px;background:#fff" aria-label="Copy span operation" title="Copy span operation" (click)="copyText(selectedTraceSpan.name)">
+                    <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
+                  </button>
+                </div>
+                <p style="padding:8px 9px;font-size:13px;line-height:1.5">{{selectedTraceSpan.name}}</p>
+              </section>
+
+              <dl class="detail-meta">
+                <div><dt>Service</dt><dd>{{selectedTraceSpan.serviceName}}</dd></div>
+                <div><dt>Kind</dt><dd>{{traceSpanKind(selectedTraceSpan)}}</dd></div>
+                <div><dt>Duration</dt><dd>{{formatTraceDuration(selectedTraceSpan.durationNanoseconds)}}</dd></div>
+                <div><dt>Start</dt><dd>{{selectedTraceSpan.startTimestamp}}</dd></div>
+                <div><dt>Trace ID</dt><dd>{{selectedTraceSpan.traceId}}</dd></div>
+                <div><dt>Span ID</dt><dd>{{selectedTraceSpan.spanId}}</dd></div>
+              </dl>
+
+              <section *ngIf="selectedTraceSpan.statusMessage" class="exception-panel">
+                <span>Span status</span>
+                <pre>{{selectedTraceSpan.statusMessage}}</pre>
+              </section>
+
+              <section class="detail-section">
+                <h3>Attributes</h3>
+                <pre style="margin:0;padding:8px;background:#f7f8fa;border:1px solid #d0d7de;white-space:pre-wrap;overflow-wrap:anywhere">{{formatTraceJson(selectedTraceSpan.attributesJson)}}</pre>
+              </section>
+
+              <section class="detail-section">
+                <h3>Resource attributes</h3>
+                <pre style="margin:0;padding:8px;background:#f7f8fa;border:1px solid #d0d7de;white-space:pre-wrap;overflow-wrap:anywhere">{{formatTraceJson(selectedTraceSpan.resourceAttributesJson)}}</pre>
+              </section>
+            </div>
+          </ng-container>
+
+          <ng-template #selectedLogDetails>
           <ng-container *ngIf="selectedRow() as selectedLog; else noSelectedLog">
             <div class="detail-titlebar">
               <div>
@@ -290,6 +345,7 @@
               <span>No event selected</span>
               <p>Select a row to inspect message, exception and structured properties.</p>
             </div>
+          </ng-template>
           </ng-template>
         </section>
       </aside>

@@ -1,0 +1,120 @@
+<section class="trace-panel" aria-label="Trace workspace">
+  <header class="trace-panel-header">
+    <div>
+      <p class="trace-eyebrow">Traces</p>
+      <h2>{{selectedTrace() ? selectedTrace()!.summary.rootSpanName : 'Trace browser'}}</h2>
+    </div>
+    <div class="trace-header-actions">
+      <button *ngIf="selectedTrace()" class="trace-button" type="button" (click)="closeTrace()">Browse</button>
+      <button class="trace-icon-button" type="button" aria-label="Close traces" title="Close traces" (click)="closePanel()">
+        <ng-icon name="ionCloseCircleOutline" size="18px"></ng-icon>
+      </button>
+    </div>
+  </header>
+
+  <div class="trace-panel-body" *ngIf="!selectedTrace(); else traceDetail">
+    <form class="trace-filters" (submit)="$event.preventDefault(); refresh()">
+      <label>
+        <span>Trace ID</span>
+        <input type="text" [(ngModel)]="traceId" name="traceId" placeholder="32-character trace ID">
+      </label>
+      <label>
+        <span>Service</span>
+        <select [(ngModel)]="serviceName" name="serviceName">
+          <option value="">All services</option>
+          <option *ngFor="let service of services()" [value]="service">{{service}}</option>
+        </select>
+      </label>
+      <label>
+        <span>Status</span>
+        <select [(ngModel)]="status" name="status">
+          <option *ngFor="let option of statuses" [value]="option">{{option}}</option>
+        </select>
+      </label>
+      <label>
+        <span>Period</span>
+        <select [(ngModel)]="selectedPeriod" name="period">
+          <option *ngFor="let option of periods" [value]="option.value">{{option.label}}</option>
+        </select>
+      </label>
+      <label>
+        <span>Operation</span>
+        <input type="text" [(ngModel)]="rootOperationName" name="operation" placeholder="contains">
+      </label>
+      <label>
+        <span>Min duration (ms)</span>
+        <input type="number" min="0" [(ngModel)]="minimumDurationMs" name="minimumDurationMs">
+      </label>
+      <button class="trace-button primary" type="submit" [disabled]="loading()">
+        <ng-icon name="ionRefreshOutline" size="15px"></ng-icon>
+        Refresh
+      </button>
+    </form>
+
+    <p *ngIf="error()" class="trace-state error">{{error()}}</p>
+    <p *ngIf="loading()" class="trace-state">Loading traces...</p>
+
+    <div class="trace-list" *ngIf="!loading() && !error()">
+      <button class="trace-list-item" type="button" *ngFor="let trace of page()?.items ?? []; trackBy: trackByTraceId" (click)="selectTrace(trace)">
+        <span class="trace-state-dot" [class.error]="trace.errorSpanCount > 0"></span>
+        <span class="trace-list-main">
+          <strong>{{trace.rootSpanName}}</strong>
+          <span>{{trace.rootServiceName}} · {{formatDuration(trace.durationNanoseconds)}} · {{trace.spanCount}} spans</span>
+        </span>
+        <span class="trace-list-id">{{abbreviatedTraceId(trace.traceId)}}</span>
+      </button>
+      <p class="trace-state" *ngIf="(page()?.items?.length ?? 0) === 0">No traces match these filters.</p>
+    </div>
+  </div>
+
+  <ng-template #traceDetail>
+    <div class="trace-panel-body detail" *ngIf="selectedTrace() as trace">
+      <div class="trace-summary">
+        <div>
+          <span>{{trace.summary.rootServiceName}}</span>
+          <strong>{{formatDuration(trace.summary.durationNanoseconds)}}</strong>
+          <span>{{trace.summary.spanCount}} spans · {{trace.summary.errorSpanCount}} errors</span>
+        </div>
+        <div class="trace-id-copy">
+          <code>{{abbreviatedTraceId(trace.summary.traceId)}}</code>
+          <button class="trace-icon-button" type="button" aria-label="Copy trace ID" title="Copy trace ID" (click)="copyTraceId(trace.summary.traceId)">
+            <ng-icon name="ionCopyOutline" size="15px"></ng-icon>
+          </button>
+        </div>
+      </div>
+
+      <p *ngIf="error()" class="trace-state error">{{error()}}</p>
+      <p *ngIf="loadingTrace()" class="trace-state">Loading trace details...</p>
+
+      <div class="trace-visual" *ngIf="!loadingTrace()">
+        <section class="span-tree" aria-label="Span hierarchy">
+          <div class="span-tree-heading"><span>Span</span><span>Service</span><span>Duration</span></div>
+          <button type="button"
+            *ngFor="let span of orderedSpans(trace); trackBy: trackBySpanId"
+            class="span-tree-row"
+            [class.selected]="selectedSpan()?.spanId === span.spanId"
+            [class.error]="span.statusCode === 2"
+            [style.--span-depth]="spanDepth(span, trace)"
+            (click)="selectSpan(span)">
+            <span class="span-name"><i [class]="'span-status ' + spanTone(span)"></i>{{span.name}}</span>
+            <span>{{span.serviceName}}</span>
+            <span>{{formatDuration(span.durationNanoseconds)}}</span>
+          </button>
+        </section>
+
+        <section class="trace-waterfall" aria-label="Trace waterfall">
+          <div class="waterfall-axis"><span>0ms</span><span>{{formatDuration(trace.summary.durationNanoseconds)}}</span></div>
+          <div class="waterfall-row" *ngFor="let span of orderedSpans(trace); trackBy: trackBySpanId">
+            <button type="button"
+              [class]="'waterfall-bar ' + spanTone(span)"
+              [style.margin-left.%]="spanOffset(span, trace)"
+              [style.width.%]="spanWidth(span, trace)"
+              [attr.aria-label]="span.name + ', ' + formatDuration(span.durationNanoseconds)"
+              [title]="span.name + ' · ' + formatDuration(span.durationNanoseconds)"
+              (click)="selectSpan(span)"></button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </ng-template>
+</section>

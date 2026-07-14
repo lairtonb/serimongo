@@ -8,6 +8,8 @@ import { LogEntry } from './log-entry';
 import { HelpDrawerComponent } from './help-drawer.component';
 import { SignalRService } from '../services/signalr.service';
 import { SearchService } from '../services/search.service';
+import { TracePanelComponent } from '../traces/trace-panel.component';
+import { TraceSpan } from '../traces/trace.models';
 
 type PeriodUnit = 'minute' | 'hour' | 'day' | 'month';
 
@@ -37,7 +39,7 @@ interface PropertyFilter {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, FormsModule, NgIcon, HelpDrawerComponent],
+  imports: [CommonModule, FormsModule, NgIcon, HelpDrawerComponent, TracePanelComponent],
   providers: [provideIcons({ ionCheckmarkOutline, ionCloseCircleOutline, ionCopyOutline, ionFunnelOutline, ionHelpCircleOutline, ionOptionsOutline, ionRemoveCircleOutline, ionSettingsOutline })],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
@@ -49,6 +51,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   searchExpression = '*';
   logEntries = signal<LogEntry[]>([]);
   selectedRow = signal<LogEntry | null>(null);
+  selectedSpan = signal<TraceSpan | null>(null);
+  tracePanelOpen = signal(false);
   tailInjectedLogIds = signal<ReadonlySet<string>>(new Set<string>());
   isTailing = signal(true);
   selectedPeriod = signal<string | null>(null);
@@ -302,6 +306,29 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.helpOpen.update(open => !open);
   }
 
+  toggleTracePanel(): void {
+    this.tracePanelOpen.update(open => !open);
+    if (!this.tracePanelOpen()) {
+      this.selectedSpan.set(null);
+    }
+  }
+
+  closeTracePanel(): void {
+    this.tracePanelOpen.set(false);
+    this.selectedSpan.set(null);
+  }
+
+  setSelectedSpan(span: TraceSpan | null): void {
+    this.selectedSpan.set(span);
+    if (span) {
+      this.selectedRow.set(null);
+    }
+  }
+
+  clearSelectedSpan(): void {
+    this.selectedSpan.set(null);
+  }
+
   toggleLevelFilter(): void {
     this.levelFilterOpen.update(open => !open);
   }
@@ -392,6 +419,62 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   async copyLogDetails(log: LogEntry): Promise<void> {
     await this.copyText(this.buildLogDetailsMarkdown(log));
+  }
+
+  async copySpanDetails(span: TraceSpan): Promise<void> {
+    const lines = [
+      '# Trace span',
+      '',
+      `- TraceId: ${span.traceId}`,
+      `- SpanId: ${span.spanId}`,
+      `- ParentSpanId: ${span.parentSpanId || '-'}`,
+      `- Service: ${span.serviceName}`,
+      `- Operation: ${span.name}`,
+      `- Status: ${this.traceSpanStatus(span)}`,
+      `- Duration: ${this.formatTraceDuration(span.durationNanoseconds)}`,
+      '',
+      '## Attributes',
+      '',
+      this.markdownCodeBlock(this.formatTraceJson(span.attributesJson))
+    ];
+
+    await this.copyText(`${lines.join('\n').trimEnd()}\n`);
+  }
+
+  traceSpanStatus(span: TraceSpan): string {
+    return span.statusCode === 2 ? 'Error' : span.statusCode === 1 ? 'OK' : 'Unset';
+  }
+
+  traceSpanKind(span: TraceSpan): string {
+    const kinds: Record<number, string> = {
+      1: 'Internal',
+      2: 'Server',
+      3: 'Client',
+      4: 'Producer',
+      5: 'Consumer'
+    };
+
+    return kinds[span.kind] || 'Unspecified';
+  }
+
+  formatTraceDuration(durationNanoseconds: number): string {
+    if (durationNanoseconds >= 1_000_000_000) {
+      return `${(durationNanoseconds / 1_000_000_000).toFixed(2)}s`;
+    }
+
+    if (durationNanoseconds >= 1_000_000) {
+      return `${Math.round(durationNanoseconds / 1_000_000)}ms`;
+    }
+
+    return `${Math.round(durationNanoseconds / 1_000)}us`;
+  }
+
+  formatTraceJson(value: string): string {
+    try {
+      return JSON.stringify(JSON.parse(value), null, 2);
+    } catch {
+      return value || '{}';
+    }
   }
 
   private firstPropertyText(log: LogEntry, ...keys: string[]): string {
@@ -692,6 +775,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   async setClickedRow(le: LogEntry): Promise<void> {
     const nextSelected = this.selectedRow() === le ? null : le;
     this.selectedRow.set(nextSelected);
+    if (nextSelected) {
+      this.selectedSpan.set(null);
+    }
     if (nextSelected) {
       await this.pauseTail();
     }
