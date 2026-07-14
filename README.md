@@ -256,15 +256,91 @@ curl -X POST http://localhost:51983/v1/logs \
 
 ## Local Development
 
-Backend:
+Use this workflow to run the ASP.NET Core API and the Angular frontend on your
+computer. They are two separate processes, so keep two terminals open.
 
-```bash
-dotnet build SeriMongo/SeriMongo.csproj
+The commands below use PowerShell and assume your current directory is the
+repository root (the folder that contains `SeriMongo.sln`).
+
+### Before You Start
+
+Install the following tools:
+
+* a .NET SDK compatible with `SeriMongo/SeriMongo.csproj`;
+* Node.js 22.22.3+, Node.js 24.15.0+, or a newer supported version; and
+* npm, which is installed with Node.js.
+
+Check that they are available:
+
+```powershell
+dotnet --version
+node --version
+npm --version
+```
+
+### 1. Start the Backend
+
+In the first terminal, from the repository root, run:
+
+```powershell
 dotnet run --project SeriMongo/SeriMongo.csproj --urls http://localhost:51983
 ```
 
-Frontend with Angular 22 requires Node 22.22.3+, Node 24.15.0+, or newer. If your local Node is older, use Docker/Node 24 for frontend commands:
+Leave this terminal running. The API is now listening at
+`http://localhost:51983`.
 
-```bash
-docker run --rm --mount "type=bind,source=%CD%/SeriMongo,target=/app" -w /app node:24-alpine npm run build
+### 2. Install and Start the Frontend
+
+Open a second terminal. From the repository root, run:
+
+```powershell
+Set-Location .\SeriMongo
+npm install
+npm start
+```
+
+`npm install` downloads the frontend dependencies. You need it after cloning
+the repository and whenever `package.json` changes. `npm start` starts the
+Angular development server, watches the frontend files, and rebuilds the UI
+when you save a change.
+
+Do not use `npm run dev`: this project does not define a `dev` script.
+
+### 3. Open SeriMongo
+
+When Angular reports that the application compiled successfully, open:
+
+```text
+http://localhost:4200
+```
+
+Use this Angular URL while developing the frontend. Its development server
+automatically forwards UI requests to the backend at
+`http://localhost:51983`, including API calls and the realtime SignalR
+connection. You do not need to change frontend URLs or configure CORS.
+
+Keep both terminals running. Press `Ctrl+C` in either terminal to stop that
+part of the application.
+
+### Common Problems
+
+* **The page shows API or realtime connection errors:** make sure the backend
+  terminal is still running on port `51983`.
+* **Port `4200` is already in use:** start Angular on another port with
+  `npm start -- --port 4201`, then open `http://localhost:4201`.
+* **`npm install` rejects your Node.js version:** install Node.js 22.22.3+ or
+  Node.js 24.15.0+ before trying again.
+* **Dependencies appear broken after a package change:** from `SeriMongo`, run
+  `Remove-Item -Recurse -Force node_modules` and then `npm install`.
+
+### Build the Frontend Without Local Node.js
+
+Docker can build the frontend when a compatible local Node.js version is not
+available. This command creates a production build but does not start the
+development server. It keeps Linux dependencies in a Docker volume so they do
+not interfere with `npm` commands run on Windows:
+
+```powershell
+docker volume create serimongo-node-modules
+docker run --rm --mount "type=bind,source=$((Get-Location).Path)\SeriMongo,target=/app" --mount "type=volume,source=serimongo-node-modules,target=/app/node_modules" -w /app node:24-alpine sh -c "npm install && npm run build"
 ```
