@@ -1,15 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { ionCheckmarkOutline, ionCloseCircleOutline, ionCopyOutline, ionFunnelOutline, ionHelpCircleOutline, ionOptionsOutline, ionRemoveCircleOutline, ionSettingsOutline } from '@ng-icons/ionicons';
+import { Subscription } from 'rxjs';
 
 import { LogEntry } from './log-entry';
 import { HelpDrawerComponent } from './help-drawer.component';
 import { SignalRService } from '../services/signalr.service';
 import { SearchService } from '../services/search.service';
 import { TracePanelComponent } from '../traces/trace-panel.component';
-import { TraceSpan } from '../traces/trace.models';
+import { TraceSpan, TraceSummary } from '../traces/trace.models';
 
 type PeriodUnit = 'minute' | 'hour' | 'day' | 'month';
 
@@ -37,6 +39,18 @@ interface PropertyFilter {
   value: string | number;
 }
 
+interface TraceFocusSnapshot {
+  searchExpression: string;
+  selectedPeriod: string | null;
+  selectedPeriodSince: string | null;
+  selectedLevels: string[];
+  selectedServiceNames: string[];
+  propertyFilters: PropertyFilter[];
+  wasTailing: boolean;
+  selectedRow: LogEntry | null;
+  scrollTop: number;
+}
+
 @Component({
   standalone: true,
   imports: [CommonModule, FormsModule, NgIcon, HelpDrawerComponent, TracePanelComponent],
@@ -53,6 +67,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedRow = signal<LogEntry | null>(null);
   selectedSpan = signal<TraceSpan | null>(null);
   tracePanelOpen = signal(false);
+  activeTraceId = signal<string | null>(null);
+  traceRefreshVersion = signal(0);
   tailInjectedLogIds = signal<ReadonlySet<string>>(new Set<string>());
   isTailing = signal(true);
   selectedPeriod = signal<string | null>(null);
@@ -89,6 +105,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   private currentSearchPage = 0;
   private resizeStartX = 0;
   private resizeStartWidth = 0;
+  private traceFocusSnapshot: TraceFocusSnapshot | null = null;
+  private traceRouteSubscription?: Subscription;
 
   readonly periodOptions: PeriodOption[] = [
     { id: '5m', label: '5m', amount: 5, unit: 'minute' },
@@ -142,13 +160,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   });
 
   constructor(private signalRService: SignalRService,
-    private searchService: SearchService) {
+    private searchService: SearchService,
+    private route: ActivatedRoute,
+    private router: Router) {
   }
 
   async ngOnInit(): Promise<void> {
     window.addEventListener('resize', this.clampSidebarToViewport);
     this.signalRService.getLogEntries(this.onReceiveLogEntry);
     this.signalRService.getServiceNames(this.onReceiveServiceNames);
+    this.signalRService.getTraceUpdates(this.onTraceUpdated);
+    this.traceRouteSubscription = this.route.queryParamMap.subscribe(params => {
+      const traceId = params.get('traceId');
+      if (this.isTraceId(traceId)) {
+        void this.enterTraceFocus(traceId);
+      } else if (this.activeTraceId()) {
+        void this.exitTraceFocus(false);
+      }
+    });
     await this.signalRService.start();
   }
 
@@ -175,6 +204,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.clearTailInjectedRows();
     this.clearToastTimer();
     this.stopSidebarResize();
+    this.traceRouteSubscription?.unsubscribe();
     await this.signalRService.stop();
   }
 
@@ -307,6 +337,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   toggleTracePanel(): void {
+    if (this.activeTraceId()) {
+      void this.exitTraceFocus(true);
+      return;
+    }
+
     this.tracePanelOpen.update(open => !open);
     if (!this.tracePanelOpen()) {
       this.selectedSpan.set(null);
@@ -314,6 +349,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   closeTracePanel(): void {
+    if (this.activeTraceId()) {
+      void this.exitTraceFocus(true);
+      return;
+    }
+
     this.tracePanelOpen.set(false);
     this.selectedSpan.set(null);
   }
@@ -327,6 +367,31 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   clearSelectedSpan(): void {
     this.selectedSpan.set(null);
+  }
+
+  openTraceFromLog(event: MouseEvent, traceId: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!this.isTraceId(traceId)) {
+      return;
+    }
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { traceId },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  async filterLogsForSelectedSpan(): Promise<void> {
+    const span = this.selectedSpan();
+    if (!span) {
+      return;
+    }
+
+    this.searchExpression = `prop.traceId = ${this.quoteLogQueryValue(span.traceId)} and prop.spanId = ${this.quoteLogQueryValue(span.spanId)}`;
+    this.clearTailInjectedRows();
+    await this.loadFirstSearchPage(this.buildLogQuery());
   }
 
   toggleLevelFilter(): void {
@@ -475,6 +540,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     } catch {
       return value || '{}';
     }
+  }
+
+  isTraceId(value: string | null | undefined): value is string {
+    return !!value && /^[0-9a-f]{32}$/.test(value);
   }
 
   private firstPropertyText(log: LogEntry, ...keys: string[]): string {
@@ -660,6 +729,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     }, this.tailInjectedHighlightMs));
   }
 
+  private readonly onTraceUpdated = (trace: TraceSummary): void => {
+    if (this.tracePanelOpen() || this.activeTraceId() === trace.traceId) {
+      this.traceRefreshVersion.update(version => version + 1);
+    }
+  };
+
   private clearTailInjectedRows(): void {
     for (const timer of this.tailInjectedTimers.values()) {
       clearTimeout(timer);
@@ -839,6 +914,93 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isTailing.set(false);
     await this.signalRService.pauseTail();
     this.clearTailInjectedRows();
+  }
+
+  private async enterTraceFocus(traceId: string): Promise<void> {
+    if (this.activeTraceId() === traceId) {
+      this.tracePanelOpen.set(true);
+      return;
+    }
+
+    this.traceFocusSnapshot ??= this.captureTraceFocusSnapshot();
+    this.activeTraceId.set(traceId);
+    this.tracePanelOpen.set(true);
+    this.selectedSpan.set(null);
+    this.selectedRow.set(null);
+    this.searchExpression = `prop.traceId = ${this.quoteLogQueryValue(traceId)}`;
+    this.selectedPeriod.set(null);
+    this.selectedPeriodSince.set(null);
+    this.selectedLevels.set([]);
+    this.selectedServiceNames.set([]);
+    this.propertyFilters.set([]);
+    await this.pauseTail();
+    await this.loadFirstSearchPage(this.buildLogQuery());
+  }
+
+  private async exitTraceFocus(updateUrl: boolean): Promise<void> {
+    const snapshot = this.traceFocusSnapshot;
+    this.activeTraceId.set(null);
+    this.tracePanelOpen.set(false);
+    this.selectedSpan.set(null);
+    this.traceFocusSnapshot = null;
+
+    if (snapshot) {
+      this.searchExpression = snapshot.searchExpression;
+      this.selectedPeriod.set(snapshot.selectedPeriod);
+      this.selectedPeriodSince.set(snapshot.selectedPeriodSince);
+      this.selectedLevels.set(snapshot.selectedLevels);
+      this.selectedServiceNames.set(snapshot.selectedServiceNames);
+      this.propertyFilters.set(snapshot.propertyFilters);
+      this.selectedRow.set(snapshot.selectedRow);
+      const query = this.buildLogQuery();
+      await this.loadFirstSearchPage(query);
+      this.restoreLogScrollPosition(snapshot.scrollTop);
+
+      if (snapshot.wasTailing) {
+        this.isTailing.set(true);
+        await this.signalRService.setTailQuery(query);
+      }
+    } else {
+      this.searchExpression = '*';
+      this.selectedPeriod.set(null);
+      this.selectedPeriodSince.set(null);
+      this.selectedLevels.set([]);
+      this.selectedServiceNames.set([]);
+      this.propertyFilters.set([]);
+      await this.loadFirstSearchPage(this.buildLogQuery());
+    }
+
+    if (updateUrl) {
+      await this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { traceId: null },
+        queryParamsHandling: 'merge'
+      });
+    }
+  }
+
+  private captureTraceFocusSnapshot(): TraceFocusSnapshot {
+    return {
+      searchExpression: this.searchExpression,
+      selectedPeriod: this.selectedPeriod(),
+      selectedPeriodSince: this.selectedPeriodSince(),
+      selectedLevels: [...this.selectedLevels()],
+      selectedServiceNames: [...this.selectedServiceNames()],
+      propertyFilters: this.propertyFilters().map(filter => ({ ...filter })),
+      wasTailing: this.isTailing(),
+      selectedRow: this.selectedRow(),
+      scrollTop: this.logTableBodyElement?.nativeElement.scrollTop ?? 0
+    };
+  }
+
+  private restoreLogScrollPosition(scrollTop: number): void {
+    setTimeout(() => {
+      const logTableBody = this.logTableBodyElement?.nativeElement;
+      if (logTableBody) {
+        logTableBody.scrollTop = scrollTop;
+        this.virtualScrollTop.set(scrollTop);
+      }
+    });
   }
 
   // TODO: inprove Angular $event handling following best practices

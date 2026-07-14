@@ -137,7 +137,7 @@
           </div>
         </section>
 
-        <app-trace-panel *ngIf="tracePanelOpen()" (closed)="closeTracePanel()" (spanSelected)="setSelectedSpan($event)"></app-trace-panel>
+        <app-trace-panel *ngIf="tracePanelOpen()" [focusedTraceId]="activeTraceId()" [refreshVersion]="traceRefreshVersion()" (closed)="closeTracePanel()" (spanSelected)="setSelectedSpan($event)"></app-trace-panel>
 
         <section class="log-area" aria-label="Log entries">
           <div class="table-titlebar">
@@ -181,7 +181,7 @@
                   </tr>
                   <ng-container *ngFor="let log of rows.entries; trackBy: trackByLogId">
                     <tr class="log-row" (click)="setClickedRow(log)" [class.active]="log === selectedRow()" [class.tail-injected]="isTailInjected(log)">
-                      <td *ngIf="isLogColumnVisible('traceId')" class="trace-id" [title]="traceId(log)"><span class="row-marker" aria-hidden="true"></span>{{traceId(log)}}</td>
+                      <td *ngIf="isLogColumnVisible('traceId')" class="trace-id" [title]="traceId(log)"><span class="row-marker" aria-hidden="true"></span><ng-container *ngIf="isTraceId(traceId(log)); else plainTraceId"><a class="trace-link" [attr.href]="'?traceId=' + traceId(log)" (click)="openTraceFromLog($event, traceId(log))">{{traceId(log)}}</a></ng-container><ng-template #plainTraceId>{{traceId(log)}}</ng-template></td>
                       <td *ngIf="isLogColumnVisible('timestamp')" class="tstamp">{{log.timestamp | date:'yyyy-MM-dd HH:mm:ss SSS z'}}</td>
                       <td *ngIf="isLogColumnVisible('level')" [class]="['lvl', log.level]"><span>{{log.level}}</span></td>
                       <td *ngIf="isLogColumnVisible('serviceName')" class="service-name" [title]="serviceName(log)">{{serviceName(log)}}</td>
@@ -230,6 +230,7 @@
                 <strong>{{traceSpanStatus(selectedTraceSpan)}}</strong>
               </div>
               <div class="detail-actions">
+                <button class="action-button ghost" type="button" (click)="filterLogsForSelectedSpan()">Filter logs</button>
                 <button class="action-button ghost ionicon-button" type="button" aria-label="Copy span details as Markdown" title="Copy span details as Markdown" (click)="copySpanDetails(selectedTraceSpan)">
                   <ng-icon name="ionCopyOutline" size="17px"></ng-icon>
                 </button>

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 
 import { LogEntry } from '../home/log-entry';
+import { TraceSummary } from '../traces/trace.models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -58,6 +59,12 @@ export class SignalRService {
   getServiceNames(next: (serviceNames: string[]) => void): void {
     this.connection.on('OnReceiveServiceNames', (serviceNames: string[]) => {
       next(serviceNames);
+    });
+  }
+
+  getTraceUpdates(next: (trace: TraceSummary) => void): void {
+    this.connection.on('OnTraceUpdated', (trace: TraceSummary) => {
+      next(trace);
     });
   }
 

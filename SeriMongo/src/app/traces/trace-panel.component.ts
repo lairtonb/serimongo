@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { ionCloseCircleOutline, ionCopyOutline, ionRefreshOutline } from '@ng-icons/ionicons';
@@ -21,7 +21,35 @@ interface TracePeriodOption {
   templateUrl: './trace-panel.component.html',
   styleUrls: ['./trace-panel.component.css']
 })
-export class TracePanelComponent implements OnInit {
+export class TracePanelComponent implements OnInit, OnDestroy {
+  @Input()
+  set focusedTraceId(value: string | null) {
+    const traceId = this.isTraceId(value) ? value : null;
+    if (this._focusedTraceId === traceId) {
+      return;
+    }
+
+    this._focusedTraceId = traceId;
+    if (traceId) {
+      this.traceId = traceId;
+      if (this.initialized) {
+        void this.loadTrace(traceId);
+      }
+    }
+  }
+
+  @Input()
+  set refreshVersion(value: number) {
+    if (value === this._refreshVersion) {
+      return;
+    }
+
+    this._refreshVersion = value;
+    if (this.initialized) {
+      this.scheduleRefresh();
+    }
+  }
+
   @Output() closed = new EventEmitter<void>();
   @Output() spanSelected = new EventEmitter<TraceSpan | null>();
 
@@ -49,10 +77,25 @@ export class TracePanelComponent implements OnInit {
 
   readonly statuses: TraceStatusFilter[] = ['All', 'Successful', 'Error'];
 
+  private _focusedTraceId: string | null = null;
+  private _refreshVersion = 0;
+  private initialized = false;
+  private refreshTimer?: ReturnType<typeof setTimeout>;
+
   constructor(private readonly traceService: TraceService) {}
 
   async ngOnInit(): Promise<void> {
     await Promise.all([this.loadServices(), this.refresh()]);
+    this.initialized = true;
+    if (this._focusedTraceId) {
+      await this.loadTrace(this._focusedTraceId);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+    }
   }
 
   async refresh(): Promise<void> {
@@ -70,11 +113,15 @@ export class TracePanelComponent implements OnInit {
   }
 
   async selectTrace(summary: TraceSummary): Promise<void> {
+    await this.loadTrace(summary.traceId);
+  }
+
+  private async loadTrace(traceId: string): Promise<void> {
     this.loadingTrace.set(true);
     this.error.set(null);
 
     try {
-      const trace = await this.traceService.getTrace(summary.traceId);
+      const trace = await this.traceService.getTrace(traceId);
       this.selectedTrace.set(trace);
       this.selectSpan(this.rootSpan(trace) ?? trace.spans[0] ?? null);
     } catch (error) {
@@ -210,5 +257,28 @@ export class TracePanelComponent implements OnInit {
   private rootSpan(trace: TraceDetail): TraceSpan | undefined {
     return trace.spans.find(span => span.spanId === trace.summary.rootSpanId)
       ?? trace.spans.find(span => !span.parentSpanId);
+  }
+
+  private scheduleRefresh(): void {
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+    }
+
+    this.refreshTimer = setTimeout(() => {
+      this.refreshTimer = undefined;
+      void this.refreshAfterRealtimeUpdate();
+    }, 250);
+  }
+
+  private async refreshAfterRealtimeUpdate(): Promise<void> {
+    await this.refresh();
+    const traceId = this.selectedTrace()?.summary.traceId ?? this._focusedTraceId;
+    if (traceId) {
+      await this.loadTrace(traceId);
+    }
+  }
+
+  private isTraceId(value: string | null): value is string {
+    return !!value && /^[0-9a-f]{32}$/.test(value);
   }
 }

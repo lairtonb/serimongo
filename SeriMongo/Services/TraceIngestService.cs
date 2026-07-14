@@ -2,6 +2,7 @@ using SeriMongo.Data;
 using SeriMongo.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,10 +11,12 @@ namespace SeriMongo.Services
     public sealed class TraceIngestService : ITraceIngestService
     {
         private readonly ITraceRepository _traceRepository;
+        private readonly ITraceNotifier _traceNotifier;
 
-        public TraceIngestService(ITraceRepository traceRepository)
+        public TraceIngestService(ITraceRepository traceRepository, ITraceNotifier traceNotifier)
         {
             _traceRepository = traceRepository;
+            _traceNotifier = traceNotifier;
         }
 
         public async Task<TraceIngestResult> IngestAsync(
@@ -44,6 +47,7 @@ namespace SeriMongo.Services
             {
                 await _traceRepository.UpsertAsync(validSpans, cancellationToken);
                 result.PersistedSpans = validSpans.Count;
+                await PublishUpdatedTracesAsync(validSpans, cancellationToken);
             }
 
             return result;
@@ -101,6 +105,28 @@ namespace SeriMongo.Services
             }
 
             return true;
+        }
+
+        private async Task PublishUpdatedTracesAsync(
+            IReadOnlyCollection<TraceSpan> spans,
+            CancellationToken cancellationToken)
+        {
+            foreach (var traceId in spans.Select(span => span.TraceId).Distinct(StringComparer.Ordinal))
+            {
+                var page = await _traceRepository.SearchAsync(
+                    new TraceSearchFilter
+                    {
+                        TraceId = traceId,
+                        Page = 1,
+                        PageSize = 1
+                    },
+                    cancellationToken);
+                var trace = page.Items.FirstOrDefault();
+                if (trace is not null)
+                {
+                    await _traceNotifier.PublishAsync(trace, cancellationToken);
+                }
+            }
         }
     }
 }

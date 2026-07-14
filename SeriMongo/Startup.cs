@@ -58,6 +58,7 @@ namespace SeriMongo
             services.AddSingleton<ITraceRepository, SqliteTraceRepository>();
             services.AddTransient<LogQueryCompiler>();
             services.AddSingleton<ILogEntryNotifier, SignalRLogEntryNotifier>();
+            services.AddSingleton<ITraceNotifier, SignalRTraceNotifier>();
             services.AddSingleton<ILogServiceNameCatalog, LogServiceNameCatalog>();
             services.AddSingleton<ITailSubscriptionStore, TailSubscriptionStore>();
             services.AddSingleton<ILogIngestService, LogIngestService>();

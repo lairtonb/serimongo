@@ -549,6 +549,19 @@ table.logs > tbody > tr.tail-injected:nth-child(4n + 3) {
   text-overflow: ellipsis;
 }
 
+.trace-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: #8cb4ff;
+  text-underline-offset: 2px;
+}
+
+.trace-link:hover,
+.trace-link:focus-visible {
+  color: #174ea6;
+  outline: none;
+}
+
 .row-marker {
   display: inline-flex;
   width: 3px;
