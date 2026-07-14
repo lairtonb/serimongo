@@ -40,7 +40,7 @@ namespace SeriMongo
 
             services.AddCors(options =>
             {
-                options.AddPolicy("CorsPolicy", builder => builder 
+                options.AddPolicy("CorsPolicy", builder => builder
                     .WithOrigins("http://localhost:4200")
                     // .AllowAnyOrigin()
                     .AllowAnyMethod()
@@ -52,8 +52,10 @@ namespace SeriMongo
             });
 
             // SQLite Data Access
+            services.AddSingleton<SqliteSchemaMigrator>();
             services.AddSingleton<AppLogsContext>();
             services.AddSingleton<ILogRepository, SqliteLogRepository>();
+            services.AddSingleton<ITraceRepository, SqliteTraceRepository>();
             services.AddTransient<LogQueryCompiler>();
             services.AddSingleton<ILogEntryNotifier, SignalRLogEntryNotifier>();
             services.AddSingleton<ILogServiceNameCatalog, LogServiceNameCatalog>();
@@ -64,7 +66,7 @@ namespace SeriMongo
             services.AddSingleton<StartupSeedService>();
 
             // SignalR remains the client push channel for new log entries.
-            services.AddSignalR(configure => { 
+            services.AddSignalR(configure => {
                 // Can fine-tune settings
                 // configure.
             });

@@ -10,8 +10,8 @@
 Replace the current trace accept-and-drop compatibility endpoints with a real
 OTLP trace receiver. A user must be able to export traces with a standard .NET
 OpenTelemetry `http/protobuf` exporter, find a trace in SeriMongo, inspect its
-span hierarchy and timing, and navigate between a trace and its correlated
-logs.
+span hierarchy and timing, and investigate the trace beside its correlated
+logs in the existing workspace.
 
 Metrics remain outside this plan. Their compatibility endpoints continue to
 acknowledge and discard payloads until a separate metrics design is approved.
@@ -50,6 +50,14 @@ acknowledge and discard payloads until a separate metrics design is approved.
    Add a trace-specific query language only after the filter model stabilizes.
 9. Do not add trace data to `LogEntries.PropertiesJson`. Trace persistence gets
    dedicated tables and repositories.
+10. Keep logs and traces in the same workspace at `/`. Do not add separate
+    `/logs` or `/traces` UI routes; use `?traceId=<id>` for shareable trace
+    focus.
+11. Render the trace panel above the log grid so the waterfall and correlated
+    logs remain visible together.
+12. Opening a trace temporarily replaces the active LogQL scope with an exact
+    `prop.traceId` query. Closing the trace restores the previous query,
+    filters, tail state, and scroll position.
 
 ## Target Backend Shape
 
@@ -213,65 +221,104 @@ Exit criteria:
 - Unknown, malformed, and syntactically valid but absent trace IDs have
   distinct 400 and 404 behavior.
 
-## Phase 4: Angular Trace Workspace
+## Phase 4: Unified Logs and Traces Workspace
 
-Split the current single page into an application shell with primary `Logs`
-and `Traces` navigation. Preserve the current log workspace behavior and add:
+Keep the current log workspace at `/` and add a trace panel between the query
+panel and the log grid. The panel is hidden by default and has browse, loading,
+selected trace, not found, and error states.
 
-- `/logs` for the existing log viewer, with `/` redirecting to `/logs`.
-- `/traces` for trace search and recent traces.
-- `/traces/:traceId` for a shareable selected trace.
+Layout and interaction:
 
-The trace list should show:
+- Open the panel above the log grid with a default height of 300 pixels, a
+  minimum of 180 pixels, and a maximum of 60 percent of the workspace height.
+- Add a horizontal splitter for resizing. Below 980 pixels, hide the splitter,
+  use a bounded automatic height, and allow horizontal waterfall scrolling.
+- Add a `Traces` action beside `Search` and `Tail`. It opens an integrated
+  recent-trace browser without changing LogQL until a trace is selected.
+- Provide compact trace filters for exact trace ID, service, status, minimum
+  duration, and period. Selecting a result enters the same trace-focus flow as
+  selecting a TraceId from a log.
+- Show start time, duration, root service and operation, span/service counts,
+  error state, and an abbreviated copyable trace ID in browse results.
+- Render the selected trace as a collapsible span tree and horizontal
+  waterfall aligned to the trace start and duration.
+- Keep service colors stable within a trace. Show span service, operation,
+  kind, status, duration, and proportional timing.
+- Mark orphan spans and clock skew explicitly instead of producing broken
+  geometry.
+- Reuse the resizable right sidebar for either log details or selected-span
+  details. Selecting one clears the other selection but does not close the
+  trace panel.
+- Show span attributes, resource attributes, scope, events, links, status,
+  IDs, and copy actions in the selected-span view.
+- Implement the waterfall with HTML and CSS first. Do not add a charting
+  dependency unless performance testing demonstrates a need.
 
-- start timestamp
-- total duration
-- root service and operation
-- number of spans and services
-- error state
-- abbreviated trace ID with copy action
+Component boundaries:
 
-The trace detail should show:
-
-- a collapsible span tree
-- a horizontal waterfall aligned to the trace start and duration
-- service-specific colors that remain consistent within the trace
-- span name, service, kind, duration, and status
-- a selected-span panel with attributes, resource attributes, scope, events,
-  links, status message, IDs, and copy actions
-- explicit orphan and clock-skew indicators rather than broken geometry
-
-Reuse the current dense workspace layout, resizable detail sidebar, virtualized
-rows, quick-filter styling, and accessible keyboard controls. Implement the
-waterfall with HTML/CSS positioning first; do not add a charting dependency
-unless performance testing shows it is necessary.
+- Keep `HomeComponent` as the workspace orchestrator.
+- Extract trace browsing, the trace panel, the waterfall, and span details into
+  focused standalone components.
+- Add a dedicated Angular `TraceService`; do not add trace responsibilities to
+  the existing log `SearchService`.
 
 Exit criteria:
 
 - A trace with hundreds of spans remains scrollable and selection stays
   responsive.
 - Waterfall bars have accessible text equivalents and keyboard selection.
-- Direct navigation to `/traces/:traceId` restores the selected trace.
+- Traces without correlated logs are discoverable through the integrated
+  browser.
+- Logs and the selected trace remain visible together without navigating to a
+  separate page.
 
-## Phase 5: Log Correlation and Realtime Updates
+## Phase 5: Trace Focus, LogQL Correlation, and Realtime Updates
 
-- Make every non-empty trace ID in the log table and detail panel a link to
-  `/traces/:traceId`.
-- Add `View related logs` to the trace and selected-span panels. Navigate to
-  `/logs` with a LogQL query for `prop.traceId` and, for a span, `prop.spanId`.
-- Teach the log workspace to initialize its query from route query parameters
-  without weakening LogQL escaping.
-- Add a trace SignalR notification carrying a `TraceListItem` after an ingest
+Trace links and focus lifecycle:
+
+- Render a canonical 32-character lowercase hexadecimal TraceId as a real
+  hyperlink to `/?traceId=<id>`. Invalid or missing IDs remain plain text.
+- Stop TraceId link activation from also selecting the containing log row.
+- Before entering trace focus, snapshot the manual query, period, level,
+  service and property filters, tail state, selected log, and log-grid scroll
+  offset.
+- Pause tailing, suspend quick filters, set the visible query to
+  `prop.traceId = "<trace-id>"`, and fetch trace details and the first log page
+  in parallel.
+- Allow the user to edit LogQL while the trace remains pinned. Those temporary
+  edits are discarded when trace focus closes.
+- Switching to another trace updates the trace and LogQL without replacing the
+  original pre-focus snapshot.
+- Closing the panel or returning to trace browse restores the snapshot,
+  reruns the previous query, restores the scroll offset, and resumes tailing
+  only if it was active before trace focus.
+- Restore the previously selected log only when it exists in the reloaded
+  results; otherwise leave the details sidebar empty.
+- Opening `/?traceId=<id>` directly starts with a trace-only query and no
+  snapshot. Closing a direct link returns to `*`.
+- Keep URL state synchronized with panel state so browser back and forward open
+  and close trace focus correctly.
+- If logs arrive before trace storage, keep the LogQL results visible and show
+  `Trace data not found yet` with a retry action.
+
+Correlation and realtime behavior:
+
+- Add `Filter span logs` to the selected-span view. It changes the temporary
+  query to `prop.traceId = "<trace-id>" and prop.spanId = "<span-id>"`.
+- Publish a `TraceListItem` SignalR notification after a trace ingest
   transaction commits.
-- Keep trace subscriptions separate from existing LogQL tail subscriptions.
-  The first version may refresh an already visible trace rather than stream
-  individual span mutations.
+- Keep trace notifications separate from existing LogQL tail subscriptions.
+- Debounce and refetch an open trace after notifications rather than applying
+  individual span mutations in the browser.
+- Refresh the integrated recent-trace browser without reloading the page.
 
 Exit criteria:
 
-- A log can open its trace in one action.
-- A span can open its correlated logs in one action.
-- New traces appear in an active recent-traces view without a full page reload.
+- A log opens its trace and exact correlated LogQL scope in one action.
+- Closing trace focus restores the complete previous log investigation state.
+- A span filters its correlated logs in one action.
+- Direct links and browser history reproduce the selected trace state.
+- New and updated traces appear without a full page reload.
 
 ## Test Matrix
 
@@ -306,21 +353,29 @@ Exit criteria:
 
 ### UI tests
 
-- trace list filtering and paging
+- integrated trace browsing, filtering, and paging
+- TraceId validation, hyperlink semantics, and row-click isolation
+- temporary LogQL generation, snapshot restoration, and safe escaping
 - tree construction, orphan handling, and waterfall geometry
-- selected-span details and copy actions
-- log-to-trace and trace-to-log navigation
-- deep-link restoration
-- accessibility checks for navigation, tree rows, and waterfall alternatives
+- selected-span details, copy actions, and span-log filtering
+- loading, not-found, retry, and error panel states
+- direct-link, new-tab, and browser back/forward behavior
+- responsive panel sizing and horizontal waterfall scrolling
+- accessibility checks for links, splitters, tree rows, and waterfall
+  alternatives
 
 ### End-to-end container verification
 
 1. Start the rebuilt image with `serimongo-data` attached.
 2. Export a multi-service trace from a .NET sample using `http/protobuf`.
 3. Confirm the exporter receives a successful OTLP response.
-4. Confirm the trace and all spans exist through the API and UI.
-5. Follow a trace-linked log into the trace view and back to related logs.
-6. Restart the container and confirm the trace remains available.
+4. Confirm the trace and all spans exist through the API and integrated panel.
+5. Click a log TraceId, confirm the exact temporary LogQL query and waterfall
+   above the correlated logs, then close it and verify state restoration.
+6. Open a trace without logs through integrated browse and through a direct
+   `?traceId=` link.
+7. Select a span and confirm the span-specific LogQL filter.
+8. Restart the container and confirm the trace remains available.
 
 ## Rollout and Operational Safeguards
 
@@ -343,8 +398,8 @@ Exit criteria:
 1. `feat(traces): add schema migrations and trace storage`
 2. `feat(traces): ingest OTLP HTTP protobuf and JSON spans`
 3. `feat(traces): expose trace query APIs`
-4. `feat(ui): add trace list and waterfall details`
-5. `feat(ui): correlate logs and traces`
+4. `feat(ui): integrate trace panel and waterfall`
+5. `feat(ui): add trace log focus and realtime updates`
 6. `docs(traces): document receiver, retention, and verification`
 
 Each commit must leave tests passing. Do not switch `/v1/traces` from
@@ -357,9 +412,14 @@ tests are part of the same deployable sequence.
 - Success, partial success, malformed input, and unsupported media responses
   follow OTLP/HTTP semantics.
 - Existing SQLite log data survives migration and container recreation.
-- Trace list, detail tree, waterfall, filters, deep links, and copy actions work
-  in the UI.
-- Log-to-trace and trace-to-log correlation works with canonical IDs.
+- Trace browse, detail tree, waterfall, filters, and copy actions work above the
+  existing log grid without a separate trace page.
+- Canonical TraceIds are hyperlinks that open shareable `?traceId=` focus and
+  apply an exact temporary LogQL scope.
+- Closing trace focus restores query, quick filters, tail state, selection, and
+  scroll position according to the focus snapshot rules.
+- Traces without logs remain accessible through integrated browse.
+- Log-to-trace and span-to-log correlation works with canonical IDs.
 - Automated mapper, repository, endpoint, UI, and container verification cover
   the complete flow.
 - README and CHANGELOG no longer describe traces as discarded.
@@ -370,5 +430,3 @@ tests are part of the same deployable sequence.
 - Maximum accepted request bytes and spans per export request.
 - Whether partial traces should be visually marked after an inactivity window,
   and the length of that window.
-- Whether realtime trace updates are required in the first UI release or may
-  follow the searchable list/detail MVP.

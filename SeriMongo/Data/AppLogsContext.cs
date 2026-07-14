@@ -13,13 +13,17 @@ namespace SeriMongo.Data
     {
         private readonly ILogger<AppLogsContext> _logger;
 
-        public AppLogsContext(IOptions<ApplicationOptions> applicationOptions, ILogger<AppLogsContext> logger)
+        public AppLogsContext(
+            IOptions<ApplicationOptions> applicationOptions,
+            SqliteSchemaMigrator schemaMigrator,
+            ILogger<AppLogsContext> logger)
         {
             _logger = logger;
             ConnectionString = applicationOptions.Value.Database.ConnectionString;
 
             EnsureDatabaseDirectoryExists();
-            EnsureCreated();
+            schemaMigrator.Migrate(ConnectionString);
+            _logger.LogInformation("SQLite log store ready at {ConnectionString}", ConnectionString);
         }
 
         public string ConnectionString { get; }
@@ -46,29 +50,6 @@ namespace SeriMongo.Data
             }
         }
 
-        private void EnsureCreated()
-        {
-            using var connection = CreateConnection();
-            connection.Open();
-
-            using var command = connection.CreateCommand();
-            command.CommandText = @"
-CREATE TABLE IF NOT EXISTS LogEntries (
-    Id TEXT NOT NULL PRIMARY KEY,
-    TimestampUtc TEXT NOT NULL,
-    Level TEXT NOT NULL,
-    RenderedMessage TEXT NOT NULL,
-    Exception TEXT NULL,
-    PropertiesJson TEXT NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS IX_LogEntries_TimestampUtc ON LogEntries (TimestampUtc DESC);
-CREATE INDEX IF NOT EXISTS IX_LogEntries_Level ON LogEntries (Level);
-";
-
-            command.ExecuteNonQuery();
-            _logger.LogInformation("SQLite log store ready at {ConnectionString}", ConnectionString);
-        }
     }
 
     public interface ILogRepository
