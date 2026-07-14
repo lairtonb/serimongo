@@ -1,7 +1,8 @@
 # OTLP Traces Support Plan
 
-- Status: proposed
+- Status: implemented for phases 1-5; operational safeguards remain follow-up work
 - Created: 2026-07-13
+- Delivered: 2026-07-14
 - Scope: OTLP/HTTP trace ingestion, SQLite persistence, query APIs, log
   correlation, and trace visualization in the Angular UI.
 
@@ -16,19 +17,19 @@ logs in the existing workspace.
 Metrics remain outside this plan. Their compatibility endpoints continue to
 acknowledge and discard payloads until a separate metrics design is approved.
 
-## Current Baseline
+## Delivered Baseline
 
-- `/v1/traces` and `/otlp/v1/traces` accept OTLP/HTTP Protobuf or JSON and
-  return an empty successful response, but discard the request body.
-- OTLP log records already preserve lowercase hexadecimal `traceId` and
-  `spanId` properties. This provides the correlation key for the first UI
-  integration.
-- SQLite initialization is currently an idempotent inline `CREATE TABLE IF NOT
-  EXISTS` script in `AppLogsContext`; there is no schema version table.
-- The Angular application has one log workspace at `/`, backed by LogQL search
-  and a SignalR tail.
-- The development volume `serimongo-data` must survive every schema and image
-  upgrade.
+- `/v1/traces` and `/otlp/v1/traces` persist OTLP/HTTP Protobuf and JSON spans
+  and return representation-matching export responses.
+- Trace and span IDs are validated as canonical lowercase hexadecimal values;
+  invalid individual spans return OTLP partial success.
+- SQLite uses forward-only schema migrations for trace summaries and spans.
+- `/api/traces`, `/api/traces/{traceId}`, and `/api/traces/services` support
+  browsing and detail inspection.
+- The Angular workspace renders trace browse results, a span tree, waterfall,
+  URL-backed log focus, span-log filtering, and realtime trace refreshes.
+- The simulator emits correlated logical operations with an OTLP trace and its
+  attached log records.
 
 ## Protocol and Product Decisions
 
@@ -393,18 +394,13 @@ Exit criteria:
 - Rebuild and recreate the development container after each backend/UI delivery
   that must be verified in Docker.
 
-## Recommended Delivery Commits
+## Delivery Commits
 
-1. `feat(traces): add schema migrations and trace storage`
-2. `feat(traces): ingest OTLP HTTP protobuf and JSON spans`
-3. `feat(traces): expose trace query APIs`
-4. `feat(ui): integrate trace panel and waterfall`
-5. `feat(ui): add trace log focus and realtime updates`
-6. `docs(traces): document receiver, retention, and verification`
-
-Each commit must leave tests passing. Do not switch `/v1/traces` from
-accept-and-drop to persistence until the migration, repository, and endpoint
-tests are part of the same deployable sequence.
+1. `06d75c8` — `docs(traces): unify trace and log workspace`
+2. `f0e6ee7` — `feat(traces): ingest OTLP traces and correlate simulator logs`
+3. `aebf0bf` — `feat(traces): expose trace query APIs`
+4. `08d291f` — `feat(ui): add trace browser and waterfall workspace`
+5. `bef5fae` — `feat(ui): add trace log focus and realtime updates`
 
 ## Definition of Done
 
@@ -424,7 +420,7 @@ tests are part of the same deployable sequence.
   the complete flow.
 - README and CHANGELOG no longer describe traces as discarded.
 
-## Decisions Required Before Implementation
+## Operational Follow-ups
 
 - Default trace retention age and optional maximum trace count.
 - Maximum accepted request bytes and spans per export request.

@@ -1,6 +1,6 @@
 # SeriMongo
 
-SeriMongo is a real-time log viewer backed by SQLite. It receives logs through HTTP APIs, broadcasts new entries to the UI with SignalR, and supports OTLP/HTTP Protobuf and JSON log ingestion.
+SeriMongo is a real-time log and trace viewer backed by SQLite. It receives OTLP/HTTP logs and traces, broadcasts updates to the UI with SignalR, and keeps correlated telemetry in one workspace.
 
 ## Screenshots
 
@@ -22,8 +22,12 @@ Generate individual events, mixed bursts, or continuous traffic from the bundled
 * Real-time UI updates through SignalR.
 * LogQL search dialect compiled to parameterized SQLite queries.
 * OTLP logs receiver at `/v1/logs` and `/otlp/v1/logs` for `http/protobuf` and `http/json` exporters.
-* Compatibility endpoints that accept and discard OTLP traces and metrics until
-  those signals receive native storage and UI support.
+* OTLP traces receiver at `/v1/traces` and `/otlp/v1/traces` for
+  `http/protobuf` and `http/json` exporters, with SQLite persistence and
+  partial-success responses for rejected spans.
+* Integrated trace browser, span tree, waterfall, and LogQL focus for
+  correlated logs.
+* Metrics compatibility endpoints that acknowledge and discard OTLP metrics.
 * Docker image with Angular UI and ASP.NET Core backend.
 * Docker Compose simulator UI for emitting realtime sample logs.
 
@@ -110,7 +114,9 @@ Configure a different target with:
 SimulatorOptions__TargetBaseUrl=http://localhost:51983
 ```
 
-The UI can emit one log for each supported level or generate mixed bursts of sample traffic.
+The UI emits one correlated logical operation for each action: one log is
+attached to its processing span and four related spans are exported as an OTLP
+trace. Mixed bursts and continuous traffic preserve that correlation.
 
 ## LogQL
 
@@ -189,10 +195,15 @@ Successful Protobuf requests receive an empty
 `ExportLogsServiceResponse` with `Content-Type: application/x-protobuf`, as
 defined by OTLP/HTTP. JSON requests continue to receive an empty JSON object.
 
-The receiver also exposes `/v1/traces`, `/otlp/v1/traces`, `/v1/metrics`, and
-`/otlp/v1/metrics`. These compatibility endpoints currently acknowledge
-Protobuf and JSON exports with an empty successful OTLP response but discard
-their contents: only logs are persisted and visible in the UI today.
+The trace receiver exposes `/v1/traces` and `/otlp/v1/traces`. It persists
+OTLP/HTTP Protobuf and JSON spans, returns a matching successful export
+response, and uses partial success when individual spans have invalid IDs or
+timestamps. The workspace can browse traces, inspect their span hierarchy and
+waterfall, and focus correlated logs through `?traceId=<id>`.
+
+The metrics endpoints `/v1/metrics` and `/otlp/v1/metrics` remain compatibility
+endpoints: they acknowledge OTLP Protobuf and JSON payloads but discard their
+contents.
 
 Send a minimal OTLP/HTTP JSON payload:
 

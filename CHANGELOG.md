@@ -14,15 +14,18 @@ Versioning when numbered releases begin.
   boolean operators.
 - OTLP/HTTP Protobuf and JSON ingestion through `/v1/logs` and
   `/otlp/v1/logs`.
-- OTLP/HTTP trace and metric compatibility endpoints under `/v1` and
-  `/otlp/v1`; these signals are acknowledged and discarded until native
-  storage and UI support are implemented.
+- OTLP/HTTP Protobuf and JSON trace ingestion through `/v1/traces` and
+  `/otlp/v1/traces`, backed by idempotent SQLite span and trace-summary
+  storage with partial-success responses for rejected spans.
+- Trace query APIs for browsing, detail inspection, and service names.
+- An integrated trace browser with compact filters, span hierarchy, waterfall,
+  trace-to-log focus, span-log filtering, and SignalR trace updates.
 - SignalR-based realtime tailing with server-side query synchronization.
 - Paged and virtualized log results with configurable columns.
 - Quick filters for periods, levels, services, and structured properties.
 - Structured event details, Markdown copy actions, and an in-app help guide.
-- A standalone simulator for individual events, mixed bursts, and continuous
-  traffic.
+- A standalone simulator for correlated logical operations, mixed bursts, and
+  continuous traffic with OTLP logs and spans.
 - Docker images and a Docker Compose environment for the viewer and simulator.
 
 ### Changed
@@ -35,6 +38,8 @@ Versioning when numbered releases begin.
   semantics, and returned an empty Protobuf export response on success.
 - Updated the README for the current architecture, development workflow, and
   user interface.
+- Metrics remain compatibility endpoints that acknowledge and discard their
+  payloads; traces are persisted and visible in the workspace.
 
 ### Removed
 
