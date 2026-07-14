@@ -74,6 +74,23 @@ Or use Docker Compose, which enables the seed by default:
 docker compose up --build
 ```
 
+The seed setting can be overridden from the command line without editing the
+Compose file. In PowerShell:
+
+```powershell
+$env:ApplicationOptions__Seed__Enabled = "false"
+docker compose up --build
+```
+
+In Bash or another POSIX shell:
+
+```bash
+ApplicationOptions__Seed__Enabled=false docker compose up --build
+```
+
+The override disables startup seeding but does not delete data already stored
+in the `serimongo-data` volume.
+
 Open the UI:
 
 ```text
