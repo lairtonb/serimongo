@@ -29,6 +29,11 @@ Versioning when numbered releases begin.
 - Updated the README for the current architecture, development workflow, and
   user interface.
 
+### Fixed
+
+- OTLP/HTTP requests with `Content-Encoding: gzip`, the OpenTelemetry
+  Collector default, are decompressed instead of rejected with HTTP 400.
+
 ### Removed
 
 - The former MongoDB storage implementation and related dependencies.
