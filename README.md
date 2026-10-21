@@ -2,6 +2,8 @@
 
 SeriMongo is a real-time log viewer backed by SQLite. It receives logs through HTTP APIs, broadcasts new entries to the UI with SignalR, and supports OTLP/HTTP JSON log ingestion.
 
+New to SeriMongo? Start with the [Getting Started guide](Docs/getting-started.md).
+
 ## Screenshots
 
 ### Log viewer
