@@ -395,3 +395,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+# SeriMongo local SQLite database
+SeriMongo/Data/
