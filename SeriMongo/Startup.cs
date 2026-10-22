@@ -38,6 +38,9 @@ namespace SeriMongo
 
             services.AddControllers();
 
+            // OTLP/HTTP clients such as the OpenTelemetry Collector gzip request bodies by default.
+            services.AddRequestDecompression();
+
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder => builder
@@ -90,6 +93,8 @@ namespace SeriMongo
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseRequestDecompression();
 
             app.UseDefaultFiles();
             app.UseStaticFiles();

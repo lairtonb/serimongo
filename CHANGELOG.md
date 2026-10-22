@@ -41,6 +41,11 @@ Versioning when numbered releases begin.
 - Metrics remain compatibility endpoints that acknowledge and discard their
   payloads; traces are persisted and visible in the workspace.
 
+### Fixed
+
+- OTLP/HTTP requests with `Content-Encoding: gzip`, the OpenTelemetry
+  Collector default, are decompressed instead of rejected with HTTP 400.
+
 ### Removed
 
 - The former MongoDB storage implementation and related dependencies.

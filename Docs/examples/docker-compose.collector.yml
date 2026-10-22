@@ -1,0 +1,16 @@
+# Adds an OpenTelemetry Collector in front of SeriMongo.
+#
+# docker compose -f docker-compose.yml -f Docs/examples/docker-compose.collector.yml up --build
+#
+# Point OTLP/gRPC exporters at http://localhost:4317 and OTLP/HTTP Protobuf
+# exporters at http://localhost:4318.
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.115.1
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./Docs/examples/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on:
+      - serimongo

@@ -2,6 +2,8 @@
 
 SeriMongo is a real-time log and trace viewer backed by SQLite. It receives OTLP/HTTP logs and traces, broadcasts updates to the UI with SignalR, and keeps correlated telemetry in one workspace.
 
+New to SeriMongo? Start with the [Getting Started guide](Docs/getting-started.md).
+
 ## Screenshots
 
 ### Log viewer
