@@ -1,9 +1,8 @@
 # OpenTelemetry Collector bridge for SeriMongo.
 #
-# SeriMongo accepts OTLP/HTTP JSON only. Exporters that send OTLP/gRPC or
-# OTLP/HTTP Protobuf (for example the .NET OpenTelemetry exporter and
-# Serilog.Sinks.OpenTelemetry) can send to this Collector instead, and the
-# Collector forwards the logs to SeriMongo as JSON.
+# SeriMongo accepts OTLP/HTTP only. Exporters that only send OTLP/gRPC can
+# send to this Collector instead, and the Collector forwards the logs to
+# SeriMongo over OTLP/HTTP.
 receivers:
   otlp:
     protocols:

@@ -5,8 +5,9 @@ showing up in SeriMongo.
 
 ## What SeriMongo Is
 
-SeriMongo is a log viewer. Your applications send logs to it over HTTP, it
-stores them in a SQLite file, and its web UI shows them in real time.
+SeriMongo is a log and trace viewer. Your applications send logs and traces
+to it over HTTP, it stores them in a SQLite file, and its web UI shows them in
+real time.
 
 Despite the name, SeriMongo no longer uses MongoDB. Older versions stored logs
 written by `Serilog.Sinks.MongoDB` and needed a MongoDB replica set for change
@@ -103,44 +104,23 @@ data is off unless you enable it (see [Configuration](#configuration)).
 
 ## Send Logs From Your Application
 
-SeriMongo accepts logs in two formats:
+SeriMongo accepts:
 
-* **OTLP/HTTP JSON** at `/v1/logs` (and `/otlp/v1/logs`). This is the
-  OpenTelemetry standard.
+* **OTLP/HTTP** logs at `/v1/logs` (and `/otlp/v1/logs`) and traces at
+  `/v1/traces` (and `/otlp/v1/traces`), in either Protobuf or JSON. This is
+  the OpenTelemetry standard. Gzip-compressed requests are accepted.
 * **SeriMongo JSON** at `/api/applogs`, for scripts or quick tests.
 
-It does not yet accept OTLP/HTTP Protobuf or OTLP/gRPC. The .NET OpenTelemetry
-exporter and `Serilog.Sinks.OpenTelemetry` only send those, so .NET
-applications go through an OpenTelemetry Collector, as described below.
+OTLP/gRPC is not supported. Use OTLP/HTTP, or put an OpenTelemetry Collector
+in between, as described below.
 
 ### Quick test with curl
 
 ```bash
-curl -X POST http://localhost:51983/api/applogs \
-  -H "Content-Type: application/json" \
-  -d '{ "level": "Warning", "renderedMessage": "hello from curl", "properties": { "OrderId": 42 } }'
+curl -X POST http://localhost:51983/api/applogs   -H "Content-Type: application/json"   -d '{ "level": "Warning", "renderedMessage": "hello from curl", "properties": { "OrderId": 42 } }'
 ```
 
-### Exporters that support OTLP/HTTP JSON
-
-Point the exporter at SeriMongo:
-
-```text
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:51983
-OTEL_EXPORTER_OTLP_PROTOCOL=http/json
-```
-
-### .NET and Serilog through an OpenTelemetry Collector
-
-The repository includes a Collector setup that accepts OTLP/gRPC and
-OTLP/HTTP Protobuf and forwards the logs to SeriMongo as JSON. Start it
-together with SeriMongo:
-
-```bash
-docker compose -f docker-compose.yml -f Docs/examples/docker-compose.collector.yml up --build
-```
-
-Then send logs to the Collector on port 4317 (gRPC) or 4318 (HTTP Protobuf).
+### .NET and Serilog
 
 With Serilog, add the `Serilog.Sinks.OpenTelemetry` package:
 
@@ -151,8 +131,8 @@ using Serilog.Sinks.OpenTelemetry;
 Log.Logger = new LoggerConfiguration()
     .WriteTo.OpenTelemetry(options =>
     {
-        options.Endpoint = "http://localhost:4317";
-        options.Protocol = OtlpProtocol.Grpc;
+        options.Endpoint = "http://localhost:51983/v1/logs";
+        options.Protocol = OtlpProtocol.HttpProtobuf;
         options.ResourceAttributes = new Dictionary<string, object>
         {
             ["service.name"] = "my-app"
@@ -166,12 +146,38 @@ Log.Warning("Order {OrderId} failed", 42);
 `OrderId` appears in SeriMongo as a structured property, so you can search
 for it with `prop.OrderId = 42`.
 
-With the OpenTelemetry .NET SDK, use the default OTLP exporter and set
-`OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317`.
+With the OpenTelemetry .NET SDK, keep the default OTLP exporter and switch it
+from gRPC to HTTP:
+
+```text
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:51983
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+```
+
+### Other OpenTelemetry exporters
+
+Point the exporter at SeriMongo and pick an HTTP protocol:
+
+```text
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:51983
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+```
+
+`http/json` works too.
+
+### Exporters that only speak gRPC
+
+The repository includes a Collector setup that accepts OTLP/gRPC and
+OTLP/HTTP and forwards logs to SeriMongo. Start it together with SeriMongo:
+
+```bash
+docker compose -f docker-compose.yml -f Docs/examples/docker-compose.collector.yml up --build
+```
+
+Then send to the Collector on port 4317 (gRPC) or 4318 (HTTP).
 
 The Collector configuration is in `Docs/examples/otel-collector.yaml`. If you
-already run a Collector, add an `otlphttp` exporter with `encoding: json` that
-points at SeriMongo.
+already run a Collector, add an `otlphttp` exporter that points at SeriMongo.
 
 ## Configuration
 
@@ -202,6 +208,7 @@ dotnet run --urls http://localhost:51983 \
 | `http://localhost:4200` refuses the connection | The Angular dev server is not running. Run `npm start` in `SeriMongo`, or use <http://localhost:51983> after `npm run build`. |
 | `http://localhost:51983` returns 404 but `/swagger` works | The UI has not been built. Run `npm ci` and `npm run build` in `SeriMongo`. |
 | `npm ci` or `ng` fails with an engine or version error | Your Node.js version is too old for Angular 22. Install 22.22.3+ or 24.15.0+, or use Docker. |
-| Your exporter gets HTTP 415 | It is sending OTLP Protobuf. Switch it to `http/json`, or send through the Collector. |
+| Your exporter gets HTTP 415 | It is not sending OTLP/HTTP Protobuf or JSON. Set `OTEL_EXPORTER_OTLP_PROTOCOL` to `http/protobuf` or `http/json`. |
+| Logs from your application never arrive, with no error | The exporter is probably using OTLP/gRPC, which SeriMongo does not support. Many exporters, Serilog included, drop failed batches silently. Switch it to `http/protobuf`, or send through the Collector. |
 | UI shows no live updates | The SignalR connection to `/logs` failed. With `npm start`, check that the API is running on port 51983. |
 | `$changeStream stage is only supported on replica sets` | You are running an old, MongoDB-based version. Update to the latest `master`. |
