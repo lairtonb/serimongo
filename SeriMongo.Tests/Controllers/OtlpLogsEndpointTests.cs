@@ -11,6 +11,7 @@ using SeriMongo.Tests.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -162,6 +163,42 @@ namespace SeriMongo.Tests.Controllers
         }
 
         [Fact]
+        public async Task GzipProtobufPayload_IsDecompressedAndIngested()
+        {
+            using var client = _fixture.Factory.CreateClient();
+            var request = OtlpProtobufLogMapperTests.BuildRequest(body: "hello gzip protobuf");
+            using var content = CreateGzipContent(request.ToByteArray(), "application/x-protobuf");
+
+            var response = await client.PostAsync(
+                "/v1/logs",
+                content,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var entry = Assert.Single(_fixture.Capture.Entries);
+            Assert.Equal("hello gzip protobuf", entry.RenderedMessage);
+        }
+
+        [Fact]
+        public async Task GzipJsonPayload_IsDecompressedAndIngested()
+        {
+            using var client = _fixture.Factory.CreateClient();
+            const string json = """
+                { "resourceLogs": [{ "scopeLogs": [{ "logRecords": [{ "body": { "stringValue": "hello gzip json" } }] }] }] }
+                """;
+            using var content = CreateGzipContent(Encoding.UTF8.GetBytes(json), "application/json");
+
+            var response = await client.PostAsync(
+                "/v1/logs",
+                content,
+                TestContext.Current.CancellationToken);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var entry = Assert.Single(_fixture.Capture.Entries);
+            Assert.Equal("hello gzip json", entry.RenderedMessage);
+        }
+
+        [Fact]
         public async Task UnsupportedContentType_Returns415()
         {
             using var client = _fixture.Factory.CreateClient();
@@ -256,6 +293,20 @@ namespace SeriMongo.Tests.Controllers
         {
             var content = new ByteArrayContent(payload);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/x-protobuf");
+            return content;
+        }
+
+        private static ByteArrayContent CreateGzipContent(byte[] payload, string mediaType)
+        {
+            using var buffer = new MemoryStream();
+            using (var gzip = new GZipStream(buffer, CompressionLevel.Fastest))
+            {
+                gzip.Write(payload);
+            }
+
+            var content = new ByteArrayContent(buffer.ToArray());
+            content.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
+            content.Headers.ContentEncoding.Add("gzip");
             return content;
         }
     }
